@@ -44,7 +44,10 @@ def test_sma_ema_wma_are_deterministic() -> None:
 def test_momentum_and_roc() -> None:
     values = (100.0, 105.0, 110.0)
     assert momentum(values, 1) == (None, 5.0, 5.0)
-    assert rate_of_change(values, 1) == (None, 0.05, 110 / 105 - 1)
+    result = rate_of_change(values, 1)
+    assert result[0] is None
+    assert result[1] == pytest.approx(0.05)
+    assert result[2] == pytest.approx(110 / 105 - 1)
 
 
 def test_rsi_uptrend() -> None:
@@ -104,7 +107,7 @@ def test_no_lookahead() -> None:
         lambda: ema((1.0, 2.0), 3),
         lambda: rate_of_change((1.0, 0.0, 2.0), 1),
         lambda: bollinger_bands((1.0, 2.0), 2, -1),
-        lambda: vwap((1.0,), (0.0,), (0.5,), (1.0,)),
+        lambda: vwap((1.0,), (2.0,), (1.5,), (1.0,)),
     ],
 )
 def test_invalid_domains(function: object) -> None:
