@@ -5,9 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from core.contracts import CorporateActionRequest
-from core.errors import DataProviderError
-
+from core.contracts import CorporateActionRequest\nfrom core.errors import DataProviderError
 
 _REQUIRED_COLUMNS = frozenset({"action_type", "source"})
 _COLUMN_ALIASES = {
