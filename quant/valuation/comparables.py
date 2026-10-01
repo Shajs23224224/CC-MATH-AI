@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from typing import Literal
 
 from core.contracts import ValuationAssumptions, ValuationResult
 
@@ -43,11 +44,15 @@ def comparable_valuation_result(
         equity_value = enterprise_value - _non_negative(debt, "debt") + _non_negative(cash, "cash")
 
     per_share = None
-    unit = "currency"
+    unit: Literal["currency", "currency_per_share"] = "currency"
     if shares_outstanding is not None:
         shares = _positive(shares_outstanding, "shares_outstanding")
         per_share = equity_value / shares
         unit = "currency_per_share"
+
+    valuation_value = equity_value if basis == "equity" else enterprise_value
+    if valuation_value is None:
+        raise RuntimeError("enterprise valuation value must be populated")
 
     return ValuationResult(
         method="comparables",
@@ -55,7 +60,7 @@ def comparable_valuation_result(
         currency=assumptions.currency,
         basis="equity" if basis == "equity" else "enterprise",
         unit=unit,
-        value=equity_value if basis == "equity" else enterprise_value,
+        value=valuation_value,
         enterprise_value=enterprise_value,
         equity_value=equity_value,
         per_share_value=per_share,
