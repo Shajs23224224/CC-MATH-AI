@@ -1,0 +1,12 @@
+# Non-secret default configuration template.
+
+app_env = "development"
+log_level = "INFO"
+
+[analysis]
+default_frequency = "1D"
+default_horizon = "20D"
+
+[risk]
+max_position_weight = 0.10
+max_portfolio_leverage = 1.00
