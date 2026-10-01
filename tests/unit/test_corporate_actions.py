@@ -10,7 +10,7 @@ from core.contracts import (
     CorporateActionRequest,
     CorporateActionType,
 )
-from core.errors import DataQualityError, DataProviderError
+from core.errors import DataProviderError
 from data import CorporateActionEngine, apply_split_adjustments, normalize_corporate_actions
 from data.providers.corporate_action_csv import LocalCSVCorporateActionProvider
 
