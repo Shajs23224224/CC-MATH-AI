@@ -16,6 +16,17 @@ def normalize_market_frame(
     frequency: Frequency | str,
 ) -> tuple[MarketBar, ...]:
     """Normalize OHLCV data into immutable canonical MarketBar contracts."""
+    frame = frame.rename(
+        columns={
+            "Date": "timestamp",
+            "date": "timestamp",
+            "Open": "open",
+            "High": "high",
+            "Low": "low",
+            "Close": "close",
+            "Volume": "volume",
+        }
+    )
     required = ("timestamp", "open", "high", "low", "close", "volume")
     missing = [column for column in required if column not in frame.columns]
     if missing:
