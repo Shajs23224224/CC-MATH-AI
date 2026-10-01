@@ -108,9 +108,7 @@ def test_macro_engine_pipeline(tmp_path) -> None:
         geography="CO",
         frequency="monthly",
     )
-    observations, batch = MacroDataEngine(
-        LocalCSVMacroProvider(tmp_path)
-    ).fetch(request)
+    observations, batch = MacroDataEngine(LocalCSVMacroProvider(tmp_path)).fetch(request)
 
     assert batch.observations_count == len(observations) == 2
     assert observations[0].value == 9.0
