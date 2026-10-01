@@ -179,9 +179,9 @@ class DataQualityEngine:
                                 else DataQualitySeverity.ERROR
                             ),
                             message=(
-                        "expected universe members are absent; review "
-                        "delistings/survivorship"
-                    ),
+                                "expected universe members are absent; review "
+                                "delistings/survivorship"
+                            ),
                             field=symbol_column,
                             count=len(missing_symbols),
                         )
