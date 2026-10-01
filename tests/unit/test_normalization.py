@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pandas as pd
 import pytest
@@ -31,7 +31,7 @@ def test_invalid_currency_is_rejected() -> None:
 
 def test_timestamp_is_utc() -> None:
     value = normalize_timestamp_utc("2026-10-01T12:00:00-05:00")
-    assert value == datetime(2026, 10, 1, 17, 0, tzinfo=timezone.utc)
+    assert value == datetime(2026, 10, 1, 17, 0, tzinfo=UTC)
 
 
 def test_frequency_aliases_are_canonical() -> None:
