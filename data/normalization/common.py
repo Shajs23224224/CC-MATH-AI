@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime, timezone
 from typing import TypeVar
 
 import pandas as pd
@@ -116,7 +116,7 @@ def normalize_timestamp_utc(value: object) -> datetime:
         raise DataQualityError("invalid timestamp")
     if timestamp.tzinfo is None:
         timestamp = timestamp.tz_localize("UTC")
-    return timestamp.to_pydatetime().astimezone(timezone.utc)
+    return timestamp.to_pydatetime().astimezone(UTC)
 
 
 def normalize_date(value: object) -> date:
