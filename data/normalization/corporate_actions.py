@@ -5,7 +5,7 @@ import pandas as pd
 from core.contracts import Asset, CorporateAction, CorporateActionType
 from core.errors import DataQualityError
 
-from .common import normalize_currency_code, normalize_dataframe_columns, normalize_date
+from .common import normalize_currency_code, normalize_dataframe_columns
 
 
 _REQUIRED_COLUMNS = ("action_type", "source")
@@ -62,7 +62,7 @@ def normalize_corporate_actions(
         except ValueError as exc:
             raise DataQualityError(f"unsupported corporate action type: {action_type}") from exc
 
-        def optional_value(name: str):
+        def optional_value(name: str, row=row) -> object | None:
             if not hasattr(row, name):
                 return None
             value = getattr(row, name)
