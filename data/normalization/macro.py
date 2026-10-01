@@ -13,7 +13,6 @@ from .common import (
     normalize_unit,
 )
 
-
 _REQUIRED_COLUMNS = (
     "series_id",
     "name",
