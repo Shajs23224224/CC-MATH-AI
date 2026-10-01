@@ -55,7 +55,7 @@ class DataQualityEngine:
                 0,
                 len(work),
                 issues,
-                leakage_detected=True,
+                leakage_detected=False,
                 survivorship_risk=False,
             )
 
