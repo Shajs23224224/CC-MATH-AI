@@ -41,6 +41,20 @@ from .returns import (
     wealth_index,
 )
 
+from .statistics import (
+    autocorrelation,
+    descriptive_summary,
+    excess_kurtosis,
+    interquartile_range,
+    median_absolute_deviation,
+    quantile,
+    rankdata,
+    rolling_mean,
+    rolling_std,
+    rolling_zscore,
+    skewness,
+    spearman_correlation,
+)
 from .technical import (
     adx_dmi,
     atr,
@@ -57,20 +71,6 @@ from .technical import (
     vwap,
     williams_r,
     wma,
-)
-from .statistics import (
-    autocorrelation,
-    descriptive_summary,
-    excess_kurtosis,
-    interquartile_range,
-    median_absolute_deviation,
-    quantile,
-    rankdata,
-    rolling_mean,
-    rolling_std,
-    rolling_zscore,
-    skewness,
-    spearman_correlation,
 )
 
 __all__ = [
