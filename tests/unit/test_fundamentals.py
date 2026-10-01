@@ -98,9 +98,7 @@ def test_fundamental_engine_pipeline(tmp_path) -> None:
         as_of=date(2026, 12, 31),
     )
 
-    snapshots, batch = FundamentalDataEngine(
-        LocalCSFundamentalProvider(tmp_path)
-    ).fetch(request)
+    snapshots, batch = FundamentalDataEngine(LocalCSFundamentalProvider(tmp_path)).fetch(request)
 
     assert batch.snapshots_count == len(snapshots) == 2
     assert batch.first_period_end == date(2026, 3, 31)
