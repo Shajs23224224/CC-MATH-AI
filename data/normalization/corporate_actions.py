@@ -1,0 +1,133 @@
+from __future__ import annotations
+
+from datetime import date
+
+import pandas as pd
+
+from core.contracts import Asset, CorporateAction, CorporateActionType
+from core.errors import DataQualityError
+
+
+_REQUIRED_COLUMNS = ("action_type", "source")
+
+
+def normalize_corporate_actions(
+    frame: pd.DataFrame,
+    asset: Asset,
+) -> tuple[CorporateAction, ...]:
+    missing = [column for column in _REQUIRED_COLUMNS if column not in frame.columns]
+    if missing:
+        raise DataQualityError(f"missing corporate-action columns: {missing}")
+
+    work = frame.copy()
+
+    for column in ("announced_at", "ex_date", "record_date", "payable_date"):
+        if column in work.columns:
+            work[column] = pd.to_datetime(work[column], errors="coerce", utc=True).dt.date
+
+    for column in ("ratio_numerator", "ratio_denominator", "cash_amount"):
+        if column in work.columns:
+            work[column] = pd.to_numeric(work[column], errors="coerce")
+
+    if work["action_type"].isna().any() or work["source"].isna().any():
+        raise DataQualityError("corporate action contains missing required values")
+
+    unique_columns = [
+        "action_type",
+        "announced_at",
+        "ex_date",
+        "record_date",
+        "payable_date",
+        "ratio_numerator",
+        "ratio_denominator",
+        "cash_amount",
+        "new_symbol",
+        "source_event_id",
+    ]
+    unique_columns = [column for column in unique_columns if column in work.columns]
+    if work.duplicated(subset=unique_columns).any():
+        raise DataQualityError("duplicate corporate actions detected")
+
+    work = work.sort_values(["ex_date", "announced_at"], na_position="last").reset_index(drop=True)
+
+    actions: list[CorporateAction] = []
+    for row in work.itertuples(index=False):
+        action_type = str(row.action_type).strip().lower()
+        try:
+            parsed_type = CorporateActionType(action_type)
+        except ValueError as exc:
+            raise DataQualityError(f"unsupported corporate action type: {action_type}") from exc
+
+        def optional_value(name: str):
+            if not hasattr(row, name):
+                return None
+            value = getattr(row, name)
+            return None if pd.isna(value) else value
+
+        action = CorporateAction(
+            asset=asset,
+            action_type=parsed_type,
+            announced_at=optional_value("announced_at"),
+            ex_date=optional_value("ex_date"),
+            record_date=optional_value("record_date"),
+            payable_date=optional_value("payable_date"),
+            ratio_numerator=optional_value("ratio_numerator"),
+            ratio_denominator=optional_value("ratio_denominator"),
+            cash_amount=optional_value("cash_amount"),
+            currency=optional_value("currency"),
+            new_symbol=optional_value("new_symbol"),
+            related_symbol=optional_value("related_symbol"),
+            source=str(row.source),
+            source_event_id=optional_value("source_event_id"),
+        )
+        actions.append(action)
+
+    return tuple(actions)
+
+
+def apply_split_adjustments(
+    frame: pd.DataFrame,
+    actions: tuple[CorporateAction, ...],
+) -> pd.DataFrame:
+    """Backward-adjust OHLC prices and volume for split/reverse-split events.
+
+    Bars on the ex-date are assumed to already reflect the market's split
+    convention. Only bars strictly before ex-date are adjusted.
+    Cash dividends and other events are not silently folded into price data.
+    """
+
+    required = ("timestamp", "open", "high", "low", "close", "volume")
+    missing = [column for column in required if column not in frame.columns]
+    if missing:
+        raise DataQualityError(f"missing market columns for split adjustment: {missing}")
+
+    adjusted = frame.copy()
+    timestamps = pd.to_datetime(adjusted["timestamp"], errors="coerce", utc=True)
+    if timestamps.isna().any():
+        raise DataQualityError("invalid market timestamps for corporate-action adjustment")
+
+    adjusted["timestamp"] = timestamps
+
+    split_actions = [
+        action
+        for action in actions
+        if action.action_type in {
+            CorporateActionType.SPLIT,
+            CorporateActionType.REVERSE_SPLIT,
+        }
+        and action.ex_date is not None
+    ]
+    split_actions.sort(key=lambda action: action.ex_date or date.min)
+
+    for action in split_actions:
+        factor = action.split_factor
+        if factor <= 0:
+            raise DataQualityError("split factor must be positive")
+
+        mask = adjusted["timestamp"].dt.date < action.ex_date
+
+        for column in ("open", "high", "low", "close"):
+            adjusted.loc[mask, column] = adjusted.loc[mask, column] / factor
+        adjusted.loc[mask, "volume"] = adjusted.loc[mask, "volume"] * factor
+
+    return adjusted
