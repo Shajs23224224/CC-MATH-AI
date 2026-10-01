@@ -22,7 +22,6 @@ from .market_data import MarketDataBatch, MarketDataRequest
 from .math import OptimizationResult
 from .normalization import NormalizationReport, NormalizationStatus
 from .portfolio import Portfolio, Position, SizingResult, TargetAllocation
-from .quant import AlgorithmMetadata, AlgorithmResult
 from .quality import (
     DataQualityIssue,
     DataQualityReport,
@@ -31,6 +30,7 @@ from .quality import (
     FeatureRecord,
     FeatureSet,
 )
+from .quant import AlgorithmMetadata, AlgorithmResult
 from .returns import PerformanceMetrics, ReturnSeries
 from .risk import RiskConstraint, RiskEvaluation, RiskMetric
 
