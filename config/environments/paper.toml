@@ -1,0 +1,20 @@
+# Paper-trading defaults. No live credentials belong here.
+
+app_env = "paper"
+log_level = "INFO"
+
+[analysis]
+default_frequency = "1D"
+default_horizon = "20D"
+
+[data]
+provider = "configured-via-environment"
+
+[broker]
+provider = "paper"
+live_execution_enabled = false
+
+[risk]
+max_position_weight = 0.10
+max_portfolio_leverage = 1.0
+max_daily_loss = 0.02
