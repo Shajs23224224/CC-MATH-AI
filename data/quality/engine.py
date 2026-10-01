@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Sequence
+from datetime import UTC, datetime
+from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
@@ -178,7 +178,10 @@ class DataQualityEngine:
                                 if survivorship_metadata_present
                                 else DataQualitySeverity.ERROR
                             ),
-                            message="expected universe members are absent; review delistings/survivorship",
+                            message=(
+                        "expected universe members are absent; review "
+                        "delistings/survivorship"
+                    ),
                             field=symbol_column,
                             count=len(missing_symbols),
                         )
@@ -226,7 +229,7 @@ class DataQualityEngine:
     ) -> DataQualityReport:
         return DataQualityReport(
             dataset_id=dataset_id,
-            checked_at=datetime.now(timezone.utc),
+            checked_at=datetime.now(UTC),
             rows=rows,
             accepted_rows=accepted,
             rejected_rows=rejected,
