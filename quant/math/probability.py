@@ -23,7 +23,7 @@ def normal_cdf(x: float, mean: float = 0.0, std: float = 1.0) -> float:
     if std <= 0.0:
         raise ValueError("std must be positive.")
     standardized = (x - mean) / (std * math.sqrt(2.0))
-    return 0.5 * (1.0 + math.erf(standardized))
+    return 0.5 * math.erfc(-standardized)
 
 
 def binomial_pmf(n: int, k: int, probability: float) -> float:
@@ -39,4 +39,4 @@ def binomial_pmf(n: int, k: int, probability: float) -> float:
 
     log_combination = math.lgamma(n + 1) - math.lgamma(k + 1) - math.lgamma(n - k + 1)
     log_probability = log_combination + k * math.log(probability) + (n - k) * math.log1p(-probability)
-    return math.exp(log_probability)
+    return min(1.0, max(0.0, math.exp(log_probability)))
