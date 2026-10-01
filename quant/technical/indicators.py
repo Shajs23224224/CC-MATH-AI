@@ -275,11 +275,7 @@ def adx_dmi(
             if plus_value is None or minus_value is None:
                 raise RuntimeError("DMI values must be populated")
             denominator = plus_value + minus_value
-            dx[i] = (
-                0.0
-                if denominator == 0
-                else 100.0 * abs(plus_value - minus_value) / denominator
-            )
+            dx[i] = 0.0 if denominator == 0 else 100.0 * abs(plus_value - minus_value) / denominator
     adx: list[float | None] = [None] * n
     valid_dx = tuple(value for value in dx if value is not None)
     current = sum(valid_dx[:period]) / period
