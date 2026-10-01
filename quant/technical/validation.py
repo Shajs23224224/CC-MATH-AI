@@ -32,15 +32,15 @@ def validate_ohlcv(
     checked_close = validate_series(close, len(checked_high))
     if len(checked_low) != len(checked_high) or len(checked_close) != len(checked_high):
         raise ValueError("high, low and close must have equal length")
-    if any(
-        high_value < low_value
-        or high_value < close_value
-        or low_value > close_value
-        for high_value, low_value, close_value in zip(
-            checked_high, checked_low, checked_close, strict=True
-        )
+    for high_value, low_value, close_value in zip(
+        checked_high, checked_low, checked_close, strict=True
     ):
-        raise ValueError("each OHLC row must satisfy low <= close <= high")
+        if (
+            high_value < low_value
+            or high_value < close_value
+            or low_value > close_value
+        ):
+            raise ValueError("each OHLC row must satisfy low <= close <= high")
     checked_volume = None
     if volume is not None:
         checked_volume = validate_series(volume, len(checked_high))
