@@ -66,7 +66,7 @@ def test_gordon_ddm_and_residual_income() -> None:
 def test_dcf_and_equity_bridge() -> None:
     assumptions = _assumptions()
     enterprise = dcf_value((110.0, 121.0), 0.10, 0.03)
-    assert enterprise == pytest.approx(1670.7792207792207)
+    assert enterprise == pytest.approx(1671.4285714285713)
 
     result = dcf_result(
         (110.0, 121.0),
@@ -76,8 +76,8 @@ def test_dcf_and_equity_bridge() -> None:
         assumptions=assumptions,
     )
     assert result.enterprise_value == pytest.approx(enterprise)
-    assert result.equity_value == pytest.approx(1470.7792207792207)
-    assert result.per_share_value == pytest.approx(14.707792207792207)
+    assert result.equity_value == pytest.approx(1471.4285714285713)
+    assert result.per_share_value == pytest.approx(14.714285714285714)
 
 
 def test_nav_sotp_and_comparables() -> None:
