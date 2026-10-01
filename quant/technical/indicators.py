@@ -95,12 +95,12 @@ def macd(
     slow_window: int = 26,
     signal_window: int = 9,
 ) -> tuple[tuple[float | None, ...], tuple[float | None, ...], tuple[float | None, ...]]:
-    checked = validate_series(values, max(fast_window, slow_window))
     fast = validate_window(fast_window)
     slow = validate_window(slow_window)
     signal = validate_window(signal_window)
     if fast >= slow:
         raise ValueError("fast_window must be smaller than slow_window")
+    checked = validate_series(values, slow + signal - 1)
     fast_ema = ema(checked, fast)
     slow_ema = ema(checked, slow)
     line: list[float | None] = [None] * len(checked)
@@ -108,7 +108,7 @@ def macd(
         if fast_value is not None and slow_value is not None:
             line[i] = fast_value - slow_value
     valid_line = tuple(value for value in line if value is not None)
-    signal_values = ema(valid_line, signal) if valid_line else ()
+    signal_values = ema(valid_line, signal)
     signal_line: list[float | None] = [None] * len(checked)
     histogram: list[float | None] = [None] * len(checked)
     start = slow - 1
@@ -126,8 +126,10 @@ def atr(
     close: Sequence[float],
     window: int = 14,
 ) -> tuple[float | None, ...]:
-    checked_high, checked_low, checked_close, _ = validate_ohlcv(high, low, close)
     period = validate_window(window)
+    checked_high, checked_low, checked_close, _ = validate_ohlcv(high, low, close)
+    if len(checked_close) < period:
+        raise ValueError("at least window observations are required")
     true_ranges = [
         checked_high[0] - checked_low[0],
         *(
@@ -153,8 +155,8 @@ def bollinger_bands(
     window: int = 20,
     deviations: float = 2.0,
 ) -> tuple[tuple[float | None, ...], tuple[float | None, ...], tuple[float | None, ...]]:
-    checked = validate_series(values, window)
     period = validate_window(window)
+    checked = validate_series(values, period)
     if deviations < 0 or not math.isfinite(deviations):
         raise ValueError("deviations must be finite and non-negative")
     middle = _sma(checked, period)
@@ -179,14 +181,20 @@ def stochastic_oscillator(
     window: int = 14,
     smooth: int = 3,
 ) -> tuple[tuple[float | None, ...], tuple[float | None, ...]]:
-    checked_high, checked_low, checked_close, _ = validate_ohlcv(high, low, close)
     period = validate_window(window)
     smoothing = validate_window(smooth)
+    checked_high, checked_low, checked_close, _ = validate_ohlcv(high, low, close)
+    if len(checked_close) < period + smoothing - 1:
+        raise ValueError("at least window + smooth - 1 observations are required")
     k: list[float | None] = [None] * len(checked_close)
     for i in range(period - 1, len(checked_close)):
         highest = max(checked_high[i + 1 - period : i + 1])
         lowest = min(checked_low[i + 1 - period : i + 1])
-        k[i] = 50.0 if highest == lowest else 100.0 * (checked_close[i] - lowest) / (highest - lowest)
+        k[i] = (
+            50.0
+            if highest == lowest
+            else 100.0 * (checked_close[i] - lowest) / (highest - lowest)
+        )
     valid_k = tuple(value for value in k if value is not None)
     d_valid = _sma(valid_k, smoothing)
     d: list[float | None] = [None] * len(checked_close)
@@ -202,13 +210,19 @@ def williams_r(
     close: Sequence[float],
     window: int = 14,
 ) -> tuple[float | None, ...]:
-    checked_high, checked_low, checked_close, _ = validate_ohlcv(high, low, close)
     period = validate_window(window)
+    checked_high, checked_low, checked_close, _ = validate_ohlcv(high, low, close)
+    if len(checked_close) < period:
+        raise ValueError("at least window observations are required")
     result: list[float | None] = [None] * len(checked_close)
     for i in range(period - 1, len(checked_close)):
         highest = max(checked_high[i + 1 - period : i + 1])
         lowest = min(checked_low[i + 1 - period : i + 1])
-        result[i] = -50.0 if highest == lowest else -100.0 * (highest - checked_close[i]) / (highest - lowest)
+        result[i] = (
+            -50.0
+            if highest == lowest
+            else -100.0 * (highest - checked_close[i]) / (highest - lowest)
+        )
     return tuple(result)
 
 
@@ -218,9 +232,11 @@ def adx_dmi(
     close: Sequence[float],
     window: int = 14,
 ) -> tuple[tuple[float | None, ...], tuple[float | None, ...], tuple[float | None, ...]]:
-    checked_high, checked_low, checked_close, _ = validate_ohlcv(high, low, close)
     period = validate_window(window)
+    checked_high, checked_low, checked_close, _ = validate_ohlcv(high, low, close)
     n = len(checked_close)
+    if n < 2 * period:
+        raise ValueError("ADX/DMI requires at least 2 * window observations")
     tr = [0.0] * n
     plus_dm = [0.0] * n
     minus_dm = [0.0] * n
@@ -240,8 +256,6 @@ def adx_dmi(
     plus_di: list[float | None] = [None] * n
     minus_di: list[float | None] = [None] * n
     dx: list[float | None] = [None] * n
-    if n <= period:
-        return tuple(plus_di), tuple(minus_di), tuple(atr_values)
     smoothed_tr = sum(tr[1 : period + 1])
     smoothed_plus = sum(plus_dm[1 : period + 1])
     smoothed_minus = sum(minus_dm[1 : period + 1])
@@ -262,16 +276,14 @@ def adx_dmi(
             dx[i] = 0.0 if denominator == 0 else 100.0 * abs(plus_di[i] - minus_di[i]) / denominator
     adx: list[float | None] = [None] * n
     valid_dx = tuple(value for value in dx if value is not None)
-    if len(valid_dx) >= period:
-        current = sum(valid_dx[:period]) / period
-        adx_index = 2 * period - 1
-        if adx_index < n:
-            adx[adx_index] = current
-            for j in range(period, len(valid_dx)):
-                current = ((period - 1) * current + valid_dx[j]) / period
-                index = period + j
-                if index < n:
-                    adx[index] = current
+    current = sum(valid_dx[:period]) / period
+    adx_index = 2 * period - 1
+    adx[adx_index] = current
+    for j in range(period, len(valid_dx)):
+        current = ((period - 1) * current + valid_dx[j]) / period
+        index = period + j
+        if index < n:
+            adx[index] = current
     return tuple(plus_di), tuple(minus_di), tuple(adx)
 
 
@@ -280,12 +292,15 @@ def donchian_channels(
     low: Sequence[float],
     window: int = 20,
 ) -> tuple[tuple[float | None, ...], tuple[float | None, ...], tuple[float | None, ...]]:
-    checked_high = validate_series(high, window)
-    checked_low = validate_series(low, window)
     period = validate_window(window)
+    checked_high = validate_series(high, period)
+    checked_low = validate_series(low, period)
     if len(checked_high) != len(checked_low):
         raise ValueError("high and low must have equal length")
-    if any(h < l for h, l in zip(checked_high, checked_low, strict=True)):
+    if any(
+        high_value < low_value
+        for high_value, low_value in zip(checked_high, checked_low, strict=True)
+    ):
         raise ValueError("high must be >= low")
     upper: list[float | None] = [None] * len(checked_high)
     lower: list[float | None] = [None] * len(checked_high)
@@ -312,13 +327,17 @@ def vwap(
     cumulative_volume = 0.0
     cumulative_value = 0.0
     result: list[float] = []
-    for h, l, c, volume_value in zip(
+    for high_value, low_value, close_value, volume_value in zip(
         checked_high, checked_low, checked_close, checked_volume, strict=True
     ):
         cumulative_volume += volume_value
-        cumulative_value += ((h + l + c) / 3.0) * volume_value
+        cumulative_value += (
+            (high_value + low_value + close_value) / 3.0
+        ) * volume_value
         result.append(
-            (h + l + c) / 3.0 if cumulative_volume == 0 else cumulative_value / cumulative_volume
+            (high_value + low_value + close_value) / 3.0
+            if cumulative_volume == 0
+            else cumulative_value / cumulative_volume
         )
     return tuple(result)
 
