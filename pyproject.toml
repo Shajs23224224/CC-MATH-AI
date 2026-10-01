@@ -22,8 +22,19 @@ dev = [
   "mypy>=1.11,<2",
 ]
 
-[tool.setuptools]
-py-modules = []
+[tool.setuptools.packages.find]
+include = [
+  "core*",
+  "data*",
+  "quant*",
+  "ml*",
+  "signals*",
+  "portfolio*",
+  "risk*",
+  "backtest*",
+  "execution*",
+  "config*",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
