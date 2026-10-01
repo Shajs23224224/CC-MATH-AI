@@ -103,9 +103,7 @@ def sortino_ratio(
     downside = downside_deviation(checked, target_return_per_period)
     if downside == 0.0:
         raise ValueError("Sortino ratio is undefined with zero downside deviation.")
-    excess_mean = math.fsum(
-        value - target_return_per_period for value in checked
-    ) / len(checked)
+    excess_mean = math.fsum(value - target_return_per_period for value in checked) / len(checked)
     return excess_mean / downside * math.sqrt(periods_per_year)
 
 
