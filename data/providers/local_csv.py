@@ -32,6 +32,11 @@ class LocalCSVMarketDataProvider:
         self.root = Path(root)
 
     def fetch(self, request: MarketDataRequest) -> pd.DataFrame:
+        if request.adjusted:
+            raise DataProviderError(
+                "local_csv does not provide corporate-action-adjusted prices; use F10"
+            )
+
         path = self.root / f"{_safe_symbol(request.asset.symbol)}.csv"
         if not path.is_file():
             raise DataProviderError(f"market-data file not found: {path}")
