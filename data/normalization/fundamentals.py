@@ -7,7 +7,6 @@ from core.errors import DataQualityError
 
 from .common import normalize_dataframe_columns, normalize_date
 
-
 _FIELDS = (
     "revenue",
     "ebitda",
