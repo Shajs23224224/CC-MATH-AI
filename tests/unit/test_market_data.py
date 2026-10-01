@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pandas as pd
 import pytest
 
 from core.contracts import Asset, AssetType, Frequency, MarketDataRequest
-from core.errors import DataQualityError, DataProviderError
+from core.errors import DataProviderError, DataQualityError
 from data import MarketDataEngine, normalize_market_frame
 from data.providers import LocalCSVMarketDataProvider
 
@@ -33,7 +33,7 @@ def test_request_rejects_inverted_window() -> None:
     with pytest.raises(ValueError):
         MarketDataRequest(
             asset=_asset(),
-            start=datetime(2026, 1, 2, tzinfo=timezone.utc),
+            start=datetime(2026, 1, 2, tzinfo=UTC),
             end=datetime(2026, 1, 1, tzinfo=timezone.utc),
         )
 
