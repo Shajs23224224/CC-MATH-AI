@@ -1,25 +1,25 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 import pandas as pd
 
 from core.contracts import Asset, Frequency, MarketBar
 from core.errors import DataQualityError
 
+from .common import normalize_market_frequency, normalize_timestamp_utc
+
 
 def normalize_market_frame(
     frame: pd.DataFrame,
     asset: Asset,
-    frequency: Frequency,
+    frequency: Frequency | str,
 ) -> tuple[MarketBar, ...]:
-    """Normalize an OHLCV frame into immutable MarketBar contracts."""
-
+    """Normalize OHLCV data into immutable canonical MarketBar contracts."""
     required = ("timestamp", "open", "high", "low", "close", "volume")
     missing = [column for column in required if column not in frame.columns]
     if missing:
         raise DataQualityError(f"missing normalized columns: {missing}")
 
+    canonical_frequency = normalize_market_frequency(frequency)
     work = frame.loc[:, required].copy()
     work["timestamp"] = pd.to_datetime(work["timestamp"], errors="coerce", utc=True)
 
@@ -40,24 +40,17 @@ def normalize_market_frame(
     for row in work.itertuples(index=False):
         bar = MarketBar(
             asset=asset,
-            timestamp=_as_datetime(row.timestamp),
+            timestamp=normalize_timestamp_utc(row.timestamp),
             open=float(row.open),
             high=float(row.high),
             low=float(row.low),
             close=float(row.close),
             volume=float(row.volume),
         )
-        bars.append(bar)
         bar.validate_ohlc()
+        bars.append(bar)
 
-    if bars and frequency == Frequency.TICK:
+    if bars and canonical_frequency == Frequency.TICK:
         raise DataQualityError("OHLCV normalization does not support tick data")
 
     return tuple(bars)
-
-
-def _as_datetime(value: object) -> datetime:
-    timestamp = pd.Timestamp(value)
-    if timestamp.tzinfo is None:
-        timestamp = timestamp.tz_localize("UTC")
-    return timestamp.to_pydatetime().astimezone(timezone.utc)
