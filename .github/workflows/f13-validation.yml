@@ -1,0 +1,47 @@
+name: F13 Numerical Validation
+
+on:
+  push:
+    paths:
+      - "core/contracts/math.py"
+      - "quant/math/**"
+      - "quant/__init__.py"
+      - "tests/numerical/test_mathematical_core.py"
+      - "pyproject.toml"
+      - ".github/workflows/f13-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: F13 numerical core
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project and development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Ruff lint — F13 scope
+        run: |
+          python -m ruff check             core/contracts/math.py             quant/math             quant/__init__.py             tests/numerical/test_mathematical_core.py
+
+      - name: Ruff format — F13 scope
+        run: |
+          python -m ruff format --check             core/contracts/math.py             quant/math             quant/__init__.py             tests/numerical/test_mathematical_core.py
+
+      - name: Mypy — F13 scope
+        run: |
+          python -m mypy             core/contracts/math.py             quant/math             quant/__init__.py             tests/numerical/test_mathematical_core.py
+
+      - name: Numerical tests
+        run: python -m pytest tests/numerical/test_mathematical_core.py -q
