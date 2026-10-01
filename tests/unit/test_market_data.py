@@ -34,7 +34,7 @@ def test_request_rejects_inverted_window() -> None:
         MarketDataRequest(
             asset=_asset(),
             start=datetime(2026, 1, 2, tzinfo=UTC),
-            end=datetime(2026, 1, 1, tzinfo=timezone.utc),
+            end=datetime(2026, 1, 1, tzinfo=UTC),
         )
 
 
