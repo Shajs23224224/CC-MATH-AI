@@ -15,7 +15,7 @@ from .enums import (
 )
 from .execution import ExecutionReport, Fill, Order
 from .fundamental_data import FundamentalDataBatch, FundamentalDataRequest
-from .fundamentals import FundamentalSnapshot
+from .fundamentals import FundamentalGrowthPoint, FundamentalSnapshot
 from .macro_data import MacroDataBatch, MacroDataRequest, MacroFrequency, MacroObservation
 from .market import Asset, MarketBar, PriceSeries
 from .market_data import MarketDataBatch, MarketDataRequest
@@ -61,6 +61,7 @@ __all__ = [
     "Frequency",
     "FundamentalDataBatch",
     "FundamentalDataRequest",
+    "FundamentalGrowthPoint",
     "FundamentalSnapshot",
     "MacroDataBatch",
     "MacroDataRequest",
