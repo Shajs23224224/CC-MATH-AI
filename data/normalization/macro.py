@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 from core.contracts import MacroObservation
@@ -62,7 +64,7 @@ def normalize_macro_frame(frame: pd.DataFrame) -> tuple[MacroObservation, ...]:
                 geography=normalize_identifier(str(row.geography)),
                 period_end=normalize_date(row.period_end),
                 released_at=normalize_date(row.released_at),
-                value=float(row.value),
+                value=cast(float, row.value),
                 unit=normalize_unit(str(row.unit)),
                 frequency=normalize_macro_frequency(str(row.frequency)),
                 source=str(row.source).strip(),
