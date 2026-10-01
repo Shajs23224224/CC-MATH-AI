@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from core.contracts import MacroDataRequest, MacroObservation
-from core.errors import DataQualityError, DataProviderError
+from core.errors import DataProviderError, DataQualityError
 from data import MacroDataEngine, normalize_macro_frame
 from data.providers import LocalCSVMacroProvider
 
