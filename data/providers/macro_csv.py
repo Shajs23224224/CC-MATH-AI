@@ -46,13 +46,9 @@ class LocalCSVMacroProvider:
         frame = _standardize_columns(frame)
         missing = _REQUIRED_COLUMNS - set(frame.columns)
         if missing:
-            raise DataProviderError(
-                f"macro-data file {path} is missing columns: {sorted(missing)}"
-            )
+            raise DataProviderError(f"macro-data file {path} is missing columns: {sorted(missing)}")
 
-        frame["period_end"] = pd.to_datetime(
-            frame["period_end"], errors="coerce", utc=True
-        ).dt.date
+        frame["period_end"] = pd.to_datetime(frame["period_end"], errors="coerce", utc=True).dt.date
         frame["released_at"] = pd.to_datetime(
             frame["released_at"], errors="coerce", utc=True
         ).dt.date
@@ -70,9 +66,7 @@ class LocalCSVMacroProvider:
             & (frame["geography"].astype(str) == request.geography)
         ]
 
-        frame = frame[
-            frame["frequency"].astype(str).str.lower() == request.frequency.value
-        ]
+        frame = frame[frame["frequency"].astype(str).str.lower() == request.frequency.value]
 
         return frame.sort_values(["released_at", "period_end"]).reset_index(drop=True)
 
