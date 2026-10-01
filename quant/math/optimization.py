@@ -39,6 +39,9 @@ def golden_section_minimize(
     left = float(lower_bound)
     right = float(upper_bound)
 
+    lower_value = _evaluate(objective, left)
+    upper_value = _evaluate(objective, right)
+
     x1 = right - golden_ratio_inverse * (right - left)
     x2 = left + golden_ratio_inverse * (right - left)
     f1 = _evaluate(objective, x1)
@@ -68,8 +71,13 @@ def golden_section_minimize(
 
         iterations += 1
 
-    optimum = x1 if f1 <= f2 else x2
-    objective_value = f1 if f1 <= f2 else f2
+    candidates = (
+        (left, lower_value),
+        (right, upper_value),
+        (x1, f1),
+        (x2, f2),
+    )
+    optimum, objective_value = min(candidates, key=lambda item: item[1])
 
     return OptimizationResult(
         method="golden_section",
