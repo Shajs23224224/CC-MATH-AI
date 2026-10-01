@@ -35,7 +35,7 @@ def simple_returns(prices: Sequence[float]) -> tuple[float, ...]:
     checked = tuple(float(price) for price in prices)
     if not all(math.isfinite(price) and price > 0.0 for price in checked):
         raise ValueError("prices must be finite and positive.")
-    return tuple(current / previous - 1.0 for previous, current in zip(checked, checked[1:]))
+    return tuple(current / previous - 1.0 for previous, current in zip(checked[:-1], checked[1:], strict=True))
 
 
 def log_returns(prices: Sequence[float]) -> tuple[float, ...]:
