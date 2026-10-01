@@ -2,8 +2,8 @@
 
 from .common import (
     normalize_currency_code,
-    normalize_date,
     normalize_dataframe_columns,
+    normalize_date,
     normalize_identifier,
     normalize_macro_frequency,
     normalize_market_frequency,
