@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 from datetime import date
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .market import Asset
 
 
-class MacroFrequency(str):
+class MacroFrequency(StrEnum):
+    DAILY = "daily"
+    WEEKLY = "weekly"
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
     ANNUAL = "annual"
-    DAILY = "daily"
-    WEEKLY = "weekly"
 
 
 class MacroDataRequest(BaseModel):
@@ -24,7 +25,7 @@ class MacroDataRequest(BaseModel):
     as_of: date | None = None
     period_start: date | None = None
     period_end: date | None = None
-    frequency: str = Field(min_length=1)
+    frequency: MacroFrequency
     asset: Asset | None = None
 
     @model_validator(mode="after")
@@ -48,7 +49,7 @@ class MacroObservation(BaseModel):
     released_at: date
     value: float
     unit: str = Field(min_length=1)
-    frequency: str = Field(min_length=1)
+    frequency: MacroFrequency
     source: str = Field(min_length=1)
     tenor: str | None = None
     asset: Asset | None = None
