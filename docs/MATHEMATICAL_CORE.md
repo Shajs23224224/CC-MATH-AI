@@ -35,7 +35,7 @@ These are foundational operations. More specialized statistical tests, robust st
 
 Implemented primitives include the normal probability density function, normal cumulative distribution function and binomial probability mass function.
 
-The binomial implementation uses logarithmic gamma functions for numerical stability rather than directly constructing large factorials.
+The normal CDF uses the complementary error function (erfc) for better numerical stability in distribution tails. The binomial implementation uses logarithmic gamma functions for numerical stability rather than directly constructing large factorials, with the final result bounded to the probability domain [0, 1].
 
 ### Financial formulas
 
@@ -62,7 +62,7 @@ No smoothing or model-based interpolation is performed.
 
 F13 provides deterministic bounded scalar minimization with golden-section search.
 
-This is a numerical primitive for later model calibration and parameter selection. It does not perform portfolio optimization, position sizing or asset allocation; those belong to F35-F37.
+The optimizer evaluates both interval endpoints as well as interior candidates, so a minimum located on a boundary is represented explicitly. This is a numerical primitive for later model calibration and parameter selection. It does not perform portfolio optimization, position sizing or asset allocation; those belong to F35-F37.
 
 ## Determinism and numerical safety
 
