@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pandas as pd
 
@@ -13,7 +13,7 @@ def test_quality_gate_then_feature_store(tmp_path) -> None:
         "close": [100.0, 101.0],
     })
 
-    cutoff = datetime(2026, 1, 2, tzinfo=timezone.utc)
+    cutoff = datetime(2026, 1, 2, tzinfo=UTC)
     report = DataQualityEngine().check_frame(
         frame,
         dataset_id="AAPL-prices",
