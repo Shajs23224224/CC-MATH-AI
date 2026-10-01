@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
+from datetime import date
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class BacktestResult(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     strategy_id: str = Field(min_length=1)
-    start_date: str
-    end_date: str
+    start_date: date
+    end_date: date
     initial_capital: float = Field(gt=0)
     final_equity: float = Field(ge=0)
     total_return: float
@@ -18,3 +20,9 @@ class BacktestResult(BaseModel):
     turnover: float = Field(ge=0)
     trades: int = Field(ge=0)
     transaction_costs: float = Field(ge=0)
+
+    @model_validator(mode="after")
+    def validate_period(self) -> "BacktestResult":
+        if self.end_date <= self.start_date:
+            raise ValueError("end_date must be after start_date")
+        return self
