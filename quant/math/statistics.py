@@ -57,4 +57,5 @@ def correlation(left: Sequence[float], right: Sequence[float]) -> float:
     right_std = sample_std(right)
     if left_std == 0.0 or right_std == 0.0:
         raise ValueError("correlation is undefined for a zero-variance series.")
-    return covariance / (left_std * right_std)
+    value = covariance / (left_std * right_std)
+    return max(-1.0, min(1.0, value))
