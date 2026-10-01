@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pandas as pd
 
@@ -36,7 +36,7 @@ def test_quality_detects_future_data() -> None:
         required_columns=("timestamp", "close"),
         numeric_columns=("close",),
         timestamp_column="timestamp",
-        as_of=datetime(2026, 1, 2, tzinfo=timezone.utc),
+        as_of=datetime(2026, 1, 2, tzinfo=UTC),
     )
     assert report.leakage_detected is True
     assert report.status == DataQualityStatus.INVALID
