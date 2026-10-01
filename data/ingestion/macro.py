@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from core.contracts import MacroDataBatch, MacroDataRequest, MacroObservation
 from core.errors import DataProviderError
-
 from data.normalization.macro import normalize_macro_frame
 from data.providers.macro_base import MacroDataProvider
 
