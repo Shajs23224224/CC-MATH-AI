@@ -41,6 +41,21 @@ from .returns import (
     wealth_index,
 )
 
+from .statistics import (
+    autocorrelation,
+    descriptive_summary,
+    excess_kurtosis,
+    interquartile_range,
+    median_absolute_deviation,
+    quantile,
+    rankdata,
+    rolling_mean,
+    rolling_std,
+    rolling_zscore,
+    skewness,
+    spearman_correlation,
+)
+
 __all__ = [
     "annualized_return",
     "annualized_volatility",
@@ -78,19 +93,17 @@ __all__ = [
     "sortino_ratio",
     "weighted_mean",
     "wealth_index",
+    "autocorrelation",
+    "descriptive_summary",
+    "excess_kurtosis",
+    "interquartile_range",
+    "median_absolute_deviation",
+    "quantile",
+    "rankdata",
+    "rolling_mean",
+    "rolling_std",
+    "rolling_zscore",
+    "skewness",
+    "spearman_correlation",
+    "wealth_index",
 ]
-
-from .statistics import (
-    autocorrelation,
-    descriptive_summary,
-    excess_kurtosis,
-    interquartile_range,
-    median_absolute_deviation,
-    quantile,
-    rankdata,
-    rolling_mean,
-    rolling_std,
-    rolling_zscore,
-    skewness,
-    spearman_correlation,
-)
