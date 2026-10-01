@@ -7,10 +7,12 @@ from data.quality import DataQualityEngine
 
 
 def test_quality_detects_duplicates_and_invalid_values() -> None:
-    frame = pd.DataFrame({
-        "timestamp": ["2026-01-01T00:00:00Z", "2026-01-01T00:00:00Z"],
-        "close": [100.0, None],
-    })
+    frame = pd.DataFrame(
+        {
+            "timestamp": ["2026-01-01T00:00:00Z", "2026-01-01T00:00:00Z"],
+            "close": [100.0, None],
+        }
+    )
     report = DataQualityEngine().check_frame(
         frame,
         dataset_id="prices",
@@ -26,10 +28,12 @@ def test_quality_detects_duplicates_and_invalid_values() -> None:
 
 
 def test_quality_detects_future_data() -> None:
-    frame = pd.DataFrame({
-        "timestamp": ["2026-01-01T00:00:00Z", "2026-01-03T00:00:00Z"],
-        "close": [100.0, 101.0],
-    })
+    frame = pd.DataFrame(
+        {
+            "timestamp": ["2026-01-01T00:00:00Z", "2026-01-03T00:00:00Z"],
+            "close": [100.0, 101.0],
+        }
+    )
     report = DataQualityEngine().check_frame(
         frame,
         dataset_id="prices",
@@ -57,10 +61,12 @@ def test_quality_detects_stale_values() -> None:
 
 
 def test_quality_detects_large_jumps() -> None:
-    frame = pd.DataFrame({
-        "timestamp": ["2026-01-01T00:00:00Z", "2026-01-02T00:00:00Z"],
-        "close": [100.0, 250.0],
-    })
+    frame = pd.DataFrame(
+        {
+            "timestamp": ["2026-01-01T00:00:00Z", "2026-01-02T00:00:00Z"],
+            "close": [100.0, 250.0],
+        }
+    )
     report = DataQualityEngine().check_frame(
         frame,
         dataset_id="prices",
