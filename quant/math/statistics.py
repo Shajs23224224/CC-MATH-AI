@@ -46,8 +46,7 @@ def sample_covariance(left: Sequence[float], right: Sequence[float]) -> float:
     left_mean = math.fsum(left_checked) / len(left_checked)
     right_mean = math.fsum(right_checked) / len(right_checked)
     return math.fsum(
-        (x - left_mean) * (y - right_mean)
-        for x, y in zip(left_checked, right_checked, strict=True)
+        (x - left_mean) * (y - right_mean) for x, y in zip(left_checked, right_checked, strict=True)
     ) / (len(left_checked) - 1)
 
 
