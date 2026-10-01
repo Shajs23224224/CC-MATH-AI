@@ -11,7 +11,7 @@ from core.contracts import (
 )
 from core.errors import DataProviderError, DataQualityError
 from data import FundamentalDataEngine, normalize_fundamental_frame
-from data.providers import LocalCSFundamentalProvider
+from data.providers import LocalCSVFundamentalProvider
 
 
 def _asset() -> Asset:
@@ -72,7 +72,7 @@ def test_engine_respects_as_of() -> None:
 
 
 def test_local_provider_requires_file(tmp_path) -> None:
-    provider = LocalCSFundamentalProvider(tmp_path)
+    provider = LocalCSVFundamentalProvider(tmp_path)
     request = FundamentalDataRequest(asset=_asset())
     with pytest.raises(DataProviderError):
         provider.fetch(request)
@@ -82,7 +82,7 @@ def test_local_provider_filters_as_of(tmp_path) -> None:
     path = tmp_path / "AAPL.csv"
     _frame().to_csv(path, index=False)
 
-    provider = LocalCSFundamentalProvider(tmp_path)
+    provider = LocalCSVFundamentalProvider(tmp_path)
     request = FundamentalDataRequest(asset=_asset(), as_of=date(2026, 4, 30))
     frame = provider.fetch(request)
 
@@ -98,7 +98,7 @@ def test_fundamental_engine_pipeline(tmp_path) -> None:
         as_of=date(2026, 12, 31),
     )
 
-    snapshots, batch = FundamentalDataEngine(LocalCSFundamentalProvider(tmp_path)).fetch(request)
+    snapshots, batch = FundamentalDataEngine(LocalCSVFundamentalProvider(tmp_path)).fetch(request)
 
     assert batch.snapshots_count == len(snapshots) == 2
     assert batch.first_period_end == date(2026, 3, 31)
