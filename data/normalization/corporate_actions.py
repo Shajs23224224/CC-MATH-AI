@@ -64,7 +64,7 @@ def normalize_corporate_actions(
         except ValueError as exc:
             raise DataQualityError(f"unsupported corporate action type: {action_type}") from exc
 
-        def optional_value(name: str, row=row) -> object | None:
+        def optional_value(name: str) -> object | None:
             if not hasattr(row, name):
                 return None
             value = getattr(row, name)
