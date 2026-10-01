@@ -86,7 +86,11 @@ def test_zero_rate_annuity_identity() -> None:
 def test_interpolation_reference_values() -> None:
     assert linear_interpolate(0.0, 0.0, 10.0, 20.0, 2.5) == pytest.approx(5.0)
     assert linear_interpolate(0.0, 0.0, 10.0, 20.0, 15.0) == pytest.approx(30.0)
-    assert linear_interpolate_series((0.0, 10.0, 20.0), (0.0, 100.0, 50.0), 15.0) == pytest.approx(75.0)
+    assert linear_interpolate_series(
+        (0.0, 10.0, 20.0),
+        (0.0, 100.0, 50.0),
+        15.0,
+    ) == pytest.approx(75.0)
 
 
 def test_golden_section_finds_known_quadratic_minimum() -> None:

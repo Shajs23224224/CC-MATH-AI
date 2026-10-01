@@ -30,7 +30,10 @@ def weighted_mean(values: Sequence[float], weights: Sequence[float]) -> float:
     weight_sum = math.fsum(checked_weights)
     if weight_sum == 0.0:
         raise ValueError("weights must not sum to zero.")
-    return math.fsum(v * w for v, w in zip(checked_values, checked_weights, strict=True)) / weight_sum
+    weighted_total = math.fsum(
+        v * w for v, w in zip(checked_values, checked_weights, strict=True)
+    )
+    return weighted_total / weight_sum
 
 
 def geometric_mean(values: Sequence[float]) -> float:

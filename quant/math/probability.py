@@ -12,7 +12,8 @@ def normal_pdf(x: float, mean: float = 0.0, std: float = 1.0) -> float:
     if std <= 0.0:
         raise ValueError("std must be positive.")
     standardized = (x - mean) / std
-    return math.exp(-0.5 * standardized * standardized) / (std * math.sqrt(2.0 * math.pi))
+    numerator = math.exp(-0.5 * standardized * standardized)
+    return numerator / (std * math.sqrt(2.0 * math.pi))
 
 
 def normal_cdf(x: float, mean: float = 0.0, std: float = 1.0) -> float:
