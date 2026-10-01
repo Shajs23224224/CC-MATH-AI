@@ -45,13 +45,9 @@ def linear_interpolate_series(
         raise ValueError("x_values must be strictly increasing.")
 
     if x <= checked_x[0]:
-        return linear_interpolate(
-            checked_x[0], checked_y[0], checked_x[1], checked_y[1], x
-        )
+        return linear_interpolate(checked_x[0], checked_y[0], checked_x[1], checked_y[1], x)
     if x >= checked_x[-1]:
-        return linear_interpolate(
-            checked_x[-2], checked_y[-2], checked_x[-1], checked_y[-1], x
-        )
+        return linear_interpolate(checked_x[-2], checked_y[-2], checked_x[-1], checked_y[-1], x)
 
     for index in range(1, len(checked_x)):
         if x <= checked_x[index]:
