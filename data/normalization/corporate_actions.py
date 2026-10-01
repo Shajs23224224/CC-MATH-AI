@@ -4,6 +4,7 @@ import pandas as pd
 
 from core.contracts import Asset, CorporateAction, CorporateActionType
 from core.errors import DataQualityError
+
 from .common import normalize_currency_code, normalize_dataframe_columns
 
 
