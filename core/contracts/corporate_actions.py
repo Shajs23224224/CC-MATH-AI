@@ -32,7 +32,7 @@ class CorporateAction(BaseModel):
     source: str = Field(min_length=1)
     source_event_id: str | None = None
 
-    @model_validator(mode="after")
+    @model_validator(mode="after")  # type: ignore[operator]
     def validate_action(self) -> CorporateAction:
         if self.action_type in {
             CorporateActionType.SPLIT,
