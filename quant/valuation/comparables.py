@@ -40,9 +40,7 @@ def comparable_valuation_result(
         enterprise_value = None
     else:
         enterprise_value = multiple * target_metric
-        equity_value = enterprise_value - _non_negative(debt, "debt") + _non_negative(
-            cash, "cash"
-        )
+        equity_value = enterprise_value - _non_negative(debt, "debt") + _non_negative(cash, "cash")
 
     per_share = None
     unit = "currency"
