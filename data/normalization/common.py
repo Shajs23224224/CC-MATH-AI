@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
-from typing import TypeVar
+from typing import Any, TypeVar, cast
 
 import pandas as pd
 
@@ -110,7 +110,7 @@ def normalize_macro_frequency(value: str | MacroFrequency) -> MacroFrequency:
 
 
 def normalize_timestamp_utc(value: object) -> datetime:
-    timestamp = pd.Timestamp(value)
+    timestamp = pd.Timestamp(cast(Any, value))
     if pd.isna(timestamp):
         raise DataQualityError("invalid timestamp")
     if timestamp.tzinfo is None:
