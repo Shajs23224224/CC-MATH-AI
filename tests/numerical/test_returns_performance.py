@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime
 
 import pytest
@@ -116,6 +117,6 @@ def test_performance_summary() -> None:
         lambda: simple_returns((100.0, float("nan"))),
     ],
 )
-def test_invalid_domains_are_rejected(operation: object) -> None:
+def test_invalid_domains_are_rejected(operation: Callable[[], object]) -> None:
     with pytest.raises(ValueError):
-        operation()  # type: ignore[operator]
+        operation()
