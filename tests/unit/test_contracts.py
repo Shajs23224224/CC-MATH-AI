@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -30,7 +30,7 @@ def test_asset_is_normalized_and_immutable() -> None:
 def test_market_bar_validates_ohlc() -> None:
     bar = MarketBar(
         asset=Asset(symbol="AAPL", asset_type=AssetType.EQUITY, currency="USD"),
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         open=100,
         high=105,
         low=95,
