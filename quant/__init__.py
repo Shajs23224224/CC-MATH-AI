@@ -40,7 +40,6 @@ from .returns import (
     sortino_ratio,
     wealth_index,
 )
-
 from .statistics import (
     autocorrelation,
     descriptive_summary,
