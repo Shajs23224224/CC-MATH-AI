@@ -1,0 +1,20 @@
+# Production template only. Never store secrets in this file.
+
+app_env = "production"
+log_level = "INFO"
+
+[analysis]
+default_frequency = "1D"
+default_horizon = "20D"
+
+[data]
+provider = "configured-via-environment"
+
+[broker]
+provider = "configured-via-environment"
+live_execution_enabled = false
+
+[risk]
+max_position_weight = 0.05
+max_portfolio_leverage = 1.0
+max_daily_loss = 0.01
