@@ -18,9 +18,7 @@ def test_corporate_action_pipeline_is_point_in_time(tmp_path) -> None:
         asset=Asset(symbol="MSFT", asset_type=AssetType.EQUITY, currency="USD"),
         as_of=date(2026, 6, 10),
     )
-    actions, _ = CorporateActionEngine(
-        LocalCSVCoporateActionProvider(tmp_path)
-    ).fetch(request)
+    actions, _ = CorporateActionEngine(LocalCSVCoporateActionProvider(tmp_path)).fetch(request)
 
     assert len(actions) == 1
     assert actions[0].announced_at == date(2026, 6, 1)
