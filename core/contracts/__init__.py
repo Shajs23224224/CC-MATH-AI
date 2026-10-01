@@ -22,6 +22,14 @@ from .market_data import MarketDataBatch, MarketDataRequest
 from .normalization import NormalizationReport, NormalizationStatus
 from .portfolio import Portfolio, Position, SizingResult, TargetAllocation
 from .quant import AlgorithmMetadata, AlgorithmResult
+from .quality import (
+    DataQualityIssue,
+    DataQualityReport,
+    DataQualitySeverity,
+    FeatureDefinition,
+    FeatureRecord,
+    FeatureSet,
+)
 from .risk import RiskConstraint, RiskEvaluation, RiskMetric
 
 __all__ = [
@@ -34,10 +42,16 @@ __all__ = [
     "CorporateActionBatch",
     "CorporateActionRequest",
     "CorporateActionType",
+    "DataQualityIssue",
+    "DataQualityReport",
+    "DataQualitySeverity",
     "DataQualityStatus",
     "DecisionRecord",
     "Evidence",
     "ExecutionReport",
+    "FeatureDefinition",
+    "FeatureRecord",
+    "FeatureSet",
     "Fill",
     "Forecast",
     "Frequency",
