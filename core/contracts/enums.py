@@ -22,6 +22,16 @@ class Frequency(StrEnum):
     WEEKLY = "1W"
 
 
+class CorporateActionType(StrEnum):
+    SPLIT = "split"
+    REVERSE_SPLIT = "reverse_split"
+    DIVIDEND = "dividend"
+    SPECIAL_DIVIDEND = "special_dividend"
+    SPINOFF = "spinoff"
+    TICKER_CHANGE = "ticker_change"
+    MERGER = "merger"
+
+
 class SignalType(StrEnum):
     BUY = "BUY"
     HOLD = "HOLD"
