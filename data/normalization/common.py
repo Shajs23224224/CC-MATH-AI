@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+from datetime import date, datetime, UTC
 from typing import TypeVar
 
 import pandas as pd
 
 from core.contracts import Frequency, MacroFrequency
 from core.errors import DataQualityError
-
 
 _FREQUENCY_ALIASES = {
     "tick": Frequency.TICK,
