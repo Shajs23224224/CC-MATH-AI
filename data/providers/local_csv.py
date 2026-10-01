@@ -24,7 +24,9 @@ class LocalCSVMarketDataProvider:
     """Local development provider using one CSV file per asset."""
 
     name = "local_csv"
-    supported_frequencies = frozenset(Frequency)
+    supported_frequencies = frozenset(
+        frequency for frequency in Frequency if frequency != Frequency.TICK
+    )
 
     def __init__(self, root: str | Path = "data/local/market") -> None:
         self.root = Path(root)
