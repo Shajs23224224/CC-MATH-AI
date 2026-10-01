@@ -44,7 +44,7 @@ def test_price_series_requires_alignment_and_order() -> None:
     series = PriceSeries(
         asset=Asset(symbol="AAPL", asset_type=AssetType.EQUITY, currency="USD"),
         timestamps=(
-            datetime(2026, 1, 1, tzinfo=timezone.utc),
+            datetime(2026, 1, 1, tzinfo=UTC),
             datetime(2026, 1, 2, tzinfo=timezone.utc),
         ),
         values=(100.0, 101.0),
