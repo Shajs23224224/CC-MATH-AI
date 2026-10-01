@@ -28,10 +28,7 @@ class ReturnSeries(BaseModel):
     def validate_alignment(self) -> ReturnSeries:
         if len(self.timestamps) != len(self.values):
             raise ValueError("timestamps and values must have equal length")
-        if any(
-            left >= right
-            for left, right in zip(self.timestamps, self.timestamps[1:], strict=True)
-        ):
+        if any(left >= right for left, right in zip(self.timestamps[:-1], self.timestamps[1:], strict=True)):
             raise ValueError("timestamps must be strictly increasing")
         if not all(math.isfinite(value) for value in self.values):
             raise ValueError("return values must be finite")
