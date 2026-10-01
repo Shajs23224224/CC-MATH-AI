@@ -8,10 +8,12 @@ from data.quality import DataQualityEngine
 
 
 def test_quality_gate_then_feature_store(tmp_path) -> None:
-    frame = pd.DataFrame({
-        "timestamp": ["2026-01-01T00:00:00Z", "2026-01-02T00:00:00Z"],
-        "close": [100.0, 101.0],
-    })
+    frame = pd.DataFrame(
+        {
+            "timestamp": ["2026-01-01T00:00:00Z", "2026-01-02T00:00:00Z"],
+            "close": [100.0, 101.0],
+        }
+    )
 
     cutoff = datetime(2026, 1, 2, tzinfo=UTC)
     report = DataQualityEngine().check_frame(
