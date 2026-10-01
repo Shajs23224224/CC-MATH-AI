@@ -60,6 +60,7 @@ def test_normalize_macro_frame() -> None:
 
 def test_normalization_rejects_duplicates() -> None:
     frame = _frame()
+    frame.loc[1, "period_end"] = frame.loc[0, "period_end"]
     frame.loc[1, "released_at"] = frame.loc[0, "released_at"]
     with pytest.raises(DataQualityError):
         normalize_macro_frame(frame)
