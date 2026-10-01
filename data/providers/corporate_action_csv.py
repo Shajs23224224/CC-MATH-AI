@@ -16,7 +16,6 @@ _COLUMN_ALIASES = {
     "announcement_date": "announced_at",
     "announcement": "announced_at",
     "ex": "ex_date",
-    "ex_date": "ex_date",
     "record": "record_date",
     "pay_date": "payable_date",
     "payment_date": "payable_date",
@@ -30,7 +29,7 @@ _COLUMN_ALIASES = {
 }
 
 
-class LocalCSVCoporateActionProvider:
+class LocalCSVCorporateActionProvider:
     """Local CSV corporate-action provider for development and testing."""
 
     name = "local_csv_corporate_actions"
@@ -71,9 +70,13 @@ class LocalCSVCoporateActionProvider:
             frame = frame[frame["ex_date"] >= request.start]
         if request.end is not None and "ex_date" in frame.columns:
             frame = frame[frame["ex_date"] <= request.end]
-        if request.as_of is not None and "announced_at" in frame.columns:
+
+        if request.as_of is not None:
+            if "announced_at" not in frame.columns:
+                return frame.iloc[0:0].copy()
             frame = frame[
-                frame["announced_at"].isna() | (frame["announced_at"] <= request.as_of)
+                frame["announced_at"].notna()
+                & (frame["announced_at"] <= request.as_of)
             ]
 
         return frame.reset_index(drop=True)
