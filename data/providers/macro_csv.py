@@ -71,8 +71,9 @@ class LocalCSVMacroProvider:
             & (frame["geography"].astype(str) == request.geography)
         ]
 
-        if request.frequency:
-            frame = frame[frame["frequency"].astype(str).str.lower() == request.frequency.lower()]
+        frame = frame[
+            frame["frequency"].astype(str).str.lower() == request.frequency.value
+        ]
 
         return frame.sort_values(["released_at", "period_end"]).reset_index(drop=True)
 
