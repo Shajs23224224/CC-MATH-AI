@@ -29,6 +29,9 @@ class FundamentalSnapshot(BaseModel):
     cash: float | None = None
     debt: float | None = None
     equity: float | None = None
+    total_assets: float | None = Field(default=None, gt=0)
+    current_liabilities: float | None = Field(default=None, ge=0)
+    interest_expense: float | None = Field(default=None, ge=0)
     dividends: float | None = None
     shares_outstanding: float | None = Field(default=None, gt=0)
 
@@ -37,3 +40,16 @@ class FundamentalSnapshot(BaseModel):
         if self.reported_at < self.period_end:
             raise ValueError("reported_at cannot precede period_end")
         return self
+
+
+class FundamentalGrowthPoint(BaseModel):
+    """Point-in-time fundamental growth observation."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    asset: Asset
+    metric: str = Field(min_length=1)
+    period_end: date
+    reported_at: date
+    value: float | None = None
+    growth: float | None = None
