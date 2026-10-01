@@ -127,9 +127,7 @@ def test_action_engine_pipeline(tmp_path) -> None:
         encoding="utf-8",
     )
     request = CorporateActionRequest(asset=_asset(), as_of=date(2026, 5, 2))
-    actions, batch = CorporateActionEngine(
-        LocalCSVCorporateActionProvider(tmp_path)
-    ).fetch(request)
+    actions, batch = CorporateActionEngine(LocalCSVCorporateActionProvider(tmp_path)).fetch(request)
 
     assert batch.actions_count == 1
     assert actions[0].split_factor == 2.0
@@ -138,8 +136,7 @@ def test_action_engine_pipeline(tmp_path) -> None:
 def test_as_of_excludes_unannounced_actions(tmp_path) -> None:
     path = tmp_path / "AAPL.csv"
     path.write_text(
-        "action_type,ex_date,ratio_numerator,ratio_denominator,source\n"
-        "split,2026-05-10,2,1,test\n",
+        "action_type,ex_date,ratio_numerator,ratio_denominator,source\nsplit,2026-05-10,2,1,test\n",
         encoding="utf-8",
     )
     request = CorporateActionRequest(asset=_asset(), as_of=date(2026, 5, 2))
