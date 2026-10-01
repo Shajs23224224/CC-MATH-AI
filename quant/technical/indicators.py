@@ -61,8 +61,7 @@ def rate_of_change(values: Sequence[float], period: int = 1) -> tuple[float | No
     if any(value == 0 for value in checked):
         raise ValueError("ROC requires non-zero prices")
     return tuple(
-        None if i < lag else checked[i] / checked[i - lag] - 1.0
-        for i in range(len(checked))
+        None if i < lag else checked[i] / checked[i - lag] - 1.0 for i in range(len(checked))
     )
 
 
@@ -190,11 +189,7 @@ def stochastic_oscillator(
     for i in range(period - 1, len(checked_close)):
         highest = max(checked_high[i + 1 - period : i + 1])
         lowest = min(checked_low[i + 1 - period : i + 1])
-        k[i] = (
-            50.0
-            if highest == lowest
-            else 100.0 * (checked_close[i] - lowest) / (highest - lowest)
-        )
+        k[i] = 50.0 if highest == lowest else 100.0 * (checked_close[i] - lowest) / (highest - lowest)
     valid_k = tuple(value for value in k if value is not None)
     d_valid = _sma(valid_k, smoothing)
     d: list[float | None] = [None] * len(checked_close)
@@ -331,9 +326,7 @@ def vwap(
         checked_high, checked_low, checked_close, checked_volume, strict=True
     ):
         cumulative_volume += volume_value
-        cumulative_value += (
-            (high_value + low_value + close_value) / 3.0
-        ) * volume_value
+        cumulative_value += ((high_value + low_value + close_value) / 3.0) * volume_value
         result.append(
             (high_value + low_value + close_value) / 3.0
             if cumulative_volume == 0
