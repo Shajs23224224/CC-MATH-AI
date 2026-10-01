@@ -5,7 +5,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from core.contracts import Frequency, MarketDataRequest\nfrom core.errors import DataProviderError
+from core.contracts import Frequency, MarketDataRequest
+from core.errors import DataProviderError
 
 
 _REQUIRED_COLUMNS = frozenset({"timestamp", "open", "high", "low", "close", "volume"})
