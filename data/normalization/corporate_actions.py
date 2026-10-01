@@ -64,7 +64,7 @@ def normalize_corporate_actions(
         except ValueError as exc:
             raise DataQualityError(f"unsupported corporate action type: {action_type}") from exc
 
-        def optional_value(name: str) -> object | None:
+        def optional_value(row: object, name: str) -> object | None:
             if not hasattr(row, name):
                 return None
             value = getattr(row, name)
@@ -74,18 +74,18 @@ def normalize_corporate_actions(
             CorporateAction(
                 asset=asset,
                 action_type=parsed_type,
-                announced_at=cast(date | None, optional_value("announced_at")),
-                ex_date=cast(date | None, optional_value("ex_date")),
-                record_date=cast(date | None, optional_value("record_date")),
-                payable_date=cast(date | None, optional_value("payable_date")),
-                ratio_numerator=cast(float | None, optional_value("ratio_numerator")),
-                ratio_denominator=cast(float | None, optional_value("ratio_denominator")),
-                cash_amount=cast(float | None, optional_value("cash_amount")),
-                currency=cast(str | None, optional_value("currency")),
-                new_symbol=cast(str | None, optional_value("new_symbol")),
-                related_symbol=cast(str | None, optional_value("related_symbol")),
+                announced_at=cast(date | None, optional_value(row, "announced_at")),
+                ex_date=cast(date | None, optional_value(row, "ex_date")),
+                record_date=cast(date | None, optional_value(row, "record_date")),
+                payable_date=cast(date | None, optional_value(row, "payable_date")),
+                ratio_numerator=cast(float | None, optional_value(row, "ratio_numerator")),
+                ratio_denominator=cast(float | None, optional_value(row, "ratio_denominator")),
+                cash_amount=cast(float | None, optional_value(row, "cash_amount")),
+                currency=cast(str | None, optional_value(row, "currency")),
+                new_symbol=cast(str | None, optional_value(row, "new_symbol")),
+                related_symbol=cast(str | None, optional_value(row, "related_symbol")),
                 source=str(row.source).strip(),
-                source_event_id=cast(str | None, optional_value("source_event_id")),
+                source_event_id=cast(str | None, optional_value(row, "source_event_id")),
             )
         )
 
