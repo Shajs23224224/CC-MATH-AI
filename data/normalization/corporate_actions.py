@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 from core.contracts import Asset, CorporateAction, CorporateActionType
@@ -71,18 +73,18 @@ def normalize_corporate_actions(
             CorporateAction(
                 asset=asset,
                 action_type=parsed_type,
-                announced_at=optional_value("announced_at"),
-                ex_date=optional_value("ex_date"),
-                record_date=optional_value("record_date"),
-                payable_date=optional_value("payable_date"),
-                ratio_numerator=optional_value("ratio_numerator"),
-                ratio_denominator=optional_value("ratio_denominator"),
-                cash_amount=optional_value("cash_amount"),
-                currency=optional_value("currency"),
-                new_symbol=optional_value("new_symbol"),
-                related_symbol=optional_value("related_symbol"),
+                announced_at=cast(object | None, optional_value("announced_at")),
+                ex_date=cast(object | None, optional_value("ex_date")),
+                record_date=cast(object | None, optional_value("record_date")),
+                payable_date=cast(object | None, optional_value("payable_date")),
+                ratio_numerator=cast(float | None, optional_value("ratio_numerator")),
+                ratio_denominator=cast(float | None, optional_value("ratio_denominator")),
+                cash_amount=cast(float | None, optional_value("cash_amount")),
+                currency=cast(str | None, optional_value("currency")),
+                new_symbol=cast(str | None, optional_value("new_symbol")),
+                related_symbol=cast(str | None, optional_value("related_symbol")),
                 source=str(row.source).strip(),
-                source_event_id=optional_value("source_event_id"),
+                source_event_id=cast(str | None, optional_value("source_event_id")),
             )
         )
 
