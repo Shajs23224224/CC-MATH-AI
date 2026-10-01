@@ -7,16 +7,12 @@ from core.contracts import (
     Asset,
     AssetType,
     CorporateAction,
-    CorporateActionType,
     CorporateActionRequest,
+    CorporateActionType,
 )
 from core.errors import DataQualityError, DataProviderError
-from data import (
-    CorporateActionEngine,
-    apply_split_adjustments,
-    normalize_corporate_actions,
-)
-from data.providers.corporate_action_csv import LocalCSVCoporateActionProvider
+from data import CorporateActionEngine, apply_split_adjustments, normalize_corporate_actions
+from data.providers.corporate_action_csv import LocalCSVCorporateActionProvider
 
 
 def _asset() -> Asset:
@@ -117,7 +113,7 @@ def test_reverse_split_increases_prior_prices() -> None:
 
 
 def test_action_engine_requires_file(tmp_path) -> None:
-    provider = LocalCSVCoporateActionProvider(tmp_path)
+    provider = LocalCSVCorporateActionProvider(tmp_path)
     request = CorporateActionRequest(asset=_asset())
     with pytest.raises(DataProviderError):
         provider.fetch(request)
@@ -132,8 +128,20 @@ def test_action_engine_pipeline(tmp_path) -> None:
     )
     request = CorporateActionRequest(asset=_asset(), as_of=date(2026, 5, 2))
     actions, batch = CorporateActionEngine(
-        LocalCSVCoporateActionProvider(tmp_path)
+        LocalCSVCorporateActionProvider(tmp_path)
     ).fetch(request)
 
     assert batch.actions_count == 1
     assert actions[0].split_factor == 2.0
+
+
+def test_as_of_excludes_unannounced_actions(tmp_path) -> None:
+    path = tmp_path / "AAPL.csv"
+    path.write_text(
+        "action_type,ex_date,ratio_numerator,ratio_denominator,source\n"
+        "split,2026-05-10,2,1,test\n",
+        encoding="utf-8",
+    )
+    request = CorporateActionRequest(asset=_asset(), as_of=date(2026, 5, 2))
+    provider = LocalCSVCorporateActionProvider(tmp_path)
+    assert provider.fetch(request).empty
