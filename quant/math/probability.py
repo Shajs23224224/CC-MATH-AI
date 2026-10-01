@@ -35,13 +35,9 @@ def binomial_pmf(n: int, k: int, probability: float) -> float:
     if not 0.0 <= probability <= 1.0 or not math.isfinite(probability):
         raise ValueError("probability must be finite and lie in [0, 1].")
     if probability in (0.0, 1.0):
-        return 1.0 if (probability == 1.0 and k == n) or (
-            probability == 0.0 and k == 0
-        ) else 0.0
+        return 1.0 if (probability == 1.0 and k == n) or (probability == 0.0 and k == 0) else 0.0
 
-    log_combination = (
-        math.lgamma(n + 1) - math.lgamma(k + 1) - math.lgamma(n - k + 1)
-    )
+    log_combination = math.lgamma(n + 1) - math.lgamma(k + 1) - math.lgamma(n - k + 1)
     log_probability = (
         log_combination
         + k * math.log(probability)
