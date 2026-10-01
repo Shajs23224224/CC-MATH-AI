@@ -33,7 +33,7 @@ def normalize_corporate_actions(
             lambda value: None if pd.isna(value) else normalize_currency_code(str(value))
         )
 
-    if work["action_type"].isna() .any() or work["source"].isna().any():
+    if work["action_type"].isna().any() or work["source"].isna().any():
         raise DataQualityError("corporate action contains missing required values")
 
     unique_columns = [
