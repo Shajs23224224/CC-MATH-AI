@@ -9,7 +9,7 @@ from core.contracts import (
     FundamentalDataRequest,
     FundamentalSnapshot,
 )
-from core.errors import DataQualityError, DataProviderError
+from core.errors import DataProviderError, DataQualityError
 from data import FundamentalDataEngine, normalize_fundamental_frame
 from data.providers import LocalCSFundamentalProvider
 
