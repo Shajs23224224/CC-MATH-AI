@@ -11,6 +11,17 @@ class AssetType(StrEnum):
     CRYPTO = "crypto"
 
 
+class Frequency(StrEnum):
+    TICK = "tick"
+    MINUTE_1 = "1m"
+    MINUTE_5 = "5m"
+    MINUTE_15 = "15m"
+    HOUR_1 = "1h"
+    HOUR_4 = "4h"
+    DAILY = "1D"
+    WEEKLY = "1W"
+
+
 class SignalType(StrEnum):
     BUY = "BUY"
     HOLD = "HOLD"
