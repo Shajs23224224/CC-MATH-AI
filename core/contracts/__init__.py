@@ -19,6 +19,7 @@ from .fundamentals import FundamentalSnapshot
 from .macro_data import MacroDataBatch, MacroDataRequest, MacroFrequency, MacroObservation
 from .market import Asset, MarketBar, PriceSeries
 from .market_data import MarketDataBatch, MarketDataRequest
+from .math import OptimizationResult
 from .normalization import NormalizationReport, NormalizationStatus
 from .portfolio import Portfolio, Position, SizingResult, TargetAllocation
 from .quant import AlgorithmMetadata, AlgorithmResult
@@ -67,6 +68,7 @@ __all__ = [
     "MarketDataRequest",
     "NormalizationReport",
     "NormalizationStatus",
+    "OptimizationResult",
     "Order",
     "OrderSide",
     "OrderType",
