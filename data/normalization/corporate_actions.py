@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from datetime import date
-
 import pandas as pd
 
 from core.contracts import Asset, CorporateAction, CorporateActionType
 from core.errors import DataQualityError
+
+from .common import normalize_currency_code, normalize_dataframe_columns, normalize_date
 
 
 _REQUIRED_COLUMNS = ("action_type", "source")
@@ -15,11 +15,10 @@ def normalize_corporate_actions(
     frame: pd.DataFrame,
     asset: Asset,
 ) -> tuple[CorporateAction, ...]:
-    missing = [column for column in _REQUIRED_COLUMNS if column not in frame.columns]
+    work = normalize_dataframe_columns(frame)
+    missing = [column for column in _REQUIRED_COLUMNS if column not in work.columns]
     if missing:
         raise DataQualityError(f"missing corporate-action columns: {missing}")
-
-    work = frame.copy()
 
     for column in ("announced_at", "ex_date", "record_date", "payable_date"):
         if column in work.columns:
@@ -29,7 +28,12 @@ def normalize_corporate_actions(
         if column in work.columns:
             work[column] = pd.to_numeric(work[column], errors="coerce")
 
-    if work["action_type"].isna().any() or work["source"].isna().any():
+    if "currency" in work.columns:
+        work["currency"] = work["currency"].apply(
+            lambda value: None if pd.isna(value) else normalize_currency_code(str(value))
+        )
+
+    if work["action_type"].isna() .any() or work["source"].isna().any():
         raise DataQualityError("corporate action contains missing required values")
 
     unique_columns = [
@@ -64,23 +68,24 @@ def normalize_corporate_actions(
             value = getattr(row, name)
             return None if pd.isna(value) else value
 
-        action = CorporateAction(
-            asset=asset,
-            action_type=parsed_type,
-            announced_at=optional_value("announced_at"),
-            ex_date=optional_value("ex_date"),
-            record_date=optional_value("record_date"),
-            payable_date=optional_value("payable_date"),
-            ratio_numerator=optional_value("ratio_numerator"),
-            ratio_denominator=optional_value("ratio_denominator"),
-            cash_amount=optional_value("cash_amount"),
-            currency=optional_value("currency"),
-            new_symbol=optional_value("new_symbol"),
-            related_symbol=optional_value("related_symbol"),
-            source=str(row.source),
-            source_event_id=optional_value("source_event_id"),
+        actions.append(
+            CorporateAction(
+                asset=asset,
+                action_type=parsed_type,
+                announced_at=optional_value("announced_at"),
+                ex_date=optional_value("ex_date"),
+                record_date=optional_value("record_date"),
+                payable_date=optional_value("payable_date"),
+                ratio_numerator=optional_value("ratio_numerator"),
+                ratio_denominator=optional_value("ratio_denominator"),
+                cash_amount=optional_value("cash_amount"),
+                currency=optional_value("currency"),
+                new_symbol=optional_value("new_symbol"),
+                related_symbol=optional_value("related_symbol"),
+                source=str(row.source).strip(),
+                source_event_id=optional_value("source_event_id"),
+            )
         )
-        actions.append(action)
 
     return tuple(actions)
 
@@ -89,43 +94,33 @@ def apply_split_adjustments(
     frame: pd.DataFrame,
     actions: tuple[CorporateAction, ...],
 ) -> pd.DataFrame:
-    """Backward-adjust OHLC prices and volume for split/reverse-split events.
-
-    Bars on the ex-date are assumed to already reflect the market's split
-    convention. Only bars strictly before ex-date are adjusted.
-    Cash dividends and other events are not silently folded into price data.
-    """
-
     required = ("timestamp", "open", "high", "low", "close", "volume")
-    missing = [column for column in required if column not in frame.columns]
+    work = normalize_dataframe_columns(frame)
+    missing = [column for column in required if column not in work.columns]
     if missing:
         raise DataQualityError(f"missing market columns for split adjustment: {missing}")
 
-    adjusted = frame.copy()
+    adjusted = work.copy()
     timestamps = pd.to_datetime(adjusted["timestamp"], errors="coerce", utc=True)
     if timestamps.isna().any():
         raise DataQualityError("invalid market timestamps for corporate-action adjustment")
-
     adjusted["timestamp"] = timestamps
 
     split_actions = [
-        action
-        for action in actions
+        action for action in actions
         if action.action_type in {
             CorporateActionType.SPLIT,
             CorporateActionType.REVERSE_SPLIT,
         }
         and action.ex_date is not None
     ]
-    split_actions.sort(key=lambda action: action.ex_date or date.min)
+    split_actions.sort(key=lambda action: action.ex_date or pd.Timestamp.min.date())
 
     for action in split_actions:
         factor = action.split_factor
         if factor <= 0:
             raise DataQualityError("split factor must be positive")
-
         mask = adjusted["timestamp"].dt.date < action.ex_date
-
         for column in ("open", "high", "low", "close"):
             adjusted.loc[mask, column] = adjusted.loc[mask, column] / factor
         adjusted.loc[mask, "volume"] = adjusted.loc[mask, "volume"] * factor
