@@ -36,9 +36,7 @@ class LocalCSVFundamentalProvider:
         try:
             frame = pd.read_csv(path)
         except (OSError, pd.errors.ParserError) as exc:
-            raise DataProviderError(
-                f"unable to read fundamental-data file: {path}"
-            ) from exc
+            raise DataProviderError(f"unable to read fundamental-data file: {path}") from exc
 
         frame = _standardize_columns(frame)
         missing = _REQUIRED_COLUMNS - set(frame.columns)
@@ -47,9 +45,7 @@ class LocalCSVFundamentalProvider:
                 f"fundamental-data file {path} is missing columns: {sorted(missing)}"
             )
 
-        frame["period_end"] = pd.to_datetime(
-            frame["period_end"], errors="coerce", utc=True
-        ).dt.date
+        frame["period_end"] = pd.to_datetime(frame["period_end"], errors="coerce", utc=True).dt.date
         frame["reported_at"] = pd.to_datetime(
             frame["reported_at"], errors="coerce", utc=True
         ).dt.date
