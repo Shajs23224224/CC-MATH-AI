@@ -35,11 +35,7 @@ def validate_ohlcv(
     for high_value, low_value, close_value in zip(
         checked_high, checked_low, checked_close, strict=True
     ):
-        if (
-            high_value < low_value
-            or high_value < close_value
-            or low_value > close_value
-        ):
+        if high_value < low_value or high_value < close_value or low_value > close_value:
             raise ValueError("each OHLC row must satisfy low <= close <= high")
     checked_volume = None
     if volume is not None:
