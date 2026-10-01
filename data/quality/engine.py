@@ -57,6 +57,7 @@ class DataQualityEngine:
                 issues,
                 leakage_detected=False,
                 survivorship_risk=False,
+                status=DataQualityStatus.INVALID,
             )
 
         if key_columns:
