@@ -18,7 +18,7 @@ class MarketDataRequest(BaseModel):
     adjusted: bool = False
 
     @model_validator(mode="after")
-    def validate_window(self) -> "MarketDataRequest":
+    def validate_window(self) -> MarketDataRequest:
         if self.start is not None and self.end is not None and self.end <= self.start:
             raise ValueError("end must be after start")
         return self
