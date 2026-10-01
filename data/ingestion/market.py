@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.contracts import MarketDataBatch, MarketDataRequest
+from core.contracts import MarketDataBatch, MarketDataRequest, MarketBar
 from core.errors import DataProviderError
 
 from data.normalization.market import normalize_market_frame
@@ -13,7 +13,10 @@ class MarketDataEngine:
     def __init__(self, provider: MarketDataProvider) -> None:
         self.provider = provider
 
-    def fetch(self, request: MarketDataRequest):
+    def fetch(
+        self,
+        request: MarketDataRequest,
+    ) -> tuple[tuple[MarketBar, ...], MarketDataBatch]:
         if request.frequency not in self.provider.supported_frequencies:
             raise DataProviderError(
                 f"provider {self.provider.name!r} does not support "
