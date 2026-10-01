@@ -6,76 +6,63 @@ Represent corporate events explicitly and provide deterministic split/reverse-sp
 
 ## Supported event types
 
-The domain model supports:
+- split
+- reverse split
+- cash dividend
+- special dividend
+- spinoff
+- ticker change
+- merger
 
-- split;
-- reverse split;
-- cash dividend;
-- special dividend;
-- spinoff;
-- ticker change;
-- merger.
+Every event carries provenance plus relevant announcement/effective dates.
 
-Every event carries explicit provenance and relevant dates where available.
-
-## Dates
-
-The model separates:
+## Date semantics
 
 - `announced_at`: when the event became known;
-- `ex_date`: effective market date;
-- `record_date`: holder eligibility date;
+- `ex_date`: market-effective date;
+- `record_date`: eligibility date;
 - `payable_date`: payment date.
 
-This separation is required for point-in-time backtesting.
+For point-in-time requests with `as_of`, events must have an announcement date on or before `as_of`. Events without announcement provenance are excluded rather than treated as known.
 
 ## Split mechanics
 
-For a split with:
+For a split:
 
 ```text
 ratio = new shares / old shares
-```
-
-historical bars strictly before the ex-date are transformed by:
-
-```text
 adjusted_price = raw_price / ratio
 adjusted_volume = raw_volume * ratio
 ```
 
+Historical bars strictly before the ex-date are adjusted.
+
 Examples:
 
-- 2-for-1 split → prior prices divided by 2;
-- 1-for-10 reverse split → prior prices multiplied by 10.
+- 2-for-1 split: prior prices / 2 and prior volume * 2;
+- 1-for-10 reverse split: prior prices * 10 and prior volume / 10.
 
-Bars on the ex-date are not adjusted by this routine because they are assumed to already reflect the market's ex-date trading convention.
+Bars on the ex-date are not modified by this routine.
 
 ## Dividends
 
-F10 records cash dividends and special dividends as corporate events, but the split-adjustment routine deliberately does not subtract dividends from OHLC prices.
+Cash and special dividends are stored as explicit events. They are **not** silently subtracted from OHLC prices.
 
-Dividend treatment will be implemented as an explicit cashflow/total-return methodology in later portfolio/return modules. This avoids silently mixing price-return and total-return semantics.
+Price-return and total-return methodologies must remain distinct. Dividend cashflows will be incorporated explicitly in later return/portfolio accounting work.
 
-## Ticker changes, spinoffs and mergers
+## Other events
 
-These events are preserved as structured events. Their full security-mapping, share-entitlement and accounting treatment requires later corporate-action-aware portfolio/accounting logic.
-
-## Point-in-time eligibility
-
-When `as_of` is supplied, events announced after `as_of` are not eligible.
-
-This prevents future corporate announcements from entering historical decisions.
+Spinoffs, mergers and ticker changes are represented as structured events but do not yet mutate positions or security identity automatically. Those mappings require portfolio/accounting semantics beyond simple OHLCV scaling.
 
 ## Provider
 
-Development provider:
+Development adapter:
 
 ```text
-LocalCSVCoporateActionProvider
+LocalCSVCorporateActionProvider
 ```
 
-Expected file:
+Input:
 
 ```text
 data/local/corporate_actions/<SYMBOL>.csv
@@ -88,7 +75,7 @@ action_type
 source
 ```
 
-Relevant optional columns:
+Optional columns include:
 
 ```text
 announced_at
@@ -108,16 +95,17 @@ source_event_id
 
 - [x] Corporate-action type model
 - [x] Point-in-time date fields
-- [x] Corporate-action request/batch contracts
+- [x] Request and batch contracts
 - [x] Provider protocol
 - [x] Local CSV provider
 - [x] Action normalization
-- [x] Split and reverse-split adjustment
+- [x] Split adjustment
+- [x] Reverse-split adjustment
 - [x] Dividend event preservation
-- [x] Ticker/spinoff/merger event preservation
+- [x] Ticker/spinoff/merger preservation
+- [x] Point-in-time announcement filtering
 - [x] Unit tests
 - [x] Integration test
-- [x] Explicit adjustment semantics
 
 **Status: COMPLETE**
 
