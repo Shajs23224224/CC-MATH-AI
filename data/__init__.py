@@ -1,5 +1,6 @@
-"""Data ingestion, normalization and quality boundaries."""
+"""Data ingestion, normalization, quality and feature-store boundaries."""
 
+from .feature_store import FeatureStore, LocalFeatureStore
 from .ingestion import (
     CorporateActionEngine,
     FundamentalDataEngine,
@@ -23,17 +24,20 @@ from .providers import (
     MacroDataProvider,
     MarketDataProvider,
 )
-from .quality import MarketDataQualitySummary
+from .quality import DataQualityEngine, MarketDataQualitySummary
 
 __all__ = [
     "CorporateActionEngine",
     "CorporateActionProvider",
+    "DataQualityEngine",
+    "FeatureStore",
     "FundamentalDataEngine",
     "FundamentalDataProvider",
     "LocalCSVCorporateActionProvider",
     "LocalCSVFundamentalProvider",
     "LocalCSVMacroProvider",
     "LocalCSVMarketDataProvider",
+    "LocalFeatureStore",
     "MacroDataEngine",
     "MacroDataProvider",
     "MarketDataEngine",
