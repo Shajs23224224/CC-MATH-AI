@@ -8,6 +8,8 @@ import pandas as pd
 from core.contracts import FundamentalDataRequest
 from core.errors import DataProviderError
 
+from .fundamental_base import FundamentalDataProvider
+
 
 _REQUIRED_COLUMNS = frozenset({"period_end", "reported_at"})
 _COLUMN_ALIASES = {
@@ -21,7 +23,7 @@ _COLUMN_ALIASES = {
 }
 
 
-class LocalCSFundamentalProvider:
+class LocalCSVFundamentalProvider:
     """Local CSV fundamental provider for development and point-in-time testing."""
 
     name = "local_csv_fundamentals"
