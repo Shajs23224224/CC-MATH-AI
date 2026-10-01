@@ -38,9 +38,5 @@ def binomial_pmf(n: int, k: int, probability: float) -> float:
         return 1.0 if (probability == 1.0 and k == n) or (probability == 0.0 and k == 0) else 0.0
 
     log_combination = math.lgamma(n + 1) - math.lgamma(k + 1) - math.lgamma(n - k + 1)
-    log_probability = (
-        log_combination
-        + k * math.log(probability)
-        + (n - k) * math.log1p(-probability)
-    )
+    log_probability = log_combination + k * math.log(probability) + (n - k) * math.log1p(-probability)
     return math.exp(log_probability)
