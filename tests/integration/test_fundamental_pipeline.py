@@ -2,7 +2,7 @@ from datetime import date
 
 from core.contracts import Asset, AssetType, FundamentalDataRequest
 from data import FundamentalDataEngine
-from data.providers import LocalCSFundamentalProvider
+from data.providers import LocalCSVFundamentalProvider
 
 
 def test_point_in_time_fundamental_pipeline(tmp_path) -> None:
@@ -19,7 +19,7 @@ def test_point_in_time_fundamental_pipeline(tmp_path) -> None:
         as_of=date(2026, 5, 1),
     )
 
-    snapshots, batch = FundamentalDataEngine(LocalCSFundamentalProvider(tmp_path)).fetch(request)
+    snapshots, batch = FundamentalDataEngine(LocalCSVFundamentalProvider(tmp_path)).fetch(request)
 
     assert batch.snapshots_count == 1
     assert snapshots[0].period_end == date(2026, 3, 31)
