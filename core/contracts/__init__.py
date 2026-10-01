@@ -1,9 +1,11 @@
 """Stable domain contracts used across C-MATH-AI."""
 
 from .backtest import BacktestResult
+from .corporate_actions import CorporateAction, CorporateActionBatch, CorporateActionRequest
 from .decisions import DecisionRecord, Evidence, Forecast, Signal
 from .enums import (
     AssetType,
+    CorporateActionType,
     DataQualityStatus,
     Frequency,
     OrderSide,
@@ -27,6 +29,10 @@ __all__ = [
     "Asset",
     "AssetType",
     "BacktestResult",
+    "CorporateAction",
+    "CorporateActionBatch",
+    "CorporateActionRequest",
+    "CorporateActionType",
     "DataQualityStatus",
     "DecisionRecord",
     "Evidence",
