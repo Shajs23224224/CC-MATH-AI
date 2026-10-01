@@ -76,7 +76,7 @@ def test_portfolio_market_values() -> None:
 
     portfolio = Portfolio(
         portfolio_id="paper-1",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         base_currency="USD",
         cash=1000,
         positions=(
@@ -125,7 +125,7 @@ def test_decision_record_contains_version_provenance() -> None:
     record = DecisionRecord(
         decision_id="dec-1",
         asset_symbol="AAPL",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         signal=SignalType.HOLD,
         signal_probability=0.5,
         model_confidence=0.6,
