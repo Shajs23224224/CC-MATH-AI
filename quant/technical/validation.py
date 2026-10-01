@@ -33,8 +33,12 @@ def validate_ohlcv(
     if len(checked_low) != len(checked_high) or len(checked_close) != len(checked_high):
         raise ValueError("high, low and close must have equal length")
     if any(
-        h < l or h < c or l > c
-        for h, l, c in zip(checked_high, checked_low, checked_close, strict=True)
+        high_value < low_value
+        or high_value < close_value
+        or low_value > close_value
+        for high_value, low_value, close_value in zip(
+            checked_high, checked_low, checked_close, strict=True
+        )
     ):
         raise ValueError("each OHLC row must satisfy low <= close <= high")
     checked_volume = None
