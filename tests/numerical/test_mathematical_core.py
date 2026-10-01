@@ -65,6 +65,7 @@ def test_probability_reference_values() -> None:
     assert normal_pdf(0.0) == pytest.approx(1.0 / math.sqrt(2.0 * math.pi))
     assert normal_cdf(0.0) == pytest.approx(0.5)
     assert normal_cdf(1.959963984540054) == pytest.approx(0.975, abs=1e-12)
+    assert normal_cdf(-10.0) > 0.0
     assert binomial_pmf(10, 3, 0.5) == pytest.approx(0.1171875)
 
 
@@ -99,6 +100,13 @@ def test_golden_section_finds_known_quadratic_minimum() -> None:
     assert result.converged is True
     assert result.optimum == pytest.approx(3.0, abs=1e-7)
     assert result.objective_value == pytest.approx(2.0, abs=1e-12)
+
+
+def test_golden_section_detects_boundary_minimum() -> None:
+    result = golden_section_minimize(lambda x: x, 0.0, 10.0)
+    assert result.converged is True
+    assert result.optimum == pytest.approx(0.0, abs=1e-12)
+    assert result.objective_value == pytest.approx(0.0, abs=1e-12)
 
 
 @pytest.mark.parametrize(
