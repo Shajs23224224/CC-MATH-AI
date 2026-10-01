@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
 
 from .enums import AssetType, DataQualityStatus
 
@@ -32,17 +32,15 @@ class MarketBar(BaseModel):
     close: float = Field(gt=0)
     volume: float = Field(ge=0)
 
-    @field_validator("high")
-    @classmethod
-    def high_not_below_low(cls, value: float, info):
-        low = info.data.get("low")
-        return value if low is None or value >= low else value
-
-    def validate_ohlc(self) -> None:
+    @model_validator(mode="after")
+    def validate_ohlc(self) -> "MarketBar":
         if self.high < max(self.open, self.close):
             raise ValueError("high must be >= open and close")
         if self.low > min(self.open, self.close):
             raise ValueError("low must be <= open and close")
+        if self.high < self.low:
+            raise ValueError("high must be >= low")
+        return self
 
 
 class PriceSeries(BaseModel):
@@ -54,10 +52,12 @@ class PriceSeries(BaseModel):
     frequency: str
     data_quality: DataQualityStatus = DataQualityStatus.UNKNOWN
 
-    def validate_alignment(self) -> None:
+    @model_validator(mode="after")
+    def validate_alignment(self) -> "PriceSeries":
         if len(self.timestamps) != len(self.values):
             raise ValueError("timestamps and values must have equal length")
         if any(value <= 0 for value in self.values):
             raise ValueError("price values must be positive")
         if any(left >= right for left, right in zip(self.timestamps, self.timestamps[1:])):
             raise ValueError("timestamps must be strictly increasing")
+        return self
