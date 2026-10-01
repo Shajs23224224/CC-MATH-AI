@@ -22,7 +22,7 @@ class BacktestResult(BaseModel):
     transaction_costs: float = Field(ge=0)
 
     @model_validator(mode="after")
-    def validate_period(self) -> "BacktestResult":
+    def validate_period(self) -> BacktestResult:
         if self.end_date <= self.start_date:
             raise ValueError("end_date must be after start_date")
         return self
