@@ -43,7 +43,7 @@ def test_feature_store_requires_registered_definition(tmp_path) -> None:
 def test_feature_store_writes_and_reads_versioned_records(tmp_path) -> None:
     store = LocalFeatureStore(tmp_path)
     store.register_definition(_definition())
-    timestamp = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 1, 1, tzinfo=UTC)
     assert store.write((_record(timestamp),)) == 1
     records = store.read("momentum_20d", "1.0.0", as_of=timestamp)
     assert len(records) == 1
