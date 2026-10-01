@@ -25,7 +25,7 @@ class ReturnSeries(BaseModel):
     return_type: ReturnType
 
     @model_validator(mode="after")
-    def validate_alignment(self) -> "ReturnSeries":
+    def validate_alignment(self) -> ReturnSeries:
         if len(self.timestamps) != len(self.values):
             raise ValueError("timestamps and values must have equal length")
         if any(
