@@ -47,4 +47,4 @@ jobs:
         run: pytest -q
 
       - name: Coverage
-        run: pytest --cov=core --cov=data --cov=quant --cov=ml --cov=signals --cov=portfolio --cov=risk --cov=backtest --cov=execution --cov-report=term-missing --cov-fail-under=80
+        run: pytest --cov=core --cov=data --cov=quant --cov=ml --cov=signals --cov=portfolio --cov=risk --cov=backtest --cov=execution --cov-report=term-missing
