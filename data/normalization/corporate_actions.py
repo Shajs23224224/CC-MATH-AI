@@ -7,7 +7,6 @@ from core.errors import DataQualityError
 
 from .common import normalize_currency_code, normalize_dataframe_columns
 
-
 _REQUIRED_COLUMNS = ("action_type", "source")
 
 
