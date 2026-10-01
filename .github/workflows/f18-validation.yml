@@ -1,0 +1,39 @@
+name: F18 Valuation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "core/contracts/valuation.py"
+      - "core/contracts/__init__.py"
+      - "quant/valuation/**"
+      - "tests/numerical/test_valuation.py"
+      - "docs/VALUATION.md"
+      - ".github/workflows/f18-validation.yml"
+  pull_request:
+    paths:
+      - "core/contracts/valuation.py"
+      - "core/contracts/__init__.py"
+      - "quant/valuation/**"
+      - "tests/numerical/test_valuation.py"
+      - "docs/VALUATION.md"
+      - ".github/workflows/f18-validation.yml"
+
+jobs:
+  validate-f18:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check core/contracts/valuation.py core/contracts/__init__.py quant/valuation tests/numerical/test_valuation.py
+      - name: Ruff format check
+        run: python -m ruff format --check core/contracts/valuation.py core/contracts/__init__.py quant/valuation tests/numerical/test_valuation.py
+      - name: Mypy
+        run: python -m mypy core/contracts/valuation.py quant/valuation
+      - name: Valuation tests
+        run: python -m pytest tests/numerical/test_valuation.py tests/numerical/test_fundamental_analysis.py -q
