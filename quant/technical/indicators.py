@@ -189,11 +189,10 @@ def stochastic_oscillator(
     for i in range(period - 1, len(checked_close)):
         highest = max(checked_high[i + 1 - period : i + 1])
         lowest = min(checked_low[i + 1 - period : i + 1])
-        k[i] = (
-            50.0
-            if highest == lowest
-            else 100.0 * (checked_close[i] - lowest) / (highest - lowest)
-        )
+        if highest == lowest:
+            k[i] = 50.0
+        else:
+            k[i] = 100.0 * (checked_close[i] - lowest) / (highest - lowest)
     valid_k = tuple(value for value in k if value is not None)
     d_valid = _sma(valid_k, smoothing)
     d: list[float | None] = [None] * len(checked_close)
@@ -217,11 +216,10 @@ def williams_r(
     for i in range(period - 1, len(checked_close)):
         highest = max(checked_high[i + 1 - period : i + 1])
         lowest = min(checked_low[i + 1 - period : i + 1])
-        result[i] = (
-            -50.0
-            if highest == lowest
-            else -100.0 * (highest - checked_close[i]) / (highest - lowest)
-        )
+        if highest == lowest:
+            result[i] = -50.0
+        else:
+            result[i] = -100.0 * (highest - checked_close[i]) / (highest - lowest)
     return tuple(result)
 
 
@@ -272,7 +270,11 @@ def adx_dmi(
             plus_di[i] = 100.0 * smoothed_plus / smoothed_tr
             minus_di[i] = 100.0 * smoothed_minus / smoothed_tr
             denominator = plus_di[i] + minus_di[i]
-            dx[i] = 0.0 if denominator == 0 else 100.0 * abs(plus_di[i] - minus_di[i]) / denominator
+            dx[i] = (
+                0.0
+                if denominator == 0
+                else 100.0 * abs(plus_di[i] - minus_di[i]) / denominator
+            )
     adx: list[float | None] = [None] * n
     valid_dx = tuple(value for value in dx if value is not None)
     current = sum(valid_dx[:period]) / period
@@ -296,11 +298,9 @@ def donchian_channels(
     checked_low = validate_series(low, period)
     if len(checked_high) != len(checked_low):
         raise ValueError("high and low must have equal length")
-    if any(
-        high_value < low_value
-        for high_value, low_value in zip(checked_high, checked_low, strict=True)
-    ):
-        raise ValueError("high must be >= low")
+    for high_value, low_value in zip(checked_high, checked_low, strict=True):
+        if high_value < low_value:
+            raise ValueError("high must be >= low")
     upper: list[float | None] = [None] * len(checked_high)
     lower: list[float | None] = [None] * len(checked_high)
     middle: list[float | None] = [None] * len(checked_high)
