@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 from core.contracts import Asset, Frequency, MarketBar
@@ -41,11 +43,11 @@ def normalize_market_frame(
         bar = MarketBar(
             asset=asset,
             timestamp=normalize_timestamp_utc(row.timestamp),
-            open=float(row.open),
-            high=float(row.high),
-            low=float(row.low),
-            close=float(row.close),
-            volume=float(row.volume),
+            open=cast(float, row.open),
+            high=cast(float, row.high),
+            low=cast(float, row.low),
+            close=cast(float, row.close),
+            volume=cast(float, row.volume),
         )
         bar.validate_ohlc()
         bars.append(bar)
