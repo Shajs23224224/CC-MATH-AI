@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from core.contracts import MarketBar, MarketDataBatch, MarketDataRequest
 from core.errors import DataProviderError
-
 from data.normalization.market import normalize_market_frame
 from data.providers.base import MarketDataProvider
 
