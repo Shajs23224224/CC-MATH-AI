@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from typing import cast
 
 import pandas as pd
@@ -73,10 +74,10 @@ def normalize_corporate_actions(
             CorporateAction(
                 asset=asset,
                 action_type=parsed_type,
-                announced_at=cast(object | None, optional_value("announced_at")),
-                ex_date=cast(object | None, optional_value("ex_date")),
-                record_date=cast(object | None, optional_value("record_date")),
-                payable_date=cast(object | None, optional_value("payable_date")),
+                announced_at=cast(date | None, optional_value("announced_at")),
+                ex_date=cast(date | None, optional_value("ex_date")),
+                record_date=cast(date | None, optional_value("record_date")),
+                payable_date=cast(date | None, optional_value("payable_date")),
                 ratio_numerator=cast(float | None, optional_value("ratio_numerator")),
                 ratio_denominator=cast(float | None, optional_value("ratio_denominator")),
                 cash_amount=cast(float | None, optional_value("cash_amount")),
