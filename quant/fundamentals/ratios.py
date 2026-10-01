@@ -47,10 +47,8 @@ def roic(snapshot: FundamentalSnapshot, tax_rate: float) -> float:
     """
     if not math.isfinite(tax_rate):
         raise ValueError("tax_rate must be finite")
-    invested_capital = (
-        _require(snapshot, "equity")
-        + _require(snapshot, "debt")
-        - _require(snapshot, "cash")
+    invested_capital = _require(snapshot, "equity") + _require(snapshot, "debt") - _require(
+        snapshot, "cash"
     )
     invested_capital = _positive_denominator(invested_capital, "ROIC")
     nopat = _require(snapshot, "ebit") * (1.0 - tax_rate)
@@ -59,8 +57,8 @@ def roic(snapshot: FundamentalSnapshot, tax_rate: float) -> float:
 
 def roce(snapshot: FundamentalSnapshot) -> float:
     """Return ROCE: EBIT / (total assets - current liabilities)."""
-    capital_employed = (
-        _require(snapshot, "total_assets") - _require(snapshot, "current_liabilities")
+    capital_employed = _require(snapshot, "total_assets") - _require(
+        snapshot, "current_liabilities"
     )
     capital_employed = _positive_denominator(capital_employed, "ROCE")
     return _ratio(_require(snapshot, "ebit"), capital_employed, "ROCE")
