@@ -55,7 +55,7 @@ def test_feature_store_rejects_future_records(tmp_path) -> None:
     store.register_definition(_definition())
     record = _record(datetime(2026, 1, 3, tzinfo=UTC))
     with pytest.raises(DataQualityError):
-        store.write((record,), as_of=datetime(2026, 1, 2, tzinfo=timezone.utc))
+        store.write((record,), as_of=datetime(2026, 1, 2, tzinfo=UTC))
 
 
 def test_feature_definition_conflicts_are_rejected(tmp_path) -> None:
