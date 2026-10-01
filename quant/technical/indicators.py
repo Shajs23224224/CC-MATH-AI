@@ -270,11 +270,7 @@ def adx_dmi(
             plus_di[i] = 100.0 * smoothed_plus / smoothed_tr
             minus_di[i] = 100.0 * smoothed_minus / smoothed_tr
             denominator = plus_di[i] + minus_di[i]
-            dx[i] = (
-                0.0
-                if denominator == 0
-                else 100.0 * abs(plus_di[i] - minus_di[i]) / denominator
-            )
+            dx[i] = 0.0 if denominator == 0 else 100.0 * abs(plus_di[i] - minus_di[i]) / denominator
     adx: list[float | None] = [None] * n
     valid_dx = tuple(value for value in dx if value is not None)
     current = sum(valid_dx[:period]) / period
