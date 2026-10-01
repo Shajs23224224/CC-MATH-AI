@@ -62,7 +62,7 @@ class CMathSettings(BaseModel):
         return self
 
     @classmethod
-    def from_environment(cls) -> "CMathSettings":
+    def from_environment(cls) -> CMathSettings:
         env = AppEnvironment(os.getenv("APP_ENV", AppEnvironment.DEVELOPMENT.value))
 
         data = DataSettings(
