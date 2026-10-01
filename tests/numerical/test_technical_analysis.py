@@ -1,18 +1,35 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from core.contracts.technical import TechnicalIndicatorSeries
 from quant.technical import (
-    adx_dmi, atr, bollinger_bands, donchian_channels, ema, macd, momentum,
-    rate_of_change, rsi, sma, stochastic_oscillator, volume_change, vwap, wma, williams_r,
+    adx_dmi,
+    atr,
+    bollinger_bands,
+    donchian_channels,
+    ema,
+    macd,
+    momentum,
+    rate_of_change,
+    rsi,
+    sma,
+    stochastic_oscillator,
+    volume_change,
+    vwap,
+    williams_r,
+    wma,
 )
 
 
 def test_technical_series_preserves_alignment() -> None:
-    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    start = datetime(2026, 1, 1, tzinfo=UTC)
     timestamps = tuple(start + timedelta(days=i) for i in range(4))
-    series = TechnicalIndicatorSeries(name="sma_2", timestamps=timestamps, values=(None, 1.5, 2.5, 3.5))
+    series = TechnicalIndicatorSeries(
+        name="sma_2",
+        timestamps=timestamps,
+        values=(None, 1.5, 2.5, 3.5),
+    )
     assert series.timestamps == timestamps
     assert series.values[0] is None
 
