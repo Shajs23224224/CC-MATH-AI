@@ -58,7 +58,7 @@ def test_signal_rejects_invalid_probability() -> None:
     with pytest.raises(ValidationError):
         Signal(
             asset_symbol="AAPL",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             signal=SignalType.BUY,
             probability=1.2,
             confidence=0.8,
