@@ -1,0 +1,20 @@
+# Public development defaults. No secrets belong here.
+
+app_env = "development"
+log_level = "DEBUG"
+
+[analysis]
+default_frequency = "1D"
+default_horizon = "20D"
+
+[data]
+provider = "local"
+
+[broker]
+provider = "none"
+live_execution_enabled = false
+
+[risk]
+max_position_weight = 0.10
+max_portfolio_leverage = 1.0
+max_daily_loss = 0.02
