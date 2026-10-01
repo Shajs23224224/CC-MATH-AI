@@ -58,6 +58,9 @@ class PriceSeries(BaseModel):
             raise ValueError("timestamps and values must have equal length")
         if any(value <= 0 for value in self.values):
             raise ValueError("price values must be positive")
-        if any(left >= right for left, right in zip(self.timestamps[:-1], self.timestamps[1:], strict=True)):
+        if any(
+            left >= right
+            for left, right in zip(self.timestamps[:-1], self.timestamps[1:], strict=True)
+        ):
             raise ValueError("timestamps must be strictly increasing")
         return self
