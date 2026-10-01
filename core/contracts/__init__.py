@@ -34,6 +34,7 @@ from .quant import AlgorithmMetadata, AlgorithmResult
 from .returns import PerformanceMetrics, ReturnSeries
 from .risk import RiskConstraint, RiskEvaluation, RiskMetric
 from .statistics import StatisticalSummary
+from .technical import TechnicalIndicatorSeries
 
 __all__ = [
     "AlgorithmMetadata",
@@ -85,6 +86,7 @@ __all__ = [
     "RiskMetric",
     "Signal",
     "StatisticalSummary",
+    "TechnicalIndicatorSeries",
     "SignalType",
     "SizingResult",
     "TargetAllocation",
