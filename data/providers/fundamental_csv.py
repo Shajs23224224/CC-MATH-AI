@@ -8,7 +8,6 @@ import pandas as pd
 from core.contracts import FundamentalDataRequest
 from core.errors import DataProviderError
 
-from .fundamental_base import FundamentalDataProvider
 
 
 _REQUIRED_COLUMNS = frozenset({"period_end", "reported_at"})
