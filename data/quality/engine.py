@@ -242,8 +242,8 @@ class DataQualityEngine:
 
 def _as_utc(value: datetime) -> datetime:
     if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc)
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
 
 
 def _robust_outlier_count(series: pd.Series, threshold: float) -> int:
