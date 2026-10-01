@@ -61,6 +61,13 @@ def test_normalization_rejects_invalid_ohlc() -> None:
         normalize_market_frame(frame, _asset(), Frequency.DAILY)
 
 
+def test_local_csv_rejects_adjusted_requests(tmp_path) -> None:
+    provider = LocalCSVMarketDataProvider(tmp_path)
+    request = MarketDataRequest(asset=_asset(), adjusted=True)
+    with pytest.raises(DataProviderError):
+        provider.fetch(request)
+
+
 def test_local_csv_provider_requires_file(tmp_path) -> None:
     provider = LocalCSVMarketDataProvider(tmp_path)
     request = MarketDataRequest(asset=_asset())
