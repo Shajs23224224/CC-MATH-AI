@@ -31,6 +31,7 @@ from .quality import (
     FeatureRecord,
     FeatureSet,
 )
+from .returns import PerformanceMetrics, ReturnSeries
 from .risk import RiskConstraint, RiskEvaluation, RiskMetric
 
 __all__ = [
@@ -72,9 +73,11 @@ __all__ = [
     "Order",
     "OrderSide",
     "OrderType",
+    "PerformanceMetrics",
     "Portfolio",
     "Position",
     "PriceSeries",
+    "ReturnSeries",
     "RiskAction",
     "RiskConstraint",
     "RiskEvaluation",

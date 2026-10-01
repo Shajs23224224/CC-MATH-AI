@@ -1,9 +1,4 @@
-"""Deterministic quantitative and financial algorithms.
-
-The package intentionally contains no model-generated arithmetic. Quantitative
-functions are deterministic and reusable by later signal, portfolio, risk,
-and backtesting layers.
-"""
+"""Deterministic quantitative and financial algorithms."""
 
 from .math import (
     arithmetic_mean,
@@ -26,25 +21,61 @@ from .math import (
     sample_variance,
     weighted_mean,
 )
+from .returns import (
+    annualized_return,
+    annualized_volatility,
+    cumulative_return,
+    downside_deviation,
+    drawdown_series,
+    log_return,
+    log_return_series,
+    log_returns,
+    max_drawdown,
+    performance_metrics,
+    positive_period_ratio,
+    sharpe_ratio,
+    simple_return,
+    simple_return_series,
+    simple_returns,
+    sortino_ratio,
+    wealth_index,
+)
 
 __all__ = [
+    "annualized_return",
+    "annualized_volatility",
     "arithmetic_mean",
     "binomial_pmf",
     "compound_growth",
     "correlation",
+    "cumulative_return",
     "discount_factor",
     "dot_product",
+    "downside_deviation",
+    "drawdown_series",
     "future_value",
     "geometric_mean",
     "golden_section_minimize",
     "harmonic_mean",
     "linear_interpolate",
     "linear_interpolate_series",
+    "log_return",
+    "log_return_series",
+    "log_returns",
+    "max_drawdown",
     "normal_cdf",
     "normal_pdf",
+    "performance_metrics",
+    "positive_period_ratio",
     "present_value",
     "sample_covariance",
     "sample_std",
     "sample_variance",
+    "sharpe_ratio",
+    "simple_return",
+    "simple_return_series",
+    "simple_returns",
+    "sortino_ratio",
     "weighted_mean",
+    "wealth_index",
 ]
