@@ -30,9 +30,7 @@ def weighted_mean(values: Sequence[float], weights: Sequence[float]) -> float:
     weight_sum = math.fsum(checked_weights)
     if weight_sum == 0.0:
         raise ValueError("weights must not sum to zero.")
-    weighted_total = math.fsum(
-        v * w for v, w in zip(checked_values, checked_weights, strict=True)
-    )
+    weighted_total = math.fsum(v * w for v, w in zip(checked_values, checked_weights, strict=True))
     return weighted_total / weight_sum
 
 
@@ -59,9 +57,7 @@ def dot_product(left: Sequence[float], right: Sequence[float]) -> float:
     right_checked = _finite_values(right, name="right")
     if len(left_checked) != len(right_checked):
         raise ValueError("left and right must have the same length.")
-    return math.fsum(
-        x * y for x, y in zip(left_checked, right_checked, strict=True)
-    )
+    return math.fsum(x * y for x, y in zip(left_checked, right_checked, strict=True))
 
 
 def compound_growth(initial_value: float, rate_per_period: float, periods: int) -> float:
