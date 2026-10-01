@@ -22,8 +22,7 @@ class CorporateActionEngine:
             future_announcements = tuple(
                 action
                 for action in actions
-                if action.announced_at is not None
-                and action.announced_at > request.as_of
+                if action.announced_at is not None and action.announced_at > request.as_of
             )
             if future_announcements:
                 raise ValueError("provider returned corporate actions newer than request.as_of")
