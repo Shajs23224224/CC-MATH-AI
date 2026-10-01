@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -37,7 +37,7 @@ def _record(timestamp: datetime) -> FeatureRecord:
 def test_feature_store_requires_registered_definition(tmp_path) -> None:
     store = LocalFeatureStore(tmp_path)
     with pytest.raises(DataQualityError):
-        store.write((_record(datetime(2026, 1, 1, tzinfo=timezone.utc)),))
+        store.write((_record(datetime(2026, 1, 1, tzinfo=UTC)),))
 
 
 def test_feature_store_writes_and_reads_versioned_records(tmp_path) -> None:
