@@ -106,8 +106,10 @@ def apply_split_adjustments(
     adjusted["timestamp"] = timestamps
 
     split_actions = [
-        action for action in actions
-        if action.action_type in {
+        action
+        for action in actions
+        if action.action_type
+        in {
             CorporateActionType.SPLIT,
             CorporateActionType.REVERSE_SPLIT,
         }
