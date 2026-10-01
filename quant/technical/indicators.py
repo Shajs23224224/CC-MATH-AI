@@ -189,7 +189,11 @@ def stochastic_oscillator(
     for i in range(period - 1, len(checked_close)):
         highest = max(checked_high[i + 1 - period : i + 1])
         lowest = min(checked_low[i + 1 - period : i + 1])
-        k[i] = 50.0 if highest == lowest else 100.0 * (checked_close[i] - lowest) / (highest - lowest)
+        k[i] = (
+            50.0
+            if highest == lowest
+            else 100.0 * (checked_close[i] - lowest) / (highest - lowest)
+        )
     valid_k = tuple(value for value in k if value is not None)
     d_valid = _sma(valid_k, smoothing)
     d: list[float | None] = [None] * len(checked_close)
