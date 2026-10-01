@@ -4,6 +4,7 @@ import pandas as pd
 
 from core.contracts import MacroObservation
 from core.errors import DataQualityError
+
 from .common import (
     normalize_dataframe_columns,
     normalize_date,
