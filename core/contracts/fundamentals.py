@@ -33,7 +33,7 @@ class FundamentalSnapshot(BaseModel):
     shares_outstanding: float | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
-    def validate_reporting_dates(self) -> "FundamentalSnapshot":
+    def validate_reporting_dates(self) -> FundamentalSnapshot:
         if self.reported_at < self.period_end:
             raise ValueError("reported_at cannot precede period_end")
         return self
