@@ -41,7 +41,7 @@ def linear_interpolate_series(
     checked_y = tuple(float(value) for value in y_values)
     if not all(math.isfinite(value) for value in (*checked_x, *checked_y)):
         raise ValueError("all interpolation coordinates must be finite.")
-    if any(left >= right for left, right in zip(checked_x, checked_x[1:])):
+    if any(left >= right for left, right in zip(checked_x[:-1], checked_x[1:], strict=True)):
         raise ValueError("x_values must be strictly increasing.")
 
     if x <= checked_x[0]:
