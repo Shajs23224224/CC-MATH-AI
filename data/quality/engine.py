@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from collections.abc import Sequence
+from datetime import UTC, datetime
 
 import numpy as np
 import pandas as pd
