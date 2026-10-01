@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from core.contracts import FundamentalDataBatch, FundamentalDataRequest, FundamentalSnapshot
 from core.errors import DataProviderError
-
 from data.normalization.fundamentals import normalize_fundamental_frame
 from data.providers.fundamental_base import FundamentalDataProvider
 
