@@ -1,3 +1,5 @@
+"""Bootstrap architecture tests."""
+
 from pathlib import Path
 
 
