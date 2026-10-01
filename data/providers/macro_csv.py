@@ -5,7 +5,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from core.contracts import MacroDataRequest\nfrom core.errors import DataProviderError
+from core.contracts import MacroDataRequest
+from core.errors import DataProviderError
 
 _REQUIRED_COLUMNS = frozenset(
     {"series_id", "name", "geography", "period_end", "released_at", "value", "unit", "frequency"}
