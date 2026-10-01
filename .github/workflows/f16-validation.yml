@@ -5,6 +5,7 @@ on:
     paths:
       - "core/contracts/technical.py"
       - "quant/technical/**"
+      - "quant/__init__.py"
       - "tests/numerical/test_technical_analysis.py"
       - ".github/workflows/f16-validation.yml"
   pull_request:
