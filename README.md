@@ -4,12 +4,15 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F03 — Repository Initialization**
+Current phase: **F17 — Fundamental Analysis**
 
 Completed:
 - F01 — System Specification
 - F02 — Software Architecture
 - F03 — Repository Initialization
+- F04–F15 — Data, normalization, mathematics, returns and statistical engine
+- F16 — Technical Analysis
+- F17 — Fundamental Analysis
 
 ## Architecture
 
