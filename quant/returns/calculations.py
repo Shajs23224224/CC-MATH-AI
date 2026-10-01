@@ -37,7 +37,7 @@ def simple_returns(prices: Sequence[float]) -> tuple[float, ...]:
         raise ValueError("prices must be finite and positive.")
     return tuple(
         current / previous - 1.0
-        for previous, current in zip(checked, checked[1:], strict=True)
+        for previous, current in zip(checked, checked[1:])
     )
 
 
