@@ -27,9 +27,11 @@ def residual_income_value(
     )
     terminal_income = residual_incomes[-1] * (1.0 + terminal_growth_rate)
     terminal_value = terminal_income / (required_return - terminal_growth_rate)
-    return book_value_per_share + present_value + terminal_value / (
-        1.0 + required_return
-    ) ** len(residual_incomes)
+    return (
+        book_value_per_share
+        + present_value
+        + terminal_value / (1.0 + required_return) ** len(residual_incomes)
+    )
 
 
 def residual_income_result(
