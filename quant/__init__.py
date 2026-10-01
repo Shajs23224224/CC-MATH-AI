@@ -105,5 +105,4 @@ __all__ = [
     "rolling_zscore",
     "skewness",
     "spearman_correlation",
-    "wealth_index",
 ]
