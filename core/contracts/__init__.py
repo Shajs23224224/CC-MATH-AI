@@ -12,6 +12,7 @@ from .enums import (
     SignalType,
 )
 from .execution import ExecutionReport, Fill, Order
+from .fundamental_data import FundamentalDataBatch, FundamentalDataRequest
 from .fundamentals import FundamentalSnapshot
 from .market import Asset, MarketBar, PriceSeries
 from .market_data import MarketDataBatch, MarketDataRequest
@@ -32,6 +33,8 @@ __all__ = [
     "Fill",
     "Forecast",
     "Frequency",
+    "FundamentalDataBatch",
+    "FundamentalDataRequest",
     "FundamentalSnapshot",
     "MarketBar",
     "MarketDataBatch",
