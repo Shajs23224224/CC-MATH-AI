@@ -1,0 +1,41 @@
+name: F17 Fundamental Analysis
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "core/contracts/fundamentals.py"
+      - "core/contracts/__init__.py"
+      - "data/normalization/fundamentals.py"
+      - "quant/fundamentals/**"
+      - "tests/numerical/test_fundamental_analysis.py"
+      - "docs/FUNDAMENTAL_ANALYSIS.md"
+      - ".github/workflows/f17-validation.yml"
+  pull_request:
+    paths:
+      - "core/contracts/fundamentals.py"
+      - "core/contracts/__init__.py"
+      - "data/normalization/fundamentals.py"
+      - "quant/fundamentals/**"
+      - "tests/numerical/test_fundamental_analysis.py"
+      - "docs/FUNDAMENTAL_ANALYSIS.md"
+      - ".github/workflows/f17-validation.yml"
+
+jobs:
+  validate-f17:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check core/contracts/fundamentals.py core/contracts/__init__.py data/normalization/fundamentals.py quant/fundamentals quant/__init__.py tests/numerical/test_fundamental_analysis.py
+      - name: Ruff format check
+        run: python -m ruff format --check core/contracts/fundamentals.py core/contracts/__init__.py data/normalization/fundamentals.py quant/fundamentals quant/__init__.py tests/numerical/test_fundamental_analysis.py
+      - name: Mypy
+        run: python -m mypy core/contracts/fundamentals.py data/normalization/fundamentals.py quant/fundamentals quant/__init__.py
+      - name: Fundamental tests
+        run: python -m pytest tests/numerical/test_fundamental_analysis.py tests/unit/test_fundamentals.py -q
