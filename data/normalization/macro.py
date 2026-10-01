@@ -8,7 +8,6 @@ from core.contracts import MacroObservation
 from core.errors import DataQualityError
 
 
-_OPTIONAL_COLUMNS = ("tenor",)
 _REQUIRED_COLUMNS = (
     "series_id",
     "name",
@@ -60,7 +59,7 @@ def normalize_macro_frame(frame: pd.DataFrame) -> tuple[MacroObservation, ...]:
             released_at=_as_date(row.released_at),
             value=float(row.value),
             unit=str(row.unit),
-            frequency=str(row.frequency),
+            frequency=str(row.frequency).lower(),
             source=str(row.source),
             tenor=None if pd.isna(tenor) else str(tenor),
         )
