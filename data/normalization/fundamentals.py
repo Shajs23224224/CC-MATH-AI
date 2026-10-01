@@ -18,6 +18,9 @@ _FIELDS = (
     "cash",
     "debt",
     "equity",
+    "total_assets",
+    "current_liabilities",
+    "interest_expense",
     "dividends",
     "shares_outstanding",
 )
