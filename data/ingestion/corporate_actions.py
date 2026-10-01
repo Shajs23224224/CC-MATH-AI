@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.contracts import CorporateActionBatch, CorporateActionRequest, CorporateAction
+from core.contracts import CorporateAction, CorporateActionBatch, CorporateActionRequest
 from data.normalization.corporate_actions import normalize_corporate_actions
 from data.providers.corporate_action_base import CorporateActionProvider
 
