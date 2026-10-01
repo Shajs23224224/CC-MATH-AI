@@ -33,7 +33,7 @@ class CorporateAction(BaseModel):
     source_event_id: str | None = None
 
     @model_validator(mode="after")
-    def validate_action(self) -> "CorporateAction":
+    def validate_action(self) -> CorporateAction:
         if self.action_type in {
             CorporateActionType.SPLIT,
             CorporateActionType.REVERSE_SPLIT,
@@ -54,7 +54,7 @@ class CorporateAction(BaseModel):
 
         if self.action_type == CorporateActionType.TICKER_CHANGE:
             if self.ex_date is None and self.announced_at is None:
-                raise ValueError("ticker changes require at least an announcement or effective date")
+                raise ValueError("ticker changes require an announcement or effective date")
             if not self.new_symbol:
                 raise ValueError("ticker changes require new_symbol")
 
@@ -85,7 +85,7 @@ class CorporateActionRequest(BaseModel):
     end: date | None = None
 
     @model_validator(mode="after")
-    def validate_window(self) -> "CorporateActionRequest":
+    def validate_window(self) -> CorporateActionRequest:
         if self.start and self.end and self.end < self.start:
             raise ValueError("end must be on or after start")
         return self
