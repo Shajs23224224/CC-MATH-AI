@@ -49,7 +49,6 @@ def normalize_market_frame(
             close=cast(float, row.close),
             volume=cast(float, row.volume),
         )
-        bar.validate_ohlc()
         bars.append(bar)
 
     if bars and canonical_frequency == Frequency.TICK:
