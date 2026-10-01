@@ -29,7 +29,7 @@ class MacroDataRequest(BaseModel):
     asset: Asset | None = None
 
     @model_validator(mode="after")
-    def validate_period(self) -> "MacroDataRequest":
+    def validate_period(self) -> MacroDataRequest:
         if (
             self.period_start is not None
             and self.period_end is not None
@@ -55,7 +55,7 @@ class MacroObservation(BaseModel):
     asset: Asset | None = None
 
     @model_validator(mode="after")
-    def validate_release_date(self) -> "MacroObservation":
+    def validate_release_date(self) -> MacroObservation:
         if self.released_at < self.period_end:
             raise ValueError("released_at cannot precede period_end")
         return self
