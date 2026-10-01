@@ -44,9 +44,7 @@ class LocalCSVCorporateActionProvider:
         try:
             frame = pd.read_csv(path)
         except (OSError, pd.errors.ParserError) as exc:
-            raise DataProviderError(
-                f"unable to read corporate-action file: {path}"
-            ) from exc
+            raise DataProviderError(f"unable to read corporate-action file: {path}") from exc
 
         frame = _standardize_columns(frame)
         missing = _REQUIRED_COLUMNS - set(frame.columns)
@@ -57,9 +55,7 @@ class LocalCSVCorporateActionProvider:
 
         for column in ("announced_at", "ex_date", "record_date", "payable_date"):
             if column in frame.columns:
-                frame[column] = pd.to_datetime(
-                    frame[column], errors="coerce", utc=True
-                ).dt.date
+                frame[column] = pd.to_datetime(frame[column], errors="coerce", utc=True).dt.date
 
         for column in ("ratio_numerator", "ratio_denominator", "cash_amount"):
             if column in frame.columns:
@@ -73,10 +69,7 @@ class LocalCSVCorporateActionProvider:
         if request.as_of is not None:
             if "announced_at" not in frame.columns:
                 return frame.iloc[0:0].copy()
-            frame = frame[
-                frame["announced_at"].notna()
-                & (frame["announced_at"] <= request.as_of)
-            ]
+            frame = frame[frame["announced_at"].notna() & (frame["announced_at"] <= request.as_of)]
 
         return frame.reset_index(drop=True)
 
