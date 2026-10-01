@@ -114,8 +114,9 @@ def macd(
     for j, signal_value in enumerate(signal_values):
         i = start + j
         signal_line[i] = signal_value
-        if signal_value is not None and line[i] is not None:
-            histogram[i] = line[i] - signal_value
+        line_value = line[i]
+        if signal_value is not None and line_value is not None:
+            histogram[i] = line_value - signal_value
     return tuple(line), tuple(signal_line), tuple(histogram)
 
 
@@ -269,8 +270,16 @@ def adx_dmi(
         else:
             plus_di[i] = 100.0 * smoothed_plus / smoothed_tr
             minus_di[i] = 100.0 * smoothed_minus / smoothed_tr
-            denominator = plus_di[i] + minus_di[i]
-            dx[i] = 0.0 if denominator == 0 else 100.0 * abs(plus_di[i] - minus_di[i]) / denominator
+            plus_value = plus_di[i]
+            minus_value = minus_di[i]
+            if plus_value is None or minus_value is None:
+                raise RuntimeError("DMI values must be populated")
+            denominator = plus_value + minus_value
+            dx[i] = (
+                0.0
+                if denominator == 0
+                else 100.0 * abs(plus_value - minus_value) / denominator
+            )
     adx: list[float | None] = [None] * n
     valid_dx = tuple(value for value in dx if value is not None)
     current = sum(valid_dx[:period]) / period
