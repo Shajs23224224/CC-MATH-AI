@@ -17,7 +17,7 @@ class FundamentalDataRequest(BaseModel):
     limit: int | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
-    def validate_window(self) -> "FundamentalDataRequest":
+    def validate_window(self) -> FundamentalDataRequest:
         if (
             self.period_start is not None
             and self.period_end is not None
