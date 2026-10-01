@@ -55,7 +55,6 @@ from .statistics import (
     skewness,
     spearman_correlation,
 )
-
 from .technical import (
     adx_dmi,
     atr,
