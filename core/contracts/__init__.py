@@ -35,6 +35,7 @@ from .returns import PerformanceMetrics, ReturnSeries
 from .risk import RiskConstraint, RiskEvaluation, RiskMetric
 from .statistics import StatisticalSummary
 from .technical import TechnicalIndicatorSeries
+from .valuation import SensitivityMatrix, ValuationAssumptions, ValuationResult
 
 __all__ = [
     "AlgorithmMetadata",
@@ -88,6 +89,9 @@ __all__ = [
     "Signal",
     "StatisticalSummary",
     "TechnicalIndicatorSeries",
+    "SensitivityMatrix",
+    "ValuationAssumptions",
+    "ValuationResult",
     "SignalType",
     "SizingResult",
     "TargetAllocation",
