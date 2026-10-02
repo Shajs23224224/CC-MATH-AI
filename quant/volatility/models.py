@@ -84,10 +84,7 @@ def ewma_volatility(
 def _normal_log_likelihood(errors: np.ndarray, variances: np.ndarray) -> float:
     safe_variance = np.maximum(variances, _EPSILON)
     return float(
-        -0.5
-        * np.sum(
-            np.log(2.0 * math.pi) + np.log(safe_variance) + errors * errors / safe_variance
-        )
+        -0.5 * np.sum(np.log(2.0 * math.pi) + np.log(safe_variance) + errors * errors / safe_variance)
     )
 
 
@@ -304,9 +301,7 @@ def _garch_fit(
     elif kind == "gjr_garch":
         initial = (0.05 * variance, 0.04, 0.05, 0.90)
         bounds = ((_EPSILON, 10.0 * variance), (0.0, 0.999), (0.0, 0.999), (0.0, 0.999))
-        constraints = (
-            {"type": "ineq", "fun": lambda p: 0.999 - p[1] - 0.5 * p[2] - p[3]},
-        )
+        constraints = ({"type": "ineq", "fun": lambda p: 0.999 - p[1] - 0.5 * p[2] - p[3]},)
 
         def objective(params: np.ndarray) -> float:
             omega, alpha, gamma, beta = params
@@ -423,11 +418,7 @@ def fit_stochastic_volatility(
     residuals = y - (intercept + phi * x)
     eta_variance = max(float(np.var(residuals)), _EPSILON)
     log_likelihood = float(
-        -0.5
-        * np.sum(
-            np.log(2.0 * math.pi * eta_variance)
-            + residuals * residuals / eta_variance
-        )
+        -0.5 * np.sum(np.log(2.0 * math.pi * eta_variance) + residuals * residuals / eta_variance)
     )
     return FittedVolatilityModel(
         model="stochastic_volatility",
