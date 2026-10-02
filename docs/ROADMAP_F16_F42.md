@@ -1,7 +1,7 @@
 # C-MATH-AI — Roadmap técnico F16–F42
 
-**Estado:** F18 IMPLEMENTADA  
-**Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F15.
+**Estado:** F19 IMPLEMENTADA  
+**Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
 1. Matemática y finanzas críticas: deterministas, tipadas y testeables.
@@ -16,48 +16,48 @@
 ## F16 — Technical Analysis
 **Objetivo:** indicadores deterministas sobre OHLCV.  
 **Alcance:** SMA, EMA, WMA, momentum, ROC, RSI, MACD, ATR, Bollinger, stochastic, Williams %R, ADX/DMI, Donchian, VWAP y volumen.  
-**Cambios:** `quant/technical/`, contratos sólo cuando sean necesarios, tests numéricos, documentación y CI.  
+**Cambios:** quant/technical/, contratos sólo cuando sean necesarios, tests numéricos, documentación y CI.  
 **Invariantes:** ventanas válidas, warm-up explícito, timestamps preservados, sin futuro.  
 **Cierre:** indicadores comprometidos con referencias numéricas, casos de borde y no-lookahead.
 
 ## F17 — Fundamental Analysis
 **Objetivo:** ratios, márgenes, crecimiento, calidad y solvencia point-in-time.  
 **Alcance:** ROE, ROA, ROIC, ROCE, márgenes, FCF, cash conversion, payout/retention, leverage, interest coverage y crecimiento de revenue/EBITDA/EPS/FCF.  
-**Cambios:** `quant/fundamental/`, contratos, tests, docs y CI.  
-**Reglas:** usar `reported_at`, denominadores inválidos explícitos, no imputación silenciosa.  
+**Cambios:** quant/fundamental/, contratos, tests, docs y CI.  
+**Reglas:** usar reported_at, denominadores inválidos explícitos, no imputación silenciosa.  
 **Cierre:** métricas reproducibles y point-in-time safe.
 
 ## F18 — Valuation
 **Objetivo:** valoración fundamental y relativa.  
 **Alcance:** P/E, P/S, P/B, EV/EBITDA, EV/FCF, earnings yield, DDM, Gordon, DCF, multi-stage DCF, residual income, NAV, SOTP, reverse DCF y comparables.  
-**Cambios:** `quant/valuation/`, inputs/outputs tipados, sensibilidad, tests y CI.  
+**Cambios:** quant/valuation/, inputs/outputs tipados, sensibilidad, tests y CI.  
 **Reglas:** moneda/unidades explícitas, supuestos versionados, evitar doble conteo de deuda/caja.  
 **Cierre:** valoración reproducible, auditable y con casos extremos.
 
 ## F19 — Time Series
 **Objetivo:** econometría temporal.  
 **Alcance:** AR, MA, ARMA, ARIMA, SARIMA, ARIMAX, VAR, VECM, exponential smoothing, Holt y Holt-Winters.  
-**Cambios:** `quant/time_series/`, contratos, diagnóstico de residuos, tests y CI.  
+**Cambios:** quant/time_series/, contratos, diagnóstico de residuos, tests y CI.  
 **Reglas:** separación temporal, parámetros sin futuro, estacionariedad/orden y diagnóstico documentados.  
-**Cierre:** modelos base validados temporalmente y sin leakage.
+**Cierre:** modelos base validados temporalmente y sin leakage. **IMPLEMENTADO.**
 
 ## F20 — Volatility & Stochastic
 **Objetivo:** volatilidad y procesos de reversión.  
 **Alcance:** rolling volatility, EWMA, ARCH/GARCH, EGARCH, GJR-GARCH, stochastic volatility, DCC-GARCH, Ornstein-Uhlenbeck y mean reversion.  
-**Cambios:** `quant/volatility/` y/o `quant/stochastic/`, contratos, optimización y tests.  
+**Cambios:** quant/volatility/ y/o quant/stochastic/, contratos, optimización y tests.  
 **Reglas:** anualización explícita, restricciones de parámetros, convergencia comprobada.  
 **Cierre:** modelos con validación numérica y supuestos documentados.
 
 ## F21 — Risk Engine
 **Objetivo:** riesgo de posiciones y cartera.  
 **Alcance:** beta, drawdown, Sharpe/Sortino/Treynor/Calmar/Omega/Information Ratio, exposición, concentración, leverage, liquidez y turnover.  
-**Cambios:** `risk/metrics/`, `risk/constraints/`, integración con portfolio y CI.  
+**Cambios:** risk/metrics/, risk/constraints/, integración con portfolio y CI.  
 **Cierre:** evaluación tipada capaz de producir ALLOW/REDUCE/BLOCK.
 
 ## F22 — Tail Risk
 **Objetivo:** pérdidas extremas y escenarios adversos.  
 **Alcance:** historical/parametric/Monte Carlo VaR, CVaR/Expected Shortfall, stress testing y EVT cuando proceda.  
-**Cambios:** `risk/tail/` o equivalente, escenarios versionados, tests y CI.  
+**Cambios:** risk/tail/ o equivalente, escenarios versionados, tests y CI.  
 **Reglas:** confianza, horizonte, metodología y semillas explícitos.  
 **Cierre:** métricas extremas reproducibles y consumibles por Risk Governor.
 
@@ -76,7 +76,7 @@
 ## F25 — Derivatives
 **Objetivo:** pricing y Greeks.  
 **Alcance:** Black-Scholes, binomial, trinomial, Monte Carlo, Greeks, implied volatility y superficies.  
-**Cambios:** `quant/derivatives/`, contratos, tests analíticos/numerical.  
+**Cambios:** quant/derivatives/, contratos, tests analíticos/numerical.  
 **Reglas:** tasas/dividendos/unidades explícitos, inputs acotados, estabilidad y calibración separada.  
 **Cierre:** pricing/Greeks reproducibles y auditables.
 
@@ -120,7 +120,7 @@
 ## F32 — Algorithm Registry
 **Objetivo:** formalizar el catálogo de 300+ algoritmos.  
 **Registro:** id, nombre, categoría, versión, inputs/outputs, parámetros, fórmula/método, unidades, frecuencia, requisitos, limitaciones y estado de tests.  
-**Cambios:** `quant/registry/`, metadata schema, discovery y validación.  
+**Cambios:** quant/registry/, metadata schema, discovery y validación.  
 **Cierre:** algoritmos descubribles sin imports manuales dispersos.
 
 ## F33 — Quant Ensemble
@@ -130,7 +130,7 @@
 **Cierre:** ensemble auditable y versionado.
 
 ## F34 — Meta-model / Decision Engine
-**Objetivo:** producir el `DecisionRecord`.  
+**Objetivo:** producir el DecisionRecord.  
 **Output:** BUY/HOLD/SELL, probabilidades, expected return/risk, horizon, confidence, agreement, evidence y constraints.  
 **Reglas:** calibración, thresholds versionados, abstención/reject, Risk Governor posterior, LLM sólo como orquestación/interpretación.  
 **Cierre:** decisión reproducible sin autoridad de ejecución.
@@ -139,13 +139,13 @@
 **Objetivo:** convertir señales elegibles en asignaciones.  
 **Alcance:** equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity/ERC, inverse volatility, HRP, Black-Litterman y maximum diversification.  
 **Reglas:** restricciones explícitas, solver status, infeasibility, costes/turnover y concentración.  
-**Cierre:** `TargetAllocation` validado.
+**Cierre:** TargetAllocation validado.
 
 ## F36 — Position Sizing
 **Objetivo:** determinar tamaño dentro de límites.  
 **Alcance:** fixed fractional, volatility-based, risk-based, Kelly, fractional Kelly y confidence weighting.  
 **Reglas:** inputs válidos, límites, liquidez y riesgo; tamaño cero permitido.  
-**Cierre:** `SizingResult` auditable y subordinado a portfolio/risk.
+**Cierre:** SizingResult auditable y subordinado a portfolio/risk.
 
 ## F37 — Portfolio Risk Governor
 **Objetivo:** veto/reducción final antes de ejecución.  
@@ -176,7 +176,7 @@
 
 ## F41 — Paper Trading + Execution
 **Objetivo:** reproducir operación sin dinero real y preparar adapters futuros.  
-**Cambios:** `execution/paper/`, orders, fills, execution policies, accounting y audit.  
+**Cambios:** execution/paper/, orders, fills, execution policies, accounting y audit.  
 **Reglas:** sólo decisiones risk-approved, idempotencia, estados explícitos, slippage/comisiones configurables, credenciales aisladas y sin órdenes directas desde LLM.  
 **Cierre:** paper trading end-to-end.
 
@@ -208,10 +208,12 @@ F41 → F42
 La numeración orienta el roadmap; las dependencias contractuales tienen prioridad.
 
 ## Criterio de avance
+
 Una fase no se considera lista sólo porque exista código. Debe tener implementación comprometida, contratos, tests relevantes, documentación, CI y ausencia de regresiones conocidas que afecten al alcance siguiente.
 
 ## Estado
+
 - F01–F15: implementadas según el roadmap actual.
-- F16–F18: implementadas según el alcance técnico y validadas por CI.
-- F19–F42: alcance técnico documentado.
-- **Siguiente implementación: F19.**
+- F16–F19: implementadas según el alcance técnico y sus validaciones CI.
+- F20–F42: alcance técnico documentado.
+- **Siguiente implementación: F20.**
