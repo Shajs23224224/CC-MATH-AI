@@ -7,13 +7,18 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
-from statsmodels.tsa.arima.model import ARIMA  # type: ignore[import-untyped]
 from statsmodels.tsa.api import VAR  # type: ignore[import-untyped]
+from statsmodels.tsa.arima.model import ARIMA  # type: ignore[import-untyped]
 from statsmodels.tsa.holtwinters import ExponentialSmoothing, Holt  # type: ignore[import-untyped]
 from statsmodels.tsa.statespace.sarimax import SARIMAX  # type: ignore[import-untyped]
 from statsmodels.tsa.vector_ar.vecm import VECM  # type: ignore[import-untyped]
 
-from core.contracts import ResidualDiagnostics, TimeSeriesFamily, TimeSeriesForecast, TimeSeriesFitSummary
+from core.contracts import (
+    ResidualDiagnostics,
+    TimeSeriesFamily,
+    TimeSeriesFitSummary,
+    TimeSeriesForecast,
+)
 
 from .validation import (
     validate_exogenous,
