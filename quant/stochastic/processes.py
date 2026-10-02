@@ -83,9 +83,7 @@ def fit_ornstein_uhlenbeck(
     long_run_mean = intercept / (1.0 - slope)
     residuals = target - (intercept + slope * lagged)
     residual_variance = float(np.var(residuals))
-    diffusion = math.sqrt(
-        max(residual_variance, 1e-12) * 2.0 * speed / (1.0 - slope * slope)
-    )
+    diffusion = math.sqrt(max(residual_variance, 1e-12) * 2.0 * speed / (1.0 - slope * slope))
     half_life = math.log(2.0) / speed
     return FittedMeanReversionModel(
         model="ornstein_uhlenbeck",
