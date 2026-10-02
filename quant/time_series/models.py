@@ -60,8 +60,13 @@ class FittedTimeSeriesModel:
         """Produce a typed out-of-sample forecast."""
         steps = validate_forecast_horizon(horizon)
         if self.model in {"var", "vecm"}:
-            values = self._forecast_multivariate(steps)
-            return TimeSeriesForecast(model=self.model, horizon=steps, values=values)
+            values, multivariate = self._forecast_multivariate(steps)
+            return TimeSeriesForecast(
+                model=self.model,
+                horizon=steps,
+                values=values,
+                multivariate_values=multivariate,
+            )
 
         kwargs: dict[str, Any] = {}
         if self.model == "arimax":
@@ -73,14 +78,31 @@ class FittedTimeSeriesModel:
         flattened = tuple(float(value) for value in values)
         return TimeSeriesForecast(model=self.model, horizon=steps, values=flattened)
 
-    def residual_diagnostics(self, lag: int = 10) -> ResidualDiagnostics:
-        """Return deterministic residual diagnostics."""
+    def residual_diagnostics(
+        self,
+        lag: int = 10,
+        series_index: int = 0,
+    ) -> ResidualDiagnostics:
+        """Return deterministic residual diagnostics for one output series."""
         from .diagnostics import residual_diagnostics
 
-        residuals = np.asarray(self.result.resid, dtype=float).reshape(-1)
-        return residual_diagnostics(tuple(float(value) for value in residuals), lag=lag)
+        residuals = np.asarray(self.result.resid, dtype=float)
+        if self.model in {"var", "vecm"}:
+            if residuals.ndim != 2:
+                raise RuntimeError("multivariate residuals have an unexpected shape")
+            if not 0 <= series_index < residuals.shape[1]:
+                raise ValueError("series_index is outside the residual series range")
+            selected = residuals[:, series_index]
+        else:
+            if series_index != 0:
+                raise ValueError("univariate models expose only series_index=0")
+            selected = residuals.reshape(-1)
+        return residual_diagnostics(tuple(float(value) for value in selected), lag=lag)
 
-    def _forecast_multivariate(self, horizon: int) -> tuple[float, ...]:
+    def _forecast_multivariate(
+        self,
+        horizon: int,
+    ) -> tuple[tuple[float, ...], tuple[tuple[float, ...], ...]]:
         if self.model == "var":
             endog = np.asarray(self.result.endog, dtype=float)
             values = np.asarray(
@@ -93,7 +115,11 @@ class FittedTimeSeriesModel:
             raise RuntimeError("multivariate forecast has an unexpected shape")
         if not np.all(np.isfinite(values)):
             raise RuntimeError("multivariate forecast contains non-finite values")
-        return tuple(float(value) for value in values[:, 0])
+        multivariate = tuple(
+            tuple(float(value) for value in row)
+            for row in values
+        )
+        return tuple(float(value) for value in values[:, 0]), multivariate
 
 
 def _finite_optional(value: Any) -> float | None:
