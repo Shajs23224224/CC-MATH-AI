@@ -48,7 +48,7 @@ Simple exponential smoothing, additive Holt and additive Holt-Winters variants a
 
 ### VAR / VECM
 
-Multivariate models require a rectangular matrix. fit_var exposes lagged multivariate dynamics. fit_vecm exposes cointegration-rank constrained error correction. Forecast results are represented on a single canonical series in the common facade while the underlying fitted estimator remains multivariate.
+Multivariate models require a rectangular matrix. fit_var exposes lagged multivariate dynamics. fit_vecm exposes cointegration-rank constrained error correction. Forecast results preserve the complete multivariate matrix in multivariate_values while values exposes the first series as the canonical scalar view.
 
 ## Diagnostics
 
