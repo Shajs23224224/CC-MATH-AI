@@ -422,7 +422,6 @@ def fit_stochastic_volatility(
     mu = intercept / (1.0 - phi)
     residuals = y - (intercept + phi * x)
     eta_variance = max(float(np.var(residuals)), _EPSILON)
-    fitted_log_variance = intercept + phi * x
     log_likelihood = float(
         -0.5
         * np.sum(
