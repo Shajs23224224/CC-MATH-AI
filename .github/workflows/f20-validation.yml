@@ -1,0 +1,41 @@
+name: F20 Volatility and Stochastic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "core/contracts/volatility.py"
+      - "core/contracts/__init__.py"
+      - "quant/volatility/**"
+      - "quant/stochastic/**"
+      - "tests/numerical/test_volatility.py"
+      - "docs/VOLATILITY_STOCHASTIC.md"
+      - ".github/workflows/f20-validation.yml"
+  pull_request:
+    paths:
+      - "core/contracts/volatility.py"
+      - "core/contracts/__init__.py"
+      - "quant/volatility/**"
+      - "quant/stochastic/**"
+      - "tests/numerical/test_volatility.py"
+      - "docs/VOLATILITY_STOCHASTIC.md"
+      - ".github/workflows/f20-validation.yml"
+
+jobs:
+  validate-f20:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check core/contracts/volatility.py core/contracts/__init__.py quant/volatility quant/stochastic tests/numerical/test_volatility.py
+      - name: Ruff format check
+        run: python -m ruff format --check core/contracts/volatility.py core/contracts/__init__.py quant/volatility quant/stochastic tests/numerical/test_volatility.py
+      - name: Mypy
+        run: python -m mypy core/contracts/volatility.py quant/volatility quant/stochastic
+      - name: Volatility and stochastic tests
+        run: python -m pytest tests/numerical/test_volatility.py -q
