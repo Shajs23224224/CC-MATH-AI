@@ -80,14 +80,19 @@ def test_exponential_smoothing_variants_are_deterministic() -> None:
     assert forecasts[1] == fit_holt(values).forecast(3).values
 
 
-def test_var_and_vecm_return_first_series_as_typed_forecast() -> None:
+def test_var_and_vecm_retain_multivariate_forecasts() -> None:
     values = _multivariate()
     var = fit_var(values, lags=1)
     vecm = fit_vecm(values, k_ar_diff=1, coint_rank=1)
-    assert var.forecast(2).horizon == 2
-    assert vecm.forecast(2).horizon == 2
-    assert len(var.forecast(2).values) == 2
-    assert len(vecm.forecast(2).values) == 2
+    var_forecast = var.forecast(2)
+    vecm_forecast = vecm.forecast(2)
+    assert var_forecast.horizon == 2
+    assert vecm_forecast.horizon == 2
+    assert var_forecast.multivariate_values is not None
+    assert vecm_forecast.multivariate_values is not None
+    assert len(var_forecast.multivariate_values) == 2
+    assert len(vecm_forecast.multivariate_values[0]) == 2
+    assert len(vecm_forecast.values) == 2
 
 
 def test_residual_diagnostics_and_fit_summary() -> None:
@@ -99,6 +104,8 @@ def test_residual_diagnostics_and_fit_summary() -> None:
     assert summary.parameter_count >= 1
     assert isinstance(diagnostics, ResidualDiagnostics)
     assert 0.0 <= diagnostics.ljung_box_pvalue <= 1.0
+    multivariate = fit_var(_multivariate())
+    assert 0.0 <= multivariate.residual_diagnostics(series_index=1).ljung_box_pvalue <= 1.0
 
 
 def test_validation_boundaries() -> None:
