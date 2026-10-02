@@ -44,7 +44,12 @@ def test_temporal_split_is_chronological() -> None:
 
 def test_ar_ma_arma_produce_typed_forecasts() -> None:
     values = _series()
-    for fitted in (fit_ar(values), fit_ma(values), fit_arma(values, 1, 1)):
+    for fitted in (
+        fit_ar(values),
+        fit_ma(values),
+        fit_arma(values, 1, 1),
+        fit_arima(values, (1, 1, 0)),
+    ):
         forecast = fitted.forecast(4)
         assert isinstance(forecast, TimeSeriesForecast)
         assert forecast.horizon == 4
