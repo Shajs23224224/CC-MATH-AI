@@ -31,6 +31,15 @@ def _validate_returns(values: Sequence[float], minimum: int = 30) -> np.ndarray:
     return checked - float(np.mean(checked))
 
 
+def _validate_finite_series(values: Sequence[float], minimum: int) -> np.ndarray:
+    checked = np.asarray(tuple(float(value) for value in values), dtype=float)
+    if checked.size < minimum:
+        raise ValueError(f"at least {minimum} observations are required")
+    if not np.all(np.isfinite(checked)):
+        raise ValueError("observations must be finite")
+    return checked
+
+
 def _validate_annualization_factor(value: float) -> float:
     if not math.isfinite(value) or value <= 0.0:
         raise ValueError("annualization_factor must be finite and positive")
@@ -46,7 +55,7 @@ def rolling_volatility(
     if window < 2:
         raise ValueError("window must be at least 2")
     annualization = _validate_annualization_factor(annualization_factor)
-    checked = _validate_returns(returns, minimum=window)
+    checked = _validate_finite_series(returns, minimum=window)
     result: list[float] = []
     for index in range(window, len(checked) + 1):
         chunk = checked[index - window : index]
@@ -63,7 +72,7 @@ def ewma_volatility(
     if not math.isfinite(decay) or not 0.0 < decay < 1.0:
         raise ValueError("decay must be strictly between 0 and 1")
     annualization = _validate_annualization_factor(annualization_factor)
-    checked = _validate_returns(returns, minimum=2)
+    checked = _validate_finite_series(returns, minimum=2)
     variance = float(checked[0] ** 2)
     result = [math.sqrt(max(variance, 0.0) * annualization)]
     for value in checked[1:]:
@@ -414,9 +423,12 @@ def fit_stochastic_volatility(
     residuals = y - (intercept + phi * x)
     eta_variance = max(float(np.var(residuals)), _EPSILON)
     fitted_log_variance = intercept + phi * x
-    log_likelihood = _normal_log_likelihood(
-        log_squared,
-        np.maximum(np.exp(fitted_log_variance), _EPSILON),
+    log_likelihood = float(
+        -0.5
+        * np.sum(
+            np.log(2.0 * math.pi * eta_variance)
+            + residuals * residuals / eta_variance
+        )
     )
     return FittedVolatilityModel(
         model="stochastic_volatility",
