@@ -79,8 +79,10 @@ class FittedTimeSeriesModel:
                 raise ValueError("future_exog is required for ARIMAX forecasts")
             checked = validate_exogenous(future_exog, steps)
             kwargs["exog"] = np.asarray(checked, dtype=float)
-        values = np.asarray(self.result.forecast(steps=steps, **kwargs), dtype=float).reshape(-1)
-        flattened = tuple(float(value) for value in values)
+        forecast_values = np.asarray(
+            self.result.forecast(steps=steps, **kwargs), dtype=float
+        ).reshape(-1)
+        flattened = tuple(float(value) for value in forecast_values)
         return TimeSeriesForecast(model=self.model, horizon=steps, values=flattened)
 
     def residual_diagnostics(
