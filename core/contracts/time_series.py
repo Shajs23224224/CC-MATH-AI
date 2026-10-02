@@ -30,6 +30,7 @@ class TimeSeriesForecast(BaseModel):
     model: TimeSeriesFamily
     horizon: int = Field(gt=0)
     values: tuple[float, ...]
+    multivariate_values: tuple[tuple[float, ...], ...] | None = None
 
     @model_validator(mode="after")
     def validate_values(self) -> TimeSeriesForecast:
@@ -37,6 +38,17 @@ class TimeSeriesForecast(BaseModel):
             raise ValueError("forecast values must match horizon")
         if not all(math.isfinite(value) for value in self.values):
             raise ValueError("forecast values must be finite")
+        if self.multivariate_values is None:
+            return self
+        if len(self.multivariate_values) != self.horizon:
+            raise ValueError("multivariate forecast rows must match horizon")
+        widths = {len(row) for row in self.multivariate_values}
+        if len(widths) != 1 or not widths or 0 in widths:
+            raise ValueError("multivariate forecast must be rectangular")
+        if not all(math.isfinite(value) for row in self.multivariate_values for value in row):
+            raise ValueError("multivariate forecast values must be finite")
+        if tuple(row[0] for row in self.multivariate_values) != self.values:
+            raise ValueError("values must equal the first multivariate forecast series")
         return self
 
 
