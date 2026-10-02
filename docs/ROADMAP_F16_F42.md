@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F42
 
-**Estado:** F19 IMPLEMENTADA; validación CI configurada  
+**Estado:** F20 EN IMPLEMENTACIÓN; F19 cerrada con CI/Security verificados  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -42,6 +42,7 @@
 **Cierre:** modelos base validados temporalmente y sin leakage. **IMPLEMENTADO.**
 
 ## F20 — Volatility & Stochastic
+**Estado:** EN IMPLEMENTACIÓN
 **Objetivo:** volatilidad y procesos de reversión.  
 **Alcance:** rolling volatility, EWMA, ARCH/GARCH, EGARCH, GJR-GARCH, stochastic volatility, DCC-GARCH, Ornstein-Uhlenbeck y mean reversion.  
 **Cambios:** quant/volatility/ y/o quant/stochastic/, contratos, optimización y tests.  
@@ -215,6 +216,7 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 
 - F01–F15: implementadas según el roadmap actual.
 - F16–F18: implementadas según el alcance técnico y validadas por CI.
-- F19: implementación completa, tests y workflow de CI configurados; verificación del run pendiente de disponibilidad en el conector.
-- F20–F42: alcance técnico documentado.
-- **Siguiente implementación: F20.**
+- F19: implementación completa; F19 Time Series, CI general y Security verificados correctamente.
+- F20: alcance implementado; validación específica F20/CI/Security en curso sobre el HEAD vigente.
+- F21–F42: alcance técnico documentado.
+- **Fase activa: F20.**
