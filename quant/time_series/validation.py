@@ -12,7 +12,9 @@ def validate_univariate(values: Sequence[float], minimum: int = 8) -> tuple[floa
     """Validate a finite univariate time series."""
     checked = tuple(float(value) for value in values)
     if len(checked) < minimum:
-        raise ValueError(f"time series must contain at least {minimum} observations")
+        raise ValueError(
+            f"time series is below the minimum of {minimum} observations"
+        )
     if not all(math.isfinite(value) for value in checked):
         raise ValueError("time-series values must be finite")
     return checked
