@@ -120,10 +120,7 @@ class FittedTimeSeriesModel:
             raise RuntimeError("multivariate forecast has an unexpected shape")
         if not np.all(np.isfinite(values)):
             raise RuntimeError("multivariate forecast contains non-finite values")
-        multivariate = tuple(
-            tuple(float(value) for value in row)
-            for row in values
-        )
+        multivariate = tuple(tuple(float(value) for value in row) for row in values)
         return tuple(float(value) for value in values[:, 0]), multivariate
 
 
