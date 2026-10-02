@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F18 — Valuation**
+Current phase: **F20 — Volatility & Stochastic**
 
 Completed:
 - F01 — System Specification
@@ -14,6 +14,7 @@ Completed:
 - F16 — Technical Analysis
 - F17 — Fundamental Analysis
 - F18 — Valuation
+- F19 — Time Series
 
 ## Architecture
 
