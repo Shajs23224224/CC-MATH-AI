@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 
-from scipy.stats import chi2
+from scipy.stats import chi2  # type: ignore[import-untyped]
 
 from core.contracts import ResidualDiagnostics
 
