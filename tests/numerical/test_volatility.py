@@ -48,6 +48,11 @@ def _multivariate_returns(length: int = 120) -> tuple[tuple[float, float], ...]:
 
 
 def test_rolling_and_ewma_volatility() -> None:
+    sample = (0.01, 0.02, 0.03, 0.04)
+    expected = 0.005 * math.sqrt(252.0)
+    assert rolling_volatility(sample, window=2, annualization_factor=252.0) == pytest.approx(
+        (expected, expected, expected)
+    )
     values = _returns()
     rolling = rolling_volatility(values, window=20)
     ewma = ewma_volatility(values, decay=0.94)
