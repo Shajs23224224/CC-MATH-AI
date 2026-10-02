@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
-from scipy import linalg  # type: ignore[import-untyped]
 from statsmodels.tsa.arima.model import ARIMA  # type: ignore[import-untyped]
 from statsmodels.tsa.api import VAR  # type: ignore[import-untyped]
 from statsmodels.tsa.holtwinters import ExponentialSmoothing, Holt  # type: ignore[import-untyped]
