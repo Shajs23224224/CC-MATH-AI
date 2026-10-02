@@ -26,10 +26,13 @@ def ljung_box_test(residuals: Sequence[float], lag: int = 10) -> tuple[float, fl
         raise ValueError("Ljung-Box diagnostic is undefined for zero-variance residuals")
     statistic = 0.0
     for current_lag in range(1, max_lag + 1):
-        rho = math.fsum(
-            centered[index] * centered[index - current_lag]
-            for index in range(current_lag, len(centered))
-        ) / denominator
+        rho = (
+            math.fsum(
+                centered[index] * centered[index - current_lag]
+                for index in range(current_lag, len(centered))
+            )
+            / denominator
+        )
         statistic += rho * rho / (len(centered) - current_lag)
     statistic *= len(centered) * (len(centered) + 2.0)
     pvalue = float(chi2.sf(statistic, max_lag))
