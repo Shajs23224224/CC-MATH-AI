@@ -13,7 +13,7 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing, Holt  # type: igno
 from statsmodels.tsa.statespace.sarimax import SARIMAX  # type: ignore[import-untyped]
 from statsmodels.tsa.vector_ar.vecm import VECM  # type: ignore[import-untyped]
 
-from core.contracts import TimeSeriesFamily, TimeSeriesForecast, TimeSeriesFitSummary
+from core.contracts import ResidualDiagnostics, TimeSeriesFamily, TimeSeriesForecast, TimeSeriesFitSummary
 
 from .validation import (
     validate_exogenous,
@@ -73,7 +73,7 @@ class FittedTimeSeriesModel:
         flattened = tuple(float(value) for value in values)
         return TimeSeriesForecast(model=self.model, horizon=steps, values=flattened)
 
-    def residual_diagnostics(self, lag: int = 10):
+    def residual_diagnostics(self, lag: int = 10) -> ResidualDiagnostics:
         """Return deterministic residual diagnostics."""
         from .diagnostics import residual_diagnostics
 
