@@ -5,6 +5,7 @@ import pytest
 from core.contracts import ResidualDiagnostics, TemporalSplit, TimeSeriesForecast
 from quant.time_series import (
     fit_ar,
+    fit_arima,
     fit_arimax,
     fit_arma,
     fit_exponential_smoothing,
