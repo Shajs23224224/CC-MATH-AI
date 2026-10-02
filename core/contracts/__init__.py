@@ -35,6 +35,13 @@ from .returns import PerformanceMetrics, ReturnSeries
 from .risk import RiskConstraint, RiskEvaluation, RiskMetric
 from .statistics import StatisticalSummary
 from .technical import TechnicalIndicatorSeries
+from .time_series import (
+    ResidualDiagnostics,
+    TemporalSplit,
+    TimeSeriesFamily,
+    TimeSeriesFitSummary,
+    TimeSeriesForecast,
+)
 from .valuation import SensitivityMatrix, ValuationAssumptions, ValuationResult
 
 __all__ = [
@@ -86,9 +93,14 @@ __all__ = [
     "RiskConstraint",
     "RiskEvaluation",
     "RiskMetric",
+    "ResidualDiagnostics",
     "Signal",
     "StatisticalSummary",
     "TechnicalIndicatorSeries",
+    "TemporalSplit",
+    "TimeSeriesFamily",
+    "TimeSeriesFitSummary",
+    "TimeSeriesForecast",
     "SensitivityMatrix",
     "ValuationAssumptions",
     "ValuationResult",
