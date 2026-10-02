@@ -220,7 +220,10 @@ def fit_exponential_smoothing(
     values: Sequence[float],
 ) -> FittedTimeSeriesModel:
     checked = validate_univariate(values, minimum=4)
-    result = ExponentialSmoothing(np.asarray(checked, dtype=float)).fit()
+    result = ExponentialSmoothing(
+        np.asarray(checked, dtype=float),
+        initialization_method="estimated",
+    ).fit()
     return FittedTimeSeriesModel("exponential_smoothing", result, len(checked))
 
 
@@ -229,7 +232,11 @@ def fit_holt(
     damped_trend: bool = False,
 ) -> FittedTimeSeriesModel:
     checked = validate_univariate(values, minimum=5)
-    result = Holt(np.asarray(checked, dtype=float), damped_trend=damped_trend).fit()
+    result = Holt(
+        np.asarray(checked, dtype=float),
+        damped_trend=damped_trend,
+        initialization_method="estimated",
+    ).fit()
     return FittedTimeSeriesModel("holt", result, len(checked))
 
 
@@ -248,6 +255,7 @@ def fit_holt_winters(
         trend=trend,
         seasonal=seasonal,
         seasonal_periods=seasonal_periods,
+        initialization_method="estimated",
     ).fit()
     return FittedTimeSeriesModel("holt_winters", result, len(checked))
 
