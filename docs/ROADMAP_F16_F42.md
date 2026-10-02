@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F42
 
-**Estado:** F19 IMPLEMENTADA  
+**Estado:** F19 IMPLEMENTADA; validación CI configurada  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -214,6 +214,7 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 ## Estado
 
 - F01–F15: implementadas según el roadmap actual.
-- F16–F19: implementadas según el alcance técnico y sus validaciones CI.
+- F16–F18: implementadas según el alcance técnico y validadas por CI.
+- F19: implementación completa, tests y workflow de CI configurados; verificación del run pendiente de disponibilidad en el conector.
 - F20–F42: alcance técnico documentado.
 - **Siguiente implementación: F20.**
