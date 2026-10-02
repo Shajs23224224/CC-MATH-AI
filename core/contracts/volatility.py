@@ -73,10 +73,10 @@ class DynamicCorrelationForecast(BaseModel):
         size = len(self.matrix)
         if size < 2 or any(len(row) != size for row in self.matrix):
             raise ValueError("correlation matrix must be square with at least two series")
-        if not all(
-            math.isfinite(value) and -1.0 <= value <= 1.0 for row in self.matrix for value in row
-        ):
-            raise ValueError("correlation matrix entries must be finite and bounded")
+        for row in self.matrix:
+            for value in row:
+                if not math.isfinite(value) or not -1.0 <= value <= 1.0:
+                    raise ValueError("correlation matrix entries must be finite and bounded")
         for i in range(size):
             if abs(self.matrix[i][i] - 1.0) > 1e-8:
                 raise ValueError("correlation matrix diagonal must equal one")
