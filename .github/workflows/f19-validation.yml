@@ -1,0 +1,43 @@
+name: F19 Time Series
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "core/contracts/time_series.py"
+      - "core/contracts/__init__.py"
+      - "quant/time_series/**"
+      - "quant/__init__.py"
+      - "tests/numerical/test_time_series.py"
+      - "docs/TIME_SERIES.md"
+      - "pyproject.toml"
+      - ".github/workflows/f19-validation.yml"
+  pull_request:
+    paths:
+      - "core/contracts/time_series.py"
+      - "core/contracts/__init__.py"
+      - "quant/time_series/**"
+      - "quant/__init__.py"
+      - "tests/numerical/test_time_series.py"
+      - "docs/TIME_SERIES.md"
+      - "pyproject.toml"
+      - ".github/workflows/f19-validation.yml"
+
+jobs:
+  validate-f19:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check core/contracts/time_series.py core/contracts/__init__.py quant/time_series quant/__init__.py tests/numerical/test_time_series.py
+      - name: Ruff format check
+        run: python -m ruff format --check core/contracts/time_series.py core/contracts/__init__.py quant/time_series quant/__init__.py tests/numerical/test_time_series.py
+      - name: Mypy
+        run: python -m mypy core/contracts/time_series.py quant/time_series
+      - name: Time-series tests
+        run: python -m pytest tests/numerical/test_time_series.py -q
