@@ -43,6 +43,13 @@ from .time_series import (
     TimeSeriesForecast,
 )
 from .valuation import SensitivityMatrix, ValuationAssumptions, ValuationResult
+from .volatility import (
+    DynamicCorrelationForecast,
+    MeanReversionFit,
+    MeanReversionForecast,
+    VolatilityFitSummary,
+    VolatilityForecast,
+)
 
 __all__ = [
     "AlgorithmMetadata",
@@ -104,6 +111,11 @@ __all__ = [
     "SensitivityMatrix",
     "ValuationAssumptions",
     "ValuationResult",
+    "DynamicCorrelationForecast",
+    "MeanReversionFit",
+    "MeanReversionForecast",
+    "VolatilityFitSummary",
+    "VolatilityForecast",
     "SignalType",
     "SizingResult",
     "TargetAllocation",
