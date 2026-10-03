@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from scipy.optimize import minimize  # type: ignore[import-untyped]
@@ -155,7 +155,7 @@ class FittedVolatilityModel:
         if self.forecast_kind == "stochastic_volatility":
             mu, phi, _eta_std = self.parameters
             initial_log_variance = math.log(max(self.last_variance, _EPSILON))
-            values = tuple(
+            forecast_values = tuple(
                 math.sqrt(
                     math.exp(mu + (initial_log_variance - mu) * math.pow(phi, step))
                     * self.annualization_factor
@@ -166,7 +166,7 @@ class FittedVolatilityModel:
                 model=self.model,
                 horizon=horizon,
                 annualization_factor=self.annualization_factor,
-                values=values,
+                values=forecast_values,
             )
         raise ValueError("unsupported univariate forecast model")
 
@@ -254,6 +254,8 @@ def _garch_fit(
     annualization = _validate_annualization_factor(annualization_factor)
     variance = float(np.var(errors))
     constraints: tuple[dict[str, Any], ...] = ()
+    initial: tuple[float, ...]
+    bounds: tuple[tuple[float, float], ...]
 
     if kind == "arch":
         initial = (0.1 * variance, 0.85)
@@ -354,7 +356,7 @@ def _garch_fit(
             )
 
     return FittedVolatilityModel(
-        model=kind,  # type: ignore[arg-type]
+        model=cast(VolatilityFamily, kind),
         parameters=parameters,
         log_likelihood=log_likelihood,
         observations=int(errors.size),
