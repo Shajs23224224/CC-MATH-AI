@@ -47,6 +47,7 @@ from .volatility import (
     DynamicCorrelationForecast,
     MeanReversionFit,
     MeanReversionForecast,
+    VolatilityFamily,
     VolatilityFitSummary,
     VolatilityForecast,
 )
@@ -114,6 +115,7 @@ __all__ = [
     "DynamicCorrelationForecast",
     "MeanReversionFit",
     "MeanReversionForecast",
+    "VolatilityFamily",
     "VolatilityFitSummary",
     "VolatilityForecast",
     "SignalType",
