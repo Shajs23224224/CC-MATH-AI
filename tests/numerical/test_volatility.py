@@ -42,8 +42,7 @@ def _mean_reverting(length: int = 160) -> tuple[float, ...]:
 def _multivariate_returns(length: int = 120) -> tuple[tuple[float, float], ...]:
     base = _returns(length)
     return tuple(
-        (value, 0.65 * value + 0.002 * math.cos(index / 7.0))
-        for index, value in enumerate(base)
+        (value, 0.65 * value + 0.002 * math.cos(index / 7.0)) for index, value in enumerate(base)
     )
 
 
