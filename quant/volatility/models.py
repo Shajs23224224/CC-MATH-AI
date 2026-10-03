@@ -83,11 +83,7 @@ def ewma_volatility(
 
 def _normal_log_likelihood(errors: np.ndarray, variances: np.ndarray) -> float:
     safe_variance = np.maximum(variances, _EPSILON)
-    log_terms = (
-        np.log(2.0 * math.pi)
-        + np.log(safe_variance)
-        + errors * errors / safe_variance
-    )
+    log_terms = np.log(2.0 * math.pi) + np.log(safe_variance) + errors * errors / safe_variance
     return float(-0.5 * np.sum(log_terms))
 
 
@@ -420,10 +416,7 @@ def fit_stochastic_volatility(
     mu = intercept / (1.0 - phi)
     residuals = y - (intercept + phi * x)
     eta_variance = max(float(np.var(residuals)), _EPSILON)
-    log_terms = (
-        np.log(2.0 * math.pi * eta_variance)
-        + residuals * residuals / eta_variance
-    )
+    log_terms = np.log(2.0 * math.pi * eta_variance) + residuals * residuals / eta_variance
     log_likelihood = float(-0.5 * np.sum(log_terms))
     return FittedVolatilityModel(
         model="stochastic_volatility",
