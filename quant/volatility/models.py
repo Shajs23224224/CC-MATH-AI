@@ -290,15 +290,28 @@ def _garch_fit(
             log_values[0] = math.log(max(variance, _EPSILON))
             expectation_abs_z = math.sqrt(2.0 / math.pi)
             for index in range(1, errors.size):
-                previous_std = math.sqrt(max(math.exp(log_values[index - 1]), _EPSILON))
+                previous_log_variance = log_values[index - 1]
+                previous_std = math.exp(
+                    0.5 * np.clip(previous_log_variance, -50.0, 50.0)
+                )
                 z = errors[index - 1] / previous_std
                 log_values[index] = (
                     omega
-                    + beta * log_values[index - 1]
+                    + beta * previous_log_variance
                     + alpha * (abs(z) - expectation_abs_z)
                     + gamma * z
                 )
-            return -_normal_log_likelihood(errors, np.exp(log_values))
+                if not math.isfinite(float(log_values[index])):
+                    return 1e12
+            safe_log_variance = np.clip(log_values, -50.0, 50.0)
+            log_terms = (
+                math.log(2.0 * math.pi)
+                + safe_log_variance
+                + errors * errors * np.exp(-safe_log_variance)
+            )
+            if not np.all(np.isfinite(log_terms)):
+                return 1e12
+            return float(0.5 * np.sum(log_terms))
     elif kind == "gjr_garch":
         initial = (0.05 * variance, 0.04, 0.05, 0.90)
         bounds = ((_EPSILON, 10.0 * variance), (0.0, 0.999), (0.0, 0.999), (0.0, 0.999))
