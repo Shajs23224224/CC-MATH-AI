@@ -214,14 +214,19 @@ def _optimize(
     initial: Sequence[float],
     bounds: Sequence[tuple[float, float]],
     constraints: Sequence[dict[str, Any]] = (),
+    method: str = "SLSQP",
 ) -> tuple[tuple[float, ...], float, bool]:
+    optimize_kwargs: dict[str, Any] = {
+        "method": method,
+        "bounds": list(bounds),
+        "options": {"maxiter": 1000, "ftol": 1e-10},
+    }
+    if method == "SLSQP":
+        optimize_kwargs["constraints"] = list(constraints)
     result = minimize(
         objective,
         np.asarray(tuple(initial), dtype=float),
-        method="SLSQP",
-        bounds=list(bounds),
-        constraints=list(constraints),
-        options={"maxiter": 1000, "ftol": 1e-10},
+        **optimize_kwargs,
     )
     if not bool(result.success):
         raise RuntimeError(f"volatility optimization failed to converge: {result.message}")
@@ -333,7 +338,14 @@ def _garch_fit(
     else:
         raise ValueError(f"unsupported volatility model: {kind}")
 
-    parameters, log_likelihood, converged = _optimize(objective, initial, bounds, constraints)
+    optimization_method = "L-BFGS-B" if kind == "egarch" else "SLSQP"
+    parameters, log_likelihood, converged = _optimize(
+        objective,
+        initial,
+        bounds,
+        constraints,
+        method=optimization_method,
+    )
 
     if kind == "arch":
         final_values = np.empty(errors.size, dtype=float)
