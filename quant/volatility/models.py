@@ -296,9 +296,7 @@ def _garch_fit(
             expectation_abs_z = math.sqrt(2.0 / math.pi)
             for index in range(1, errors.size):
                 previous_log_variance = log_values[index - 1]
-                previous_std = math.exp(
-                    0.5 * np.clip(previous_log_variance, -50.0, 50.0)
-                )
+                previous_std = math.exp(0.5 * np.clip(previous_log_variance, -50.0, 50.0))
                 z = errors[index - 1] / previous_std
                 log_values[index] = (
                     omega
