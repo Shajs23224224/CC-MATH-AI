@@ -10,6 +10,7 @@ from core.contracts import (
     VolatilityForecast,
 )
 from quant.stochastic import fit_mean_reversion, fit_ornstein_uhlenbeck
+from quant.volatility.models import FittedVolatilityModel
 from quant.volatility import (
     ewma_volatility,
     fit_arch,
@@ -140,3 +141,62 @@ def test_contracts_are_strict_and_finite() -> None:
             horizon=2,
             values=(0.1, math.inf),
         )
+
+
+
+def test_multi_step_arch_garch_and_gjr_forecasts_use_conditional_variance() -> None:
+    common = {
+        "observations": 100,
+        "log_likelihood": -10.0,
+        "converged": True,
+        "annualization_factor": 1.0,
+        "last_variance": 0.04,
+        "last_error": -0.2,
+    }
+    arch = FittedVolatilityModel(
+        model="arch",
+        parameters=(0.01, 0.1),
+        forecast_kind="arch",
+        **common,
+    )
+    garch = FittedVolatilityModel(
+        model="garch",
+        parameters=(0.01, 0.1, 0.8),
+        forecast_kind="garch",
+        **common,
+    )
+    gjr = FittedVolatilityModel(
+        model="gjr_garch",
+        parameters=(0.01, 0.1, 0.2, 0.7),
+        forecast_kind="gjr_garch",
+        **common,
+    )
+
+    assert tuple(value**2 for value in arch.forecast(3).values) == pytest.approx(
+        (0.014, 0.0114, 0.01114)
+    )
+    assert tuple(value**2 for value in garch.forecast(3).values) == pytest.approx(
+        (0.046, 0.0514, 0.05626)
+    )
+    assert tuple(value**2 for value in gjr.forecast(3).values) == pytest.approx(
+        (0.05, 0.055, 0.0595)
+    )
+
+
+def test_egarch_forecast_uses_centered_shock_expectation() -> None:
+    fitted = FittedVolatilityModel(
+        model="egarch",
+        parameters=(-0.1, 0.15, 0.2, 0.8),
+        log_likelihood=-10.0,
+        observations=100,
+        converged=True,
+        annualization_factor=1.0,
+        forecast_kind="egarch",
+        last_variance=0.04,
+        last_error=-0.2,
+    )
+    forecast = fitted.forecast(2)
+    log_variance_1 = -0.1 + 0.8 * math.log(0.04)
+    log_variance_2 = -0.1 + 0.8 * log_variance_1
+    assert forecast.values[0] == pytest.approx(math.exp(log_variance_1 / 2.0))
+    assert forecast.values[1] == pytest.approx(math.exp(log_variance_2 / 2.0))
