@@ -10,7 +10,6 @@ from core.contracts import (
     VolatilityForecast,
 )
 from quant.stochastic import fit_mean_reversion, fit_ornstein_uhlenbeck
-from quant.volatility.models import FittedVolatilityModel
 from quant.volatility import (
     ewma_volatility,
     fit_arch,
@@ -21,6 +20,7 @@ from quant.volatility import (
     fit_stochastic_volatility,
     rolling_volatility,
 )
+from quant.volatility.models import FittedVolatilityModel
 
 
 def _returns(length: int = 180) -> tuple[float, ...]:
