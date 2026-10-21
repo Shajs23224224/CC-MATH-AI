@@ -34,9 +34,7 @@ def test_beta_and_treynor_ratio_reference_values() -> None:
 
 def test_calmar_ratio_uses_annualized_return_and_max_drawdown() -> None:
     returns = (0.10, -0.10, 0.05)
-    assert calmar_ratio(returns, 12.0) == pytest.approx(
-        annualized_return(returns, 12.0) / 0.10
-    )
+    assert calmar_ratio(returns, 12.0) == pytest.approx(annualized_return(returns, 12.0) / 0.10)
 
 
 def test_omega_ratio_gain_to_loss_ratio() -> None:
