@@ -174,7 +174,7 @@ def test_beta_rejects_misaligned_or_short_series(
 
 
 def test_undefined_ratios_are_rejected() -> None:
-    with pytest.raises(ValueError, match="zero"):
+    with pytest.raises(ValueError, match="constant benchmark"):
         beta((0.01, 0.02, 0.03), (0.02, 0.02, 0.02))
     with pytest.raises(ValueError, match="no losses"):
         omega_ratio((0.01, 0.02))
