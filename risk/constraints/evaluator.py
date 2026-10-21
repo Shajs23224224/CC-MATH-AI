@@ -44,8 +44,8 @@ def evaluate_constraints(
     soft_breach = False
 
     for constraint in constraint_items:
-        metric = metric_by_name.get(constraint.metric_name)
-        if metric is None:
+        matched_metric = metric_by_name.get(constraint.metric_name)
+        if matched_metric is None:
             hard_breach = True
             triggered.append(constraint.constraint_id)
             reasons.append(
@@ -55,16 +55,16 @@ def evaluate_constraints(
             continue
 
         breached = (
-            metric.value > constraint.limit
+            matched_metric.value > constraint.limit
             if constraint.operator == "max"
-            else metric.value < constraint.limit
+            else matched_metric.value < constraint.limit
         )
         if not breached:
             continue
 
         triggered.append(constraint.constraint_id)
         reasons.append(
-            f"{constraint.constraint_id}: {constraint.metric_name}={metric.value:g} "
+            f"{constraint.constraint_id}: {constraint.metric_name}={matched_metric.value:g} "
             f"breaches {constraint.operator} limit {constraint.limit:g}"
         )
         if constraint.hard:
