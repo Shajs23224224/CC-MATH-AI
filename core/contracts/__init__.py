@@ -32,7 +32,14 @@ from .quality import (
 )
 from .quant import AlgorithmMetadata, AlgorithmResult
 from .returns import PerformanceMetrics, ReturnSeries
-from .risk import RiskConstraint, RiskEvaluation, RiskMetric
+from .risk import (
+    LiquidityRiskMetrics,
+    PortfolioExposureMetrics,
+    RiskConstraint,
+    RiskEvaluation,
+    RiskMetric,
+    TurnoverMetrics,
+)
 from .statistics import StatisticalSummary
 from .technical import TechnicalIndicatorSeries
 from .time_series import (
@@ -79,6 +86,7 @@ __all__ = [
     "FundamentalDataRequest",
     "FundamentalGrowthPoint",
     "FundamentalSnapshot",
+    "LiquidityRiskMetrics",
     "MacroDataBatch",
     "MacroDataRequest",
     "MacroFrequency",
@@ -94,6 +102,7 @@ __all__ = [
     "OrderType",
     "PerformanceMetrics",
     "Portfolio",
+    "PortfolioExposureMetrics",
     "Position",
     "PriceSeries",
     "ReturnSeries",
@@ -121,4 +130,5 @@ __all__ = [
     "SignalType",
     "SizingResult",
     "TargetAllocation",
+    "TurnoverMetrics",
 ]
