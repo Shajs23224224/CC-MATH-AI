@@ -127,11 +127,19 @@ class FittedVolatilityModel:
             variance = self.last_variance
             error = self.last_error
             values: list[float] = []
-            for _ in range(horizon):
-                leverage = gamma * error**2 if error < 0.0 else 0.0
-                variance = max(omega + alpha * error**2 + beta * variance + leverage, _EPSILON)
+            for step in range(horizon):
+                if step == 0:
+                    shock_variance = error**2
+                    leverage = gamma * shock_variance if error < 0.0 else 0.0
+                else:
+                    # Future innovations are unknown; use their conditional variance.
+                    shock_variance = variance
+                    leverage = 0.5 * gamma * variance if self.forecast_kind == "gjr_garch" else 0.0
+                variance = max(
+                    omega + alpha * shock_variance + beta * variance + leverage,
+                    _EPSILON,
+                )
                 values.append(math.sqrt(variance * self.annualization_factor))
-                error = 0.0
             return VolatilityForecast(
                 model=self.model,
                 horizon=horizon,
@@ -139,13 +147,16 @@ class FittedVolatilityModel:
                 values=tuple(values),
             )
         if self.forecast_kind == "egarch":
-            omega, alpha, gamma, beta = self.parameters
+            omega, _alpha, _gamma, beta = self.parameters
             log_variance = math.log(max(self.last_variance, _EPSILON))
-            expectation_abs_z = math.sqrt(2.0 / math.pi)
             values = []
             for _ in range(horizon):
-                log_variance = omega + beta * log_variance - alpha * expectation_abs_z
-                values.append(math.sqrt(math.exp(log_variance) * self.annualization_factor))
+                # The centered absolute-shock term and signed shock have zero expectation.
+                log_variance = omega + beta * log_variance
+                safe_log_variance = min(max(log_variance, -50.0), 50.0)
+                values.append(
+                    math.sqrt(math.exp(safe_log_variance) * self.annualization_factor)
+                )
             return VolatilityForecast(
                 model=self.model,
                 horizon=horizon,
