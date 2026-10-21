@@ -43,6 +43,8 @@ Future Execution Adapters
 ```
 
 See:
+- [Full roadmap F01–F42](docs/ROADMAP_F01_F15.md) — fases F01–F15 y enlace al detalle F16–F42
+- [Detailed roadmap F16–F42](docs/ROADMAP_F16_F42.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
