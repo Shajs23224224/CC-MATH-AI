@@ -41,7 +41,7 @@ def test_calmar_ratio_uses_annualized_return_and_max_drawdown() -> None:
 
 def test_omega_ratio_gain_to_loss_ratio() -> None:
     assert omega_ratio((0.10, -0.05, 0.02)) == pytest.approx(2.4)
-    assert omega_ratio((0.10, -0.05, 0.02), threshold_per_period=0.01) == pytest.approx(3.0)
+    assert omega_ratio((0.10, -0.05, 0.02), threshold_per_period=0.01) == pytest.approx(5.0 / 3.0)
 
 
 def test_information_ratio_uses_active_return_volatility() -> None:
