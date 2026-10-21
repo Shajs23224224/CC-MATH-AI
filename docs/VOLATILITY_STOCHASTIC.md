@@ -31,13 +31,13 @@ with lambda in (0,1).
 
 ### ARCH / GARCH
 
-ARCH(1) and GARCH(1,1) are fitted by constrained Gaussian quasi-maximum likelihood. The parameter restrictions enforce positive variance and the covariance-stationarity condition for GARCH:
+ARCH(1) and GARCH(1,1) are fitted by constrained Gaussian quasi-maximum likelihood. Multi-step forecasts use realized residuals for the first step and conditional expected variance for subsequent unknown shocks. GJR-GARCH uses the symmetric-shock expectation of one half of variance for its future leverage term. The parameter restrictions enforce positive variance and the covariance-stationarity condition for GARCH:
 
 alpha + beta < 1.
 
 ### EGARCH
 
-EGARCH models log variance and permits asymmetric response to standardized shocks. The implementation constrains abs(beta) < 1 and preserves the sign-sensitive term.
+EGARCH models log variance and permits asymmetric response to standardized shocks. The implementation constrains abs(beta) < 1, preserves the sign-sensitive term during estimation, and forecasts expected log variance using the centered shock terms' zero conditional expectation.
 
 ### GJR-GARCH
 
