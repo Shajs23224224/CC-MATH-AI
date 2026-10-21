@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F20 — Volatility & Stochastic**
+Current phase: **F21 — Risk Engine**
 
 Completed:
 - F01 — System Specification
@@ -15,10 +15,14 @@ Completed:
 - F17 — Fundamental Analysis
 - F18 — Valuation
 - F19 — Time Series
+- F20 — Volatility & Stochastic (implementation complete; CI revalidation included in the F21 branch)
+
+Active:
+- F21 — Risk Engine: risk metrics, exposure, concentration, liquidity, turnover and typed ALLOW / REDUCE / BLOCK constraint evaluation.
 
 ## Architecture
 
-```text
+\`\`\`text
 Data
   ↓
 Normalization / Quality
@@ -40,11 +44,12 @@ Backtest / Validation
 Paper Trading
   ↓
 Future Execution Adapters
-```
+\`\`\`
 
 See:
-- [Full roadmap F01–F42](docs/ROADMAP_F01_F15.md) — fases F01–F15 y enlace al detalle F16–F42
+- [Full roadmap F01–F42](docs/ROADMAP_F01_F15.md) — phases F01–F15 and link to detailed phases F16–F42
 - [Detailed roadmap F16–F42](docs/ROADMAP_F16_F42.md)
+- [F21 Risk Engine](docs/RISK_ENGINE.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
@@ -54,41 +59,41 @@ Recommended Python version: **3.11+**
 
 Create a virtual environment:
 
-```bash
+\`\`\`bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
-```
+\`\`\`
 
 Run checks:
 
-```bash
+\`\`\`bash
 make test
 make lint
 make format-check
-```
+\`\`\`
 
 Run the smoke test directly:
 
-```bash
+\`\`\`bash
 python -m pytest
-```
+\`\`\`
 
 ## Repository layout
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the complete design.
 
 The repository intentionally keeps:
-- financial calculations in `quant/`;
-- domain contracts in `core/`;
-- external providers behind `data/` adapters;
-- model training/inference in `ml/`;
-- decision logic in `signals/`;
-- risk enforcement in `risk/`;
-- portfolio construction in `portfolio/`;
-- simulation in `backtest/`;
-- execution adapters in `execution/`.
+- financial calculations in \`quant/\`;
+- domain contracts in \`core/\`;
+- external providers behind \`data/\` adapters;
+- model training/inference in \`ml/\`;
+- decision logic in \`signals/\`;
+- risk metrics and constraint evaluation in \`risk/\`;
+- portfolio construction in \`portfolio/\`;
+- simulation in \`backtest/\`;
+- execution adapters in \`execution/\`.
 
 ## Security
 
