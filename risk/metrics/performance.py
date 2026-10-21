@@ -16,9 +16,9 @@ def beta(asset_returns: Sequence[float], benchmark_returns: Sequence[float]) -> 
         raise ValueError("at least two paired returns are required to estimate beta")
     asset_mean = math.fsum(asset) / len(asset)
     benchmark_mean = math.fsum(benchmark) / len(benchmark)
-    benchmark_variance = math.fsum(
-        (value - benchmark_mean) ** 2 for value in benchmark
-    ) / (len(benchmark) - 1)
+    benchmark_variance = math.fsum((value - benchmark_mean) ** 2 for value in benchmark) / (
+        len(benchmark) - 1
+    )
     if benchmark_variance == 0.0:
         raise ValueError("beta is undefined for a constant benchmark series")
     covariance = math.fsum(
@@ -84,9 +84,7 @@ def information_ratio(
     if len(active) < 2:
         raise ValueError("at least two paired returns are required for information ratio")
     mean_active = math.fsum(active) / len(active)
-    variance_active = math.fsum((value - mean_active) ** 2 for value in active) / (
-        len(active) - 1
-    )
+    variance_active = math.fsum((value - mean_active) ** 2 for value in active) / (len(active) - 1)
     if variance_active == 0.0:
         raise ValueError("information ratio is undefined when active-return volatility is zero")
     return mean_active / math.sqrt(variance_active) * math.sqrt(periods_per_year)
