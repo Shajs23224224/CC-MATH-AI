@@ -143,7 +143,6 @@ def test_contracts_are_strict_and_finite() -> None:
         )
 
 
-
 def test_multi_step_arch_garch_and_gjr_forecasts_use_conditional_variance() -> None:
     common = {
         "observations": 100,
