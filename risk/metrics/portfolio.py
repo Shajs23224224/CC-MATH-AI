@@ -72,15 +72,9 @@ def liquidity_risk_metrics(
         raise ValueError("asset_symbol must not be empty")
     if not math.isfinite(position_notional) or position_notional < 0.0:
         raise ValueError("position_notional must be finite and non-negative")
-    if (
-        not math.isfinite(average_daily_dollar_volume)
-        or average_daily_dollar_volume <= 0.0
-    ):
+    if not math.isfinite(average_daily_dollar_volume) or average_daily_dollar_volume <= 0.0:
         raise ValueError("average_daily_dollar_volume must be finite and positive")
-    if (
-        not math.isfinite(max_participation_rate)
-        or not 0.0 < max_participation_rate <= 1.0
-    ):
+    if not math.isfinite(max_participation_rate) or not 0.0 < max_participation_rate <= 1.0:
         raise ValueError("max_participation_rate must be in (0, 1]")
 
     return LiquidityRiskMetrics(
