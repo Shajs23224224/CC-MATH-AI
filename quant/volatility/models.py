@@ -122,8 +122,11 @@ class FittedVolatilityModel:
             raise ValueError("horizon must be a positive integer")
         if self.forecast_kind in {"arch", "garch", "gjr_garch"}:
             omega, alpha = self.parameters[0], self.parameters[1]
-            beta = self.parameters[2] if self.forecast_kind != "arch" else 0.0
-            gamma = self.parameters[3] if self.forecast_kind == "gjr_garch" else 0.0
+            if self.forecast_kind == "gjr_garch":
+                gamma, beta = self.parameters[2], self.parameters[3]
+            else:
+                beta = self.parameters[2] if self.forecast_kind == "garch" else 0.0
+                gamma = 0.0
             variance = self.last_variance
             error = self.last_error
             values: list[float] = []
