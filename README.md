@@ -22,7 +22,7 @@ Active:
 
 ## Architecture
 
-\`\`\`text
+```text
 Data
   ↓
 Normalization / Quality
@@ -44,7 +44,7 @@ Backtest / Validation
 Paper Trading
   ↓
 Future Execution Adapters
-\`\`\`
+```
 
 See:
 - [Full roadmap F01–F42](docs/ROADMAP_F01_F15.md) — phases F01–F15 and link to detailed phases F16–F42
@@ -59,41 +59,41 @@ Recommended Python version: **3.11+**
 
 Create a virtual environment:
 
-\`\`\`bash
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
-\`\`\`
+```
 
 Run checks:
 
-\`\`\`bash
+```bash
 make test
 make lint
 make format-check
-\`\`\`
+```
 
 Run the smoke test directly:
 
-\`\`\`bash
+```bash
 python -m pytest
-\`\`\`
+```
 
 ## Repository layout
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the complete design.
 
 The repository intentionally keeps:
-- financial calculations in \`quant/\`;
-- domain contracts in \`core/\`;
-- external providers behind \`data/\` adapters;
-- model training/inference in \`ml/\`;
-- decision logic in \`signals/\`;
-- risk metrics and constraint evaluation in \`risk/\`;
-- portfolio construction in \`portfolio/\`;
-- simulation in \`backtest/\`;
-- execution adapters in \`execution/\`.
+- financial calculations in `quant/`;
+- domain contracts in `core/`;
+- external providers behind `data/` adapters;
+- model training/inference in `ml/`;
+- decision logic in `signals/`;
+- risk metrics and constraint evaluation in `risk/`;
+- portfolio construction in `portfolio/`;
+- simulation in `backtest/`;
+- execution adapters in `execution/`.
 
 ## Security
 
