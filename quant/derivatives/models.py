@@ -63,16 +63,20 @@ def _validate_option_inputs(
 
 def _validate_option_type(option_type: str) -> OptionType:
     """Validate the supported vanilla payoff type."""
-    if option_type not in {"call", "put"}:
-        raise ValueError("option_type must be 'call' or 'put'")
-    return option_type  # type: ignore[return-value]
+    if option_type == "call":
+        return "call"
+    if option_type == "put":
+        return "put"
+    raise ValueError("option_type must be 'call' or 'put'")
 
 
 def _validate_exercise_style(exercise_style: str) -> ExerciseStyle:
     """Validate the exercise convention."""
-    if exercise_style not in {"european", "american"}:
-        raise ValueError("exercise_style must be 'european' or 'american'")
-    return exercise_style  # type: ignore[return-value]
+    if exercise_style == "european":
+        return "european"
+    if exercise_style == "american":
+        return "american"
+    raise ValueError("exercise_style must be 'european' or 'american'")
 
 
 def _intrinsic_value(spot: float | np.ndarray, strike: float, option_type: OptionType) -> float | np.ndarray:
@@ -550,7 +554,7 @@ def build_volatility_surface(
     methodology: str = "Observed implied-volatility quotes; no interpolation or extrapolation.",
 ) -> VolatilitySurface:
     """Create a canonical sparse implied-volatility surface from validated quotes."""
-    if not points:
+    if len(points) == 0:
         raise ValueError("at least one volatility surface point is required")
     ordered = tuple(sorted(points, key=lambda item: (item.maturity_years, item.strike)))
     return VolatilitySurface(
