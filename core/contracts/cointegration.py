@@ -124,7 +124,12 @@ class CointegratingPairResult(BaseModel):
             raise ValueError("pair symbols must be distinct")
         if len(self.spread) != self.observations:
             raise ValueError("spread length must equal observations")
-        values = (self.intercept, self.hedge_ratio, self.cointegration_statistic, *self.critical_values)
+        values = (
+            self.intercept,
+            self.hedge_ratio,
+            self.cointegration_statistic,
+            *self.critical_values,
+        )
         if not all(math.isfinite(value) for value in values):
             raise ValueError("pair parameters and critical values must be finite")
         if not all(math.isfinite(value) for value in self.spread):
