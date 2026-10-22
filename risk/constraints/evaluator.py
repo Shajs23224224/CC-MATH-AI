@@ -9,6 +9,19 @@ from core.contracts import Portfolio, RiskAction, RiskConstraint, RiskEvaluation
 from risk.metrics.portfolio import portfolio_risk_metrics
 
 
+_CANONICAL_UNITS = {
+    "gross_leverage": "multiple_of_equity",
+    "net_exposure_ratio": "multiple_of_equity",
+    "cash_weight": "fraction_of_equity",
+    "concentration_hhi": "index_0_to_1",
+    "largest_position_weight": "fraction_of_gross_exposure",
+    "drawdown": "fraction",
+    "max_drawdown": "fraction",
+    "liquidation_days": "trading_days",
+    "estimated_liquidation_days": "trading_days",
+}
+
+
 def evaluate_constraints(
     metrics: Sequence[RiskMetric],
     constraints: Sequence[RiskConstraint],
@@ -62,16 +75,15 @@ def evaluate_constraints(
             )
             continue
 
-        if (
-            constraint.expected_unit is not None
-            and matched_metric.unit != constraint.expected_unit
-        ):
+        expected_unit = constraint.expected_unit or _CANONICAL_UNITS.get(
+            constraint.metric_name
+        )
+        if expected_unit is not None and matched_metric.unit != expected_unit:
             hard_breach = True
             triggered.append(constraint.constraint_id)
             reasons.append(
                 f"{constraint.constraint_id}: metric {constraint.metric_name!r} has unit "
-                f"{matched_metric.unit!r}; expected {constraint.expected_unit!r}; "
-                "evaluation fails closed"
+                f"{matched_metric.unit!r}; expected {expected_unit!r}; evaluation fails closed"
             )
             continue
 
