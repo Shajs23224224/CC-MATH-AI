@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F27 — Probabilistic Forecasting Engine**
+Current phase: **F28 — Classical ML and bounded mathematical discovery**
 
 Completed:
 - F01 — System Specification
@@ -22,10 +22,10 @@ Completed:
 - F24 — Cointegration / Statistical Arbitrage (merged in PR #9; F24/CI/Security passed).
 - F25 — Derivatives: Black–Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and versioned volatility surfaces (merged in PR #10; F25, general CI and Security passed).
 - F26 — Regime Detection: Gaussian HMM / Markov-switching, CUSUM, Bayesian online change-point probabilities and calibrated trailing-volatility regimes (merged in PR #11; validation workflows passed).
+- F27 — Probabilistic Forecasting Engine: expanding-window forecast evaluation, predictive intervals, bootstrap calibration and causal per-origin regime metadata; merged in PR #12 and hardened in PR #13 with CI/Security passed.
 
 Active:
-- F27 — Probabilistic Forecasting Engine: integrated in PR #12 (`e54694d`); hardening underway for causal regime metadata per walk-forward training prefix, explicit no-look-ahead regression tests and updated documentation.
-- F28 — Classical ML is next in the roadmap, after F27 hardening is validated.
+- F28 — Classical ML: supervised regression/classification adapters, chronological out-of-sample evaluation, association screening, bounded polynomial symbolic regression and JSONL experiment records; implemented on an isolated branch pending CI/review.
 
 ## Architecture
 
@@ -63,6 +63,7 @@ See:
 - [F25 Derivatives](docs/DERIVATIVES.md)
 - [F26 Regime Detection](docs/REGIME_DETECTION.md)
 - [F27 Probabilistic Forecasting](docs/PROBABILISTIC_FORECASTING.md)
+- [F28 Classical ML and symbolic discovery](docs/CLASSICAL_ML.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 

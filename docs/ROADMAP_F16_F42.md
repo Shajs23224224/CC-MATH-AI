@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F25 integradas en main; F26 validada en PR #11 pendiente de merge; F27 en implementación en rama aislada  
+**Estado:** F21–F27 integradas en main; F28 Classical ML en implementación y validación en rama aislada  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -237,6 +237,7 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F24: ADF/KPSS/Phillips–Perron, Engle–Granger, Johansen, pares cointegrados, spread/z-score, half-life y Benjamini–Hochberg integrados en main mediante PR #9; CI F24, Ruff, mypy, pruebas numéricas, regresiones F21/F22/F23, CI general Python 3.11/3.12 y Security aprobados.
 - F25: Black–Scholes, árboles binomiales/trinomiales, Monte Carlo, Greeks, volatilidad implícita y superficie de volatilidad integrados en main mediante PR #10; F25, CI general y Security aprobados.
 - F26: HMM/Markov switching, CUSUM, Bayesian online change points y regímenes de volatilidad integrados en `main` mediante PR #11 (`96a5646`); F26/general CI/Security y regresiones aprobados.
-- F27: forecasting probabilístico integrado en `main` mediante PR #12 (`e54694d`). El refuerzo causal añade ajuste de metadatos de régimen por prefijo walk-forward, pruebas explícitas de no anticipación y documentación de la procedencia de parámetros.
-- F28–F43: alcance técnico documentado; numeración posterior desplazada para insertar F27 forecasting.
-- **Fase activa: endurecimiento de F27 (walk-forward causal y validación reforzada) antes de avanzar a F28.**
+- F27: forecasting probabilístico integrado y endurecido en `main` mediante PR #12 y PR #13 (`b07b3c4`); CI Python 3.11/3.12 y Security aprobados.
+- F28: núcleo de ML clásico y descubrimiento simbólico acotado en implementación; verificar estado real de CI antes de declararla completa.
+- F29–F43: alcance técnico documentado; implementación reservada para sus respectivas fases.
+- **Fase activa: F28 — Classical ML y descubrimiento simbólico acotado.**
