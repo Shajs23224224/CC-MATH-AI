@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Literal
 
 import numpy as np
-from arch.unitroot import PhillipsPerron  # type: ignore[import-untyped]
+from arch.unitroot import PhillipsPerron
 from statsmodels.tsa.stattools import adfuller, coint, kpss  # type: ignore[import-untyped]
 from statsmodels.tsa.vector_ar.vecm import coint_johansen  # type: ignore[import-untyped]
 
@@ -284,9 +284,11 @@ def johansen_test(
         eigenvalues=tuple(float(value) for value in result.eig),
         trace_statistics=tuple(float(value) for value in trace_statistics),
         max_eigen_statistics=tuple(float(value) for value in max_statistics),
-        trace_critical_values=tuple(tuple(float(value) for value in row) for row in trace_critical),
+        trace_critical_values=tuple(
+            (float(row[0]), float(row[1]), float(row[2])) for row in trace_critical
+        ),
         max_eigen_critical_values=tuple(
-            tuple(float(value) for value in row) for row in max_critical
+            (float(row[0]), float(row[1]), float(row[2])) for row in max_critical
         ),
         trace_rank_95=selected_rank(trace_statistics, trace_critical),
         max_eigen_rank_95=selected_rank(max_statistics, max_critical),
@@ -331,7 +333,12 @@ def fit_cointegrating_pair(
     coefficients, *_ = np.linalg.lstsq(design, left, rcond=None)
     intercept, hedge_ratio = float(coefficients[0]), float(coefficients[1])
     spread = left - (intercept + hedge_ratio * right)
-    test = engle_granger_test(left, right, trend="c", max_lags=max_lags)
+    test = engle_granger_test(
+        tuple(float(value) for value in left),
+        tuple(float(value) for value in right),
+        trend="c",
+        max_lags=max_lags,
+    )
     return CointegratingPairResult(
         dependent_symbol=dependent_symbol.strip().upper(),
         independent_symbol=independent_symbol.strip().upper(),
