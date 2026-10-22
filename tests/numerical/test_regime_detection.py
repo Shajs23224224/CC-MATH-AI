@@ -13,6 +13,7 @@ from quant.regimes import (
     cusum_change_points,
     fit_gaussian_hmm,
     fit_markov_switching_gaussian,
+    filter_regime_observations,
     fit_volatility_regime_thresholds,
 )
 
@@ -200,3 +201,20 @@ def test_volatility_regime_contract_requires_threshold_window_match() -> None:
             thresholds=thresholds,
             methodology="invalid contract fixture",
         )
+
+def test_held_out_filter_uses_fixed_training_parameters_and_is_causal() -> None:
+    rng = np.random.default_rng(2604)
+    training = np.concatenate((rng.normal(-0.8, 0.2, 120), rng.normal(0.9, 0.25, 120)))
+    fitted = fit_gaussian_hmm(training, n_states=2, max_iterations=80)
+    held_out = np.concatenate((rng.normal(-0.8, 0.2, 30), rng.normal(1.0, 0.25, 30)))
+
+    first = filter_regime_observations(held_out[:40], fitted)
+    full = filter_regime_observations(held_out, fitted)
+
+    assert first.training_observations == len(training)
+    assert first.observations == 40
+    assert full.observations == len(held_out)
+    assert np.allclose(first.filtered_probabilities, full.filtered_probabilities[:40], atol=1e-10)
+    assert np.allclose(np.asarray(full.filtered_probabilities).sum(axis=1), 1.0)
+    assert "fixed parameters" in full.methodology
+
