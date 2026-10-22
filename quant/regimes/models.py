@@ -557,9 +557,7 @@ def filter_regime_observations(
     state_count = fitted_model.state_count
     means = np.asarray(fitted_model.means, dtype=np.float64)
     variances = np.asarray(fitted_model.variances, dtype=np.float64)
-    last_training_posterior = np.asarray(
-        fitted_model.filtered_probabilities[-1], dtype=np.float64
-    )
+    last_training_posterior = np.asarray(fitted_model.filtered_probabilities[-1], dtype=np.float64)
     transition = np.asarray(fitted_model.transition_matrix, dtype=np.float64)
     log_transition = np.log(np.maximum(transition, _EPSILON))
     log_emissions = _log_emissions(values, means, variances)
