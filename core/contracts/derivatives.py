@@ -68,9 +68,7 @@ class OptionPriceResult(BaseModel):
                 raise ValueError("tree pricing cannot include Monte Carlo metadata")
         else:
             if self.exercise_style != "european":
-                raise ValueError(
-                    "Monte Carlo pricing in F25 supports European exercise only"
-                )
+                raise ValueError("Monte Carlo pricing in F25 supports European exercise only")
             if self.simulations is None or self.random_seed is None or self.antithetic is None:
                 raise ValueError(
                     "Monte Carlo output requires simulations, seed and antithetic flag"
@@ -171,8 +169,6 @@ class VolatilitySurface(BaseModel):
             raise ValueError("volatility surface cannot contain duplicate maturity/strike quotes")
         if coordinates != sorted(coordinates):
             raise ValueError("volatility surface points must be sorted by maturity then strike")
-        if not all(
-            math.isfinite(point.implied_volatility) for point in self.points
-        ):
+        if not all(math.isfinite(point.implied_volatility) for point in self.points):
             raise ValueError("surface volatilities must be finite")
         return self
