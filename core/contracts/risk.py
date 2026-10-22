@@ -41,7 +41,6 @@ class RiskConstraint(BaseModel):
     expected_unit: str | None = Field(default=None, min_length=1)
 
 
-
 class RiskEvaluation(BaseModel):
     """Decision record emitted by the risk constraint evaluator."""
 
