@@ -68,7 +68,10 @@ def _correlation_values(panel: np.ndarray, method: CorrelationMethod) -> np.ndar
     if method == "pearson":
         matrix = np.corrcoef(panel, rowvar=False)
     elif method == "spearman":
-        ranked = np.column_stack([rankdata(panel[:, index]) for index in range(panel.shape[1])])
+        ranked: np.ndarray = np.empty_like(panel)
+        for index in range(panel.shape[1]):
+            values = tuple(float(value) for value in panel[:, index])
+            ranked[:, index] = np.asarray(rankdata(values), dtype=np.float64)
         matrix = np.corrcoef(ranked, rowvar=False)
     else:
         asset_count = panel.shape[1]
