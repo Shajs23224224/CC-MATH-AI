@@ -21,7 +21,9 @@ Completed:
 - F23 — Correlation / Dependency: Pearson/Spearman/Kendall matrices, sample/OAS covariance, rolling correlation and PCA factors; dedicated validation, regression tests, general CI and Security passed.
 
 Active:
-- F24 — Cointegration / Statistical Arbitrage: unit-root testing, cointegration tests, hedge ratios, spread statistics and multiple-testing correction; implementation and validation in progress on an isolated branch.
+- F24 — Cointegration / Statistical Arbitrage: ADF/KPSS/Phillips–Perron, Engle–Granger/Johansen, hedge ratios, spreads, z-scores, half-life and Benjamini–Hochberg; F24 CI, CI Python 3.11/3.12 and Security passed in PR #9, pending merge.
+
+Next phase in the roadmap: **F25 — Derivatives** (pricing, Greeks, implied volatility and volatility surfaces).
 
 ## Architecture
 
