@@ -51,7 +51,8 @@ def _log_emissions(
 ) -> np.ndarray:
     """Compute Gaussian log densities for every observation and latent state."""
     return -0.5 * (
-        math.log(2.0 * math.pi) + np.log(variances)[None, :]
+        math.log(2.0 * math.pi)
+        + np.log(variances)[None, :]
         + (values[:, None] - means[None, :]) ** 2 / variances[None, :]
     )
 
@@ -80,9 +81,7 @@ def _forward_backward(
     log_beta = np.zeros((observation_count, state_count), dtype=np.float64)
     for index in range(observation_count - 2, -1, -1):
         log_beta[index] = logsumexp(
-            log_transition
-            + log_emissions[index + 1][None, :]
-            + log_beta[index + 1][None, :],
+            log_transition + log_emissions[index + 1][None, :] + log_beta[index + 1][None, :],
             axis=1,
         )
 
@@ -212,15 +211,9 @@ def _fit_gaussian_markov_model(
         means=tuple(float(value) for value in means),
         variances=tuple(float(value) for value in variances),
         initial_probabilities=tuple(float(value) for value in initial),
-        transition_matrix=tuple(
-            tuple(float(value) for value in row) for row in transition
-        ),
-        filtered_probabilities=tuple(
-            tuple(float(value) for value in row) for row in filtered
-        ),
-        smoothed_probabilities=tuple(
-            tuple(float(value) for value in row) for row in smoothed
-        ),
+        transition_matrix=tuple(tuple(float(value) for value in row) for row in transition),
+        filtered_probabilities=tuple(tuple(float(value) for value in row) for row in filtered),
+        smoothed_probabilities=tuple(tuple(float(value) for value in row) for row in smoothed),
         filtered_states=tuple(int(value) for value in filtered_states),
         smoothed_states=tuple(int(value) for value in smoothed_states),
         log_likelihood=likelihood,
@@ -356,26 +349,18 @@ def _normal_inverse_gamma_log_predictive(
     """Student-t log predictive density under a Normal-Inverse-Gamma prior."""
     count, sample_mean, sum_squared_deviations = stats
     posterior_kappa = prior_kappa + count
-    posterior_mean = (
-        prior_kappa * prior_mean + count * sample_mean
-    ) / posterior_kappa
+    posterior_mean = (prior_kappa * prior_mean + count * sample_mean) / posterior_kappa
     posterior_alpha = prior_alpha + count / 2.0
     posterior_beta = prior_beta + 0.5 * sum_squared_deviations
     if count > 0:
         posterior_beta += (
-            prior_kappa
-            * count
-            * (sample_mean - prior_mean) ** 2
-            / (2.0 * posterior_kappa)
+            prior_kappa * count * (sample_mean - prior_mean) ** 2 / (2.0 * posterior_kappa)
         )
     degrees_of_freedom = 2.0 * posterior_alpha
     scale = math.sqrt(
-        posterior_beta * (posterior_kappa + 1.0)
-        / (posterior_alpha * posterior_kappa)
+        posterior_beta * (posterior_kappa + 1.0) / (posterior_alpha * posterior_kappa)
     )
-    return float(
-        student_t.logpdf(value, df=degrees_of_freedom, loc=posterior_mean, scale=scale)
-    )
+    return float(student_t.logpdf(value, df=degrees_of_freedom, loc=posterior_mean, scale=scale))
 
 
 def bayesian_change_point_probabilities(
@@ -441,9 +426,7 @@ def bayesian_change_point_probabilities(
             prior_beta=prior_beta,
         )
         growth_log_mass = (
-            np.log(np.maximum(run_probabilities, _EPSILON))
-            + log_survival
-            + log_predictive
+            np.log(np.maximum(run_probabilities, _EPSILON)) + log_survival + log_predictive
         )
         next_log_masses = np.concatenate(([reset_log_mass], growth_log_mass))
         if next_log_masses.size > max_run_length:
@@ -456,10 +439,7 @@ def bayesian_change_point_probabilities(
         most_likely_run_lengths.append(int(np.argmax(next_probabilities)))
 
         next_stats = [_update_segment_stats(*prior_stats, float(value))]
-        next_stats.extend(
-            _update_segment_stats(*stats, float(value))
-            for stats in run_stats
-        )
+        next_stats.extend(_update_segment_stats(*stats, float(value)) for stats in run_stats)
         run_stats = next_stats[:max_run_length]
         run_probabilities = next_probabilities
 
@@ -541,8 +521,10 @@ def apply_volatility_regimes(
     values = _validate_observations(returns, minimum=thresholds.window, name="returns")
     volatility_values = _rolling_standard_deviation(values, thresholds.window)
     labels = tuple(
-        "low" if value < thresholds.low_threshold
-        else "high" if value > thresholds.high_threshold
+        "low"
+        if value < thresholds.low_threshold
+        else "high"
+        if value > thresholds.high_threshold
         else "normal"
         for value in volatility_values
     )
@@ -620,5 +602,4 @@ def filter_regime_observations(
             "parameters estimated on the prior training window. No refitting or backward "
             "smoothing is performed on evaluation observations."
         ),
-    )
-
+    ) 
