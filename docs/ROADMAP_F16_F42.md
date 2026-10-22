@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F42
 
-**Estado:** F21 PR abierto; F22 EN IMPLEMENTACIÓN en rama dependiente; CI/Security se revalidan  
+**Estado:** F21 PR abierto; F22 implementada y validación F22/F21 aprobada en su PR dependiente; pendiente integración  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -57,7 +57,7 @@
 **Cierre:** evaluación tipada capaz de producir ALLOW/REDUCE/BLOCK, con métricas auditables y fallo seguro ante métricas requeridas ausentes.
 
 ## F22 — Tail Risk
-**Estado:** EN IMPLEMENTACIÓN
+**Estado:** IMPLEMENTADA; CI F22 y regresión F21 aprobadas; pendiente integración tras F21
 **Objetivo:** pérdidas extremas y escenarios adversos.  
 **Alcance:** historical/parametric/Monte Carlo VaR, CVaR/Expected Shortfall, stress testing y EVT cuando proceda.  
 **Cambios:** risk/tail/ o equivalente, escenarios versionados, tests y CI.  
@@ -221,6 +221,6 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F19: implementación completa; F19 Time Series, CI general y Security verificados correctamente.
 - F20: implementación y pruebas específicas incorporadas; la corrección de formato de Ruff se revalida en la rama F21.
 - F21: contratos, métricas, evaluador de restricciones, pruebas, documentación y workflow dedicados en PR separado, pendiente de integración.
-- F22: VaR histórico/paramétrico/Monte Carlo, CVaR, EVT y stress testing implementados en rama dependiente; validación CI pendiente.
+- F22: VaR histórico/paramétrico/Monte Carlo, CVaR, EVT y stress testing implementados. Ruff lint/format, mypy, pruebas numéricas/contratos F22 y regresión F21 aprobados en PR #7; pendiente integrar primero F21.
 - F23–F42: alcance técnico documentado.
 - **Fase activa: F22.**
