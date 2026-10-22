@@ -53,7 +53,7 @@ class RiskEvaluation(BaseModel):
     reduction_factor: float = Field(default=1.0, ge=0.0, le=1.0)
 
     @model_validator(mode="after")
-    def validate_action_factor(self) -> "RiskEvaluation":
+    def validate_action_factor(self) -> RiskEvaluation:
         """Keep the decision and its allocation multiplier internally consistent."""
         if self.action == RiskAction.ALLOW and self.reduction_factor != 1.0:
             raise ValueError("ALLOW requires reduction_factor=1.0")
