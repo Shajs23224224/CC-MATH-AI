@@ -2,6 +2,13 @@
 
 from .backtest import BacktestResult
 from .corporate_actions import CorporateAction, CorporateActionBatch, CorporateActionRequest
+from .cointegration import (
+    CointegratingPairResult,
+    CointegrationTestResult,
+    JohansenTestResult,
+    MultipleTestingResult,
+    UnitRootTestResult,
+)
 from .decisions import DecisionRecord, Evidence, Forecast, Signal
 from .dependence import DependenceMatrix, PCAResult
 from .enums import (
@@ -70,6 +77,8 @@ __all__ = [
     "CorporateAction",
     "CorporateActionBatch",
     "CorporateActionRequest",
+    "CointegratingPairResult",
+    "CointegrationTestResult",
     "CorporateActionType",
     "DataQualityIssue",
     "DataQualityReport",
@@ -89,6 +98,7 @@ __all__ = [
     "FundamentalDataRequest",
     "FundamentalGrowthPoint",
     "FundamentalSnapshot",
+    "JohansenTestResult",
     "LiquidityRiskMetrics",
     "MacroDataBatch",
     "MacroDataRequest",
@@ -97,6 +107,7 @@ __all__ = [
     "MarketBar",
     "MarketDataBatch",
     "MarketDataRequest",
+    "MultipleTestingResult",
     "NormalizationReport",
     "NormalizationStatus",
     "OptimizationResult",
@@ -138,4 +149,5 @@ __all__ = [
     "SizingResult",
     "TargetAllocation",
     "TurnoverMetrics",
+    "UnitRootTestResult",
 ]
