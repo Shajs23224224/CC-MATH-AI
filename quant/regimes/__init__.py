@@ -6,6 +6,7 @@ from .models import (
     cusum_change_points,
     fit_gaussian_hmm,
     fit_markov_switching_gaussian,
+    filter_regime_observations,
     fit_volatility_regime_thresholds,
 )
 
@@ -15,5 +16,6 @@ __all__ = [
     "cusum_change_points",
     "fit_gaussian_hmm",
     "fit_markov_switching_gaussian",
+    "filter_regime_observations",
     "fit_volatility_regime_thresholds",
 ]
