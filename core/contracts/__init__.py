@@ -1,6 +1,13 @@
 """Stable domain contracts used across C-MATH-AI."""
 
 from .backtest import BacktestResult
+from .cointegration import (
+    CointegratingPairResult,
+    CointegrationTestResult,
+    JohansenTestResult,
+    MultipleTestingResult,
+    UnitRootTestResult,
+)
 from .corporate_actions import CorporateAction, CorporateActionBatch, CorporateActionRequest
 from .decisions import DecisionRecord, Evidence, Forecast, Signal
 from .dependence import DependenceMatrix, PCAResult
@@ -70,6 +77,8 @@ __all__ = [
     "CorporateAction",
     "CorporateActionBatch",
     "CorporateActionRequest",
+    "CointegratingPairResult",
+    "CointegrationTestResult",
     "CorporateActionType",
     "DataQualityIssue",
     "DataQualityReport",
@@ -89,6 +98,7 @@ __all__ = [
     "FundamentalDataRequest",
     "FundamentalGrowthPoint",
     "FundamentalSnapshot",
+    "JohansenTestResult",
     "LiquidityRiskMetrics",
     "MacroDataBatch",
     "MacroDataRequest",
@@ -97,6 +107,7 @@ __all__ = [
     "MarketBar",
     "MarketDataBatch",
     "MarketDataRequest",
+    "MultipleTestingResult",
     "NormalizationReport",
     "NormalizationStatus",
     "OptimizationResult",
@@ -138,4 +149,5 @@ __all__ = [
     "SizingResult",
     "TargetAllocation",
     "TurnoverMetrics",
+    "UnitRootTestResult",
 ]
