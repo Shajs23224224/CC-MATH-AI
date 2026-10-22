@@ -7,8 +7,8 @@ from collections.abc import Sequence
 from typing import Literal
 
 import numpy as np
-from scipy.optimize import brentq  # type: ignore[import-untyped]
-from scipy.stats import norm  # type: ignore[import-untyped]
+from scipy.optimize import brentq
+from scipy.stats import norm
 
 from core.contracts import (
     ExerciseStyle,
