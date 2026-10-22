@@ -42,7 +42,8 @@ class MLDataset(BaseModel):
             raise ValueError("features must contain only finite values")
         if self.task == "regression":
             if not all(
-                isinstance(value, (int, float)) and not isinstance(value, bool)
+                isinstance(value, (int, float))
+                and not isinstance(value, bool)
                 and math.isfinite(float(value))
                 for value in self.target
             ):
@@ -54,7 +55,8 @@ class MLDataset(BaseModel):
                 if any(not value for value in self.target):
                     raise ValueError("classification labels must not be empty")
             elif not all(
-                isinstance(value, (int, float)) and not isinstance(value, bool)
+                isinstance(value, (int, float))
+                and not isinstance(value, bool)
                 and math.isfinite(float(value))
                 for value in self.target
             ):
