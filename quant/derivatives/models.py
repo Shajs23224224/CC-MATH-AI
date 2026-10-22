@@ -241,9 +241,7 @@ def binomial_tree_price(
     terminal_spots = s * np.power(up, count - down_moves) * np.power(down, down_moves)
     values = np.asarray(_intrinsic_value(terminal_spots, k, kind), dtype=np.float64)
     for current_step in range(count - 1, -1, -1):
-        values = discount * (
-            probability_up * values[:-1] + (1.0 - probability_up) * values[1:]
-        )
+        values = discount * (probability_up * values[:-1] + (1.0 - probability_up) * values[1:])
         if exercise == "american":
             moves = np.arange(current_step + 1, dtype=np.float64)
             node_spots = s * np.power(up, current_step - moves) * np.power(down, moves)
@@ -357,8 +355,7 @@ def monte_carlo_price(
         if antithetic:
             normal_draws = np.concatenate((normal_draws, -normal_draws))
         terminal_spots = s * np.exp(
-            (rate - dividend - 0.5 * sigma * sigma) * t
-            + sigma * math.sqrt(t) * normal_draws
+            (rate - dividend - 0.5 * sigma * sigma) * t + sigma * math.sqrt(t) * normal_draws
         )
 
     payoffs = np.asarray(_intrinsic_value(terminal_spots, k, kind), dtype=np.float64)
@@ -419,9 +416,7 @@ def black_scholes_greeks(
         raise ValueError("Black-Scholes Greeks are undefined at expiration")
     root_t = math.sqrt(t)
     sigma_root_t = sigma * root_t
-    d1 = (
-        math.log(s / k) + (rate - dividend + 0.5 * sigma * sigma) * t
-    ) / sigma_root_t
+    d1 = (math.log(s / k) + (rate - dividend + 0.5 * sigma * sigma) * t) / sigma_root_t
     d2 = d1 - sigma_root_t
     discounted_spot = s * math.exp(-dividend * t)
     discounted_strike = k * math.exp(-rate * t)
@@ -503,12 +498,7 @@ def implied_volatility(
         raise ValueError("market_price must be strictly inside no-arbitrage price bounds")
 
     def difference(volatility_value: float) -> float:
-        return (
-            _black_scholes_value(
-                s, k, t, rate, dividend, volatility_value, kind
-            )
-            - market_price
-        )
+        return _black_scholes_value(s, k, t, rate, dividend, volatility_value, kind) - market_price
 
     lower_difference = difference(min_volatility)
     upper_difference = difference(max_volatility)
