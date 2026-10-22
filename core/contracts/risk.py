@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .enums import RiskAction
 
@@ -38,6 +38,8 @@ class RiskConstraint(BaseModel):
     metric_name: str = Field(min_length=1)
     operator: Literal["max", "min"] = "max"
     hard: bool = True
+    expected_unit: str | None = Field(default=None, min_length=1)
+
 
 
 class RiskEvaluation(BaseModel):
@@ -50,6 +52,17 @@ class RiskEvaluation(BaseModel):
     metrics: tuple[RiskMetric, ...] = ()
     triggered_constraints: tuple[str, ...] = ()
     reduction_factor: float = Field(default=1.0, ge=0.0, le=1.0)
+
+    @model_validator(mode="after")
+    def validate_action_factor(self) -> "RiskEvaluation":
+        """Keep the decision and its allocation multiplier internally consistent."""
+        if self.action == RiskAction.ALLOW and self.reduction_factor != 1.0:
+            raise ValueError("ALLOW requires reduction_factor=1.0")
+        if self.action == RiskAction.BLOCK and self.reduction_factor != 0.0:
+            raise ValueError("BLOCK requires reduction_factor=0.0")
+        if self.action == RiskAction.REDUCE and not 0.0 < self.reduction_factor < 1.0:
+            raise ValueError("REDUCE requires reduction_factor strictly between 0 and 1")
+        return self
 
 
 class PortfolioExposureMetrics(BaseModel):
