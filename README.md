@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F23 — Correlation / Dependency**
+Current phase: **F24 — Cointegration / Statistical Arbitrage**
 
 Completed:
 - F01 — System Specification
@@ -20,7 +20,8 @@ Completed:
 - F22 — Tail Risk (merged in PR #7; CI and Security passed)
 - F23 — Correlation / Dependency: Pearson/Spearman/Kendall matrices, sample/OAS covariance, rolling correlation and PCA factors; dedicated validation, regression tests, general CI and Security passed.
 
-Next phase in the roadmap: F24 — Cointegration / Statistical Arbitrage.
+Active:
+- F24 — Cointegration / Statistical Arbitrage: unit-root testing, cointegration tests, hedge ratios, spread statistics and multiple-testing correction; implementation and validation in progress on an isolated branch.
 
 ## Architecture
 
@@ -54,6 +55,7 @@ See:
 - [F21 Risk Engine](docs/RISK_ENGINE.md)
 - [F22 Tail Risk](docs/TAIL_RISK.md)
 - [F23 Correlation / Dependency](docs/DEPENDENCE.md)
+- [F24 Cointegration / Statistical Arbitrage](docs/COINTEGRATION.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
