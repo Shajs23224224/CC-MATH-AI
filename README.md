@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F24 — Cointegration / Statistical Arbitrage**
+Current phase: **F25 — Derivatives**
 
 Completed:
 - F01 — System Specification
@@ -19,11 +19,10 @@ Completed:
 - F21 — Risk Engine (merged in PR #6)
 - F22 — Tail Risk (merged in PR #7; CI and Security passed)
 - F23 — Correlation / Dependency: Pearson/Spearman/Kendall matrices, sample/OAS covariance, rolling correlation and PCA factors; dedicated validation, regression tests, general CI and Security passed.
+- F24 — Cointegration / Statistical Arbitrage (merged in PR #9; F24/CI/Security passed).
 
 Active:
-- F24 — Cointegration / Statistical Arbitrage: ADF/KPSS/Phillips–Perron, Engle–Granger/Johansen, hedge ratios, spreads, z-scores, half-life and Benjamini–Hochberg; F24 CI, CI Python 3.11/3.12 and Security passed in PR #9, pending merge.
-
-Next phase in the roadmap: **F25 — Derivatives** (pricing, Greeks, implied volatility and volatility surfaces).
+- F25 — Derivatives: Black-Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and sparse versioned volatility surfaces; implementation and validation in progress.
 
 ## Architecture
 
@@ -58,6 +57,7 @@ See:
 - [F22 Tail Risk](docs/TAIL_RISK.md)
 - [F23 Correlation / Dependency](docs/DEPENDENCE.md)
 - [F24 Cointegration / Statistical Arbitrage](docs/COINTEGRATION.md)
+- [F25 Derivatives](docs/DERIVATIVES.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 

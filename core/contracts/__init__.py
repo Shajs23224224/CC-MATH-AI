@@ -11,6 +11,16 @@ from .cointegration import (
 from .corporate_actions import CorporateAction, CorporateActionBatch, CorporateActionRequest
 from .decisions import DecisionRecord, Evidence, Forecast, Signal
 from .dependence import DependenceMatrix, PCAResult
+from .derivatives import (
+    ExerciseStyle,
+    ImpliedVolatilityResult,
+    OptionGreeks,
+    OptionPriceResult,
+    OptionPricingMethod,
+    OptionType,
+    VolatilitySurface,
+    VolatilitySurfacePoint,
+)
 from .enums import (
     AssetType,
     CorporateActionType,
@@ -85,6 +95,12 @@ __all__ = [
     "DataQualitySeverity",
     "DataQualityStatus",
     "DependenceMatrix",
+    "ExerciseStyle",
+    "ImpliedVolatilityResult",
+    "OptionGreeks",
+    "OptionPriceResult",
+    "OptionPricingMethod",
+    "OptionType",
     "DecisionRecord",
     "Evidence",
     "ExecutionReport",
@@ -145,6 +161,8 @@ __all__ = [
     "VolatilityFamily",
     "VolatilityFitSummary",
     "VolatilityForecast",
+    "VolatilitySurface",
+    "VolatilitySurfacePoint",
     "SignalType",
     "SizingResult",
     "TargetAllocation",
