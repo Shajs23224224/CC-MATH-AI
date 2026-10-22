@@ -60,20 +60,40 @@ def test_black_scholes_greeks_match_finite_differences() -> None:
     h_spot = 1e-3
     h_vol = 1e-4
     price_up = black_scholes_price(
-        spot + h_spot, strike, maturity, rate, volatility,
-        option_type="call", dividend_yield=dividend
+        spot + h_spot,
+        strike,
+        maturity,
+        rate,
+        volatility,
+        option_type="call",
+        dividend_yield=dividend,
     ).price
     price_down = black_scholes_price(
-        spot - h_spot, strike, maturity, rate, volatility,
-        option_type="call", dividend_yield=dividend
+        spot - h_spot,
+        strike,
+        maturity,
+        rate,
+        volatility,
+        option_type="call",
+        dividend_yield=dividend,
     ).price
     vol_up = black_scholes_price(
-        spot, strike, maturity, rate, volatility + h_vol,
-        option_type="call", dividend_yield=dividend
+        spot,
+        strike,
+        maturity,
+        rate,
+        volatility + h_vol,
+        option_type="call",
+        dividend_yield=dividend,
     ).price
     vol_down = black_scholes_price(
-        spot, strike, maturity, rate, volatility - h_vol,
-        option_type="call", dividend_yield=dividend
+        spot,
+        strike,
+        maturity,
+        rate,
+        volatility - h_vol,
+        option_type="call",
+        dividend_yield=dividend,
     ).price
 
     assert greeks.delta == pytest.approx((price_up - price_down) / (2 * h_spot), abs=1e-6)
@@ -84,10 +104,7 @@ def test_black_scholes_greeks_match_finite_differences() -> None:
     assert greeks.gamma > 0.0
     assert greeks.vega > 0.0
     assert greeks.rho > 0.0
-    put_greeks = black_scholes_greeks(
-        spot, strike, maturity, rate, volatility,
-        option_type="put", dividend_yield=dividend
-    )
+    put_greeks = black_scholes_greeks(spot, strike, maturity, rate, volatility, option_type="put", dividend_yield=dividend)
     assert put_greeks.delta < 0.0
     assert put_greeks.rho < 0.0
 
@@ -120,12 +137,28 @@ def test_monte_carlo_is_seeded_and_agrees_with_analytic_price_within_sampling_er
         100.0, 100.0, 1.0, 0.04, 0.23, option_type="call", dividend_yield=0.01
     )
     first = monte_carlo_price(
-        100.0, 100.0, 1.0, 0.04, 0.23, option_type="call",
-        dividend_yield=0.01, simulations=20_000, random_seed=45, antithetic=True
+        100.0,
+        100.0,
+        1.0,
+        0.04,
+        0.23,
+        option_type="call",
+        dividend_yield=0.01,
+        simulations=20_000,
+        random_seed=45,
+        antithetic=True,
     )
     second = monte_carlo_price(
-        100.0, 100.0, 1.0, 0.04, 0.23, option_type="call",
-        dividend_yield=0.01, simulations=20_000, random_seed=45, antithetic=True
+        100.0,
+        100.0,
+        1.0,
+        0.04,
+        0.23,
+        option_type="call",
+        dividend_yield=0.01,
+        simulations=20_000,
+        random_seed=45,
+        antithetic=True,
     )
 
     assert first == second
