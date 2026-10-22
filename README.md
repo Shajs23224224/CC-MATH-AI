@@ -19,7 +19,7 @@ Completed:
 
 Active:
 - F21 — Risk Engine: implementation exists on the dependent branch; PR #6 remains separate from main.
-- F22 — Tail Risk: historical/parametric/Monte Carlo VaR, CVaR, EVT and versioned stress testing on phase-22-tail-risk.
+- F22 — Tail Risk: historical/parametric/Monte Carlo VaR, CVaR, EVT and versioned stress testing; F22/F21 validation workflows passed on PR #7, pending integration after F21.
 
 ## Architecture
 
