@@ -64,7 +64,7 @@ def test_covariance_matches_sample_covariance_reference() -> None:
 
     assert result.method == "sample_covariance"
     assert result.kind == "covariance"
-    assert np.asarray(result.matrix) == pytest.approx(reference)
+    assert np.allclose(np.asarray(result.matrix), reference)
 
 
 def test_oas_shrinkage_is_reproducible_and_psd() -> None:
