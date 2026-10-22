@@ -157,9 +157,7 @@ class FittedVolatilityModel:
                 # The centered absolute-shock term and signed shock have zero expectation.
                 log_variance = omega + beta * log_variance
                 safe_log_variance = min(max(log_variance, -50.0), 50.0)
-                values.append(
-                    math.sqrt(math.exp(safe_log_variance) * self.annualization_factor)
-                )
+                values.append(math.sqrt(math.exp(safe_log_variance) * self.annualization_factor))
             return VolatilityForecast(
                 model=self.model,
                 horizon=horizon,

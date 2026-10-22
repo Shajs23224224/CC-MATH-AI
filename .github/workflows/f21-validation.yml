@@ -1,0 +1,50 @@
+name: F21 Risk Engine
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "core/contracts/risk.py"
+      - "core/contracts/__init__.py"
+      - "risk/metrics/**"
+      - "risk/constraints/**"
+      - "risk/__init__.py"
+      - "tests/numerical/test_risk_engine.py"
+      - "tests/unit/test_risk_engine_contracts.py"
+      - "docs/RISK_ENGINE.md"
+      - ".github/workflows/f21-validation.yml"
+  pull_request:
+    paths:
+      - "core/contracts/risk.py"
+      - "core/contracts/__init__.py"
+      - "risk/metrics/**"
+      - "risk/constraints/**"
+      - "risk/__init__.py"
+      - "tests/numerical/test_risk_engine.py"
+      - "tests/unit/test_risk_engine_contracts.py"
+      - "docs/RISK_ENGINE.md"
+      - ".github/workflows/f21-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-f21:
+    name: Validate risk metrics and constraints
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip setuptools wheel && python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check core/contracts/risk.py core/contracts/__init__.py risk/metrics risk/constraints risk/__init__.py tests/numerical/test_risk_engine.py tests/unit/test_risk_engine_contracts.py
+      - name: Ruff format check
+        run: python -m ruff format --check core/contracts/risk.py core/contracts/__init__.py risk/metrics risk/constraints risk/__init__.py tests/numerical/test_risk_engine.py tests/unit/test_risk_engine_contracts.py
+      - name: Mypy
+        run: python -m mypy core/contracts/risk.py risk/metrics risk/constraints
+      - name: F21 numerical and safety tests
+        run: python -m pytest tests/numerical/test_risk_engine.py tests/unit/test_risk_engine_contracts.py -q
