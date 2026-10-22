@@ -94,7 +94,7 @@
 **Cierre:** output probabilístico/explicable integrable con ensemble.
 
 ## F27 — Probabilistic Forecasting Engine
-**Estado:** EN IMPLEMENTACIÓN en `phase-27-probabilistic-forecasting`; PR pendiente.
+**Estado:** INTEGRADA en `main` mediante PR #12 (`e54694d`); endurecimiento causal de walk-forward en curso en `hardening/f27-causal-regimes`.
 **Objetivo:** estimar distribuciones predictivas de retornos futuros con incertidumbre explícita, no sólo una predicción puntual.  
 **Alcance:** bootstrap empírico, simulación de paths, cuantiles e intervalos centrales (50/80/90/95%), probabilidad de pérdida, bootstrap condicionado a regímenes de F26, calibración de cobertura/Brier/Winkler y evaluación walk-forward expansiva.  
 **Reglas:** retornos simples compuestos, semillas explícitas, entrenamiento anterior a cada origen, labels/transiciones de régimen causales y calibradas en train; documentar que IID bootstrap no conserva autocorrelación. No emite órdenes ni sustituye F21 Risk Engine.  
@@ -236,7 +236,7 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F23: matrices Pearson/Spearman/Kendall, covarianza, OAS shrinkage, dependencia rolling y PCA integradas en main mediante PR #8; Ruff, formato, mypy, tests numéricos, regresiones F21/F22, CI Python 3.11/3.12 y Security aprobados.
 - F24: ADF/KPSS/Phillips–Perron, Engle–Granger, Johansen, pares cointegrados, spread/z-score, half-life y Benjamini–Hochberg integrados en main mediante PR #9; CI F24, Ruff, mypy, pruebas numéricas, regresiones F21/F22/F23, CI general Python 3.11/3.12 y Security aprobados.
 - F25: Black–Scholes, árboles binomiales/trinomiales, Monte Carlo, Greeks, volatilidad implícita y superficie de volatilidad integrados en main mediante PR #10; F25, CI general y Security aprobados.
-- F26: HMM/Markov switching, CUSUM, Bayesian online change points y regímenes de volatilidad implementados en `phase-26-regime-detection`; PR #11 abierta, F26/general CI/Security y regresiones aprobados, pendiente de merge.
-- F27: engine probabilístico en desarrollo; bootstrap, simulación condicionada por regímenes, calibración, walk-forward, contratos, pruebas y workflow propios.
+- F26: HMM/Markov switching, CUSUM, Bayesian online change points y regímenes de volatilidad integrados en `main` mediante PR #11 (`96a5646`); F26/general CI/Security y regresiones aprobados.
+- F27: forecasting probabilístico integrado en `main` mediante PR #12 (`e54694d`). El refuerzo causal añade ajuste de metadatos de régimen por prefijo walk-forward, pruebas explícitas de no anticipación y documentación de la procedencia de parámetros.
 - F28–F43: alcance técnico documentado; numeración posterior desplazada para insertar F27 forecasting.
-- **Fases activas: F26 (PR #11 pendiente de merge) y F27 (implementación en curso).**
+- **Fase activa: endurecimiento de F27 (walk-forward causal y validación reforzada) antes de avanzar a F28.**

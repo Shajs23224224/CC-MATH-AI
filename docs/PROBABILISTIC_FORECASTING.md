@@ -24,11 +24,37 @@ The default method samples each future period with replacement from the supplied
 
 ### Markov regime bootstrap
 
-When both `regime_labels` and `transition_matrix` are provided, each simulated state follows the supplied row-stochastic transition matrix and each period's return is sampled from the historical return pool for that state. This path conditions on the final observed state and can use F26 outputs.
+For a single forecast, `regime_labels` and `transition_matrix` may be provided together. Labels must align exactly to the supplied return window; every state must have at least two observations; the transition matrix must be finite, row-stochastic, and have between two and six states. Only pass metadata estimated from that same training window.
 
-Regime labels and transition probabilities must be estimated from training data only. A label sequence produced by fitting a regime model on the complete sample may contain look-ahead information and is not acceptable for a strict out-of-sample test. Every state must have at least two training observations. The method is conditional on empirical within-state distributions; it is not a full generative model of market prices.
+Regime labels and transition probabilities must be estimated from training data only. A label sequence or matrix fitted on the complete sample may contain look-ahead information and is not acceptable for strict out-of-sample testing. The method is conditional on empirical within-state distributions; it is not a full generative model of market prices.
 
-## Calibration and walk-forward validation
+## Strict walk-forward regime protocol
+
+`walk_forward_forecast_evaluation` forecasts at each origin using only the expanding prefix strictly before that origin. For regime-conditioned walk-forward evaluation, pass `regime_provider`: a callable that receives one immutable tuple containing only the training returns for that origin and returns `(training_regime_labels, transition_matrix)`. Fit/re-estimate both items inside that callable on the supplied prefix; never read global labels, a full-sample model, or full-sample transition estimates from a closure.
+
+Example provider contract:
+
+```python
+def fit_regimes_on_prefix(train_returns):
+    # Fit the F26-compatible regime model using only train_returns.
+    # Return one causal/training-window label per value and a transition
+    # matrix estimated from this same prefix.
+    labels, transition_matrix = fit_your_regime_model(train_returns)
+    return labels, transition_matrix
+
+
+result = walk_forward_forecast_evaluation(
+    historical_simple_returns,
+    min_train_observations=100,
+    regime_provider=fit_regimes_on_prefix,
+)
+```
+
+Fixed `regime_labels` or `transition_matrix` arguments are deliberately rejected by the walk-forward function. Their provenance cannot be proven from a static matrix, and silently reusing full-sample transitions would invalidate the test. The single-origin `forecast_return_distribution` API still accepts explicit metadata, because that caller is responsible for supplying a correctly scoped training window.
+
+The evaluator stores the forecast generated at each origin and then evaluates the following `horizon` returns. Overlapping multi-period horizons are not independent; interpret aggregate uncertainty accordingly. The provider contract prevents the evaluator from handing it future returns, but the provider itself must not access future observations through globals, closures, external state, or pre-fitted full-sample objects.
+
+## Calibration and validation
 
 The calibration function reports:
 
@@ -37,7 +63,7 @@ The calibration function reports:
 - Brier score for the event that the cumulative return is negative;
 - MAE and MSE of the forecast expected return.
 
-`walk_forward_forecast_evaluation` forecasts at each origin using only the expanding prefix strictly before that origin. The realized value compounds the next `horizon` returns. The returned object preserves origins, individual forecasts, realized returns and aggregate scores. For overlapping multi-period horizons, observations are not independent; interpret aggregate uncertainty accordingly.
+Regression tests verify that a regime provider receives exactly the prefix for each origin and that altering returns after an origin cannot alter the forecast at that origin.
 
 ## Validations and limitations
 

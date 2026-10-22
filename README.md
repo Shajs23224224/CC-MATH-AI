@@ -21,10 +21,11 @@ Completed:
 - F23 — Correlation / Dependency: Pearson/Spearman/Kendall matrices, sample/OAS covariance, rolling correlation and PCA factors; dedicated validation, regression tests, general CI and Security passed.
 - F24 — Cointegration / Statistical Arbitrage (merged in PR #9; F24/CI/Security passed).
 - F25 — Derivatives: Black–Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and versioned volatility surfaces (merged in PR #10; F25, general CI and Security passed).
+- F26 — Regime Detection: Gaussian HMM / Markov-switching, CUSUM, Bayesian online change-point probabilities and calibrated trailing-volatility regimes (merged in PR #11; validation workflows passed).
 
 Active:
-- F26 — Regime Detection: Gaussian HMM / Markov-switching, sequential CUSUM, Bayesian online change-point probabilities and calibrated trailing-volatility regimes; PR #11 open, F26/general CI/Security and regression workflows validated, awaiting merge.
-- F27 — Probabilistic Forecasting Engine: empirical bootstrap distributions, cumulative-return quantiles/intervals, loss probabilities, Markov regime-conditioned paths, calibration scores and expanding-window walk-forward evaluation; implementation and CI validation in progress.
+- F27 — Probabilistic Forecasting Engine: integrated in PR #12 (`e54694d`); hardening underway for causal regime metadata per walk-forward training prefix, explicit no-look-ahead regression tests and updated documentation.
+- F28 — Classical ML is next in the roadmap, after F27 hardening is validated.
 
 ## Architecture
 
