@@ -48,12 +48,9 @@ def test_put_call_parity_accounts_for_continuous_dividend_yield() -> None:
 
 def test_black_scholes_greeks_match_finite_differences() -> None:
     spot, strike, maturity, rate, dividend, volatility = 103.0, 100.0, 0.9, 0.035, 0.01, 0.24
+    greek_inputs = (spot, strike, maturity, rate, volatility)
     greeks = black_scholes_greeks(
-        spot,
-        strike,
-        maturity,
-        rate,
-        volatility,
+        *greek_inputs,
         option_type="call",
         dividend_yield=dividend,
     )
@@ -104,7 +101,7 @@ def test_black_scholes_greeks_match_finite_differences() -> None:
     assert greeks.gamma > 0.0
     assert greeks.vega > 0.0
     assert greeks.rho > 0.0
-    put_greeks = black_scholes_greeks(spot, strike, maturity, rate, volatility, option_type="put", dividend_yield=dividend)
+    put_greeks = black_scholes_greeks(*greek_inputs, option_type="put", dividend_yield=dividend)
     assert put_greeks.delta < 0.0
     assert put_greeks.rho < 0.0
 
