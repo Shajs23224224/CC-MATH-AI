@@ -42,6 +42,7 @@ def fit_regimes_on_prefix(train_returns):
     labels, transition_matrix = fit_your_regime_model(train_returns)
     return labels, transition_matrix
 
+
 result = walk_forward_forecast_evaluation(
     historical_simple_returns,
     min_train_observations=100,
