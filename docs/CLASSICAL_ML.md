@@ -23,9 +23,7 @@ dataset = MLDataset(
     target=tuple(3.0 * x - 2.0 for x in range(60)),
     task="regression",
 )
-model = ClassicalMLModel(
-    MLTrainingConfig(algorithm="ridge", task="regression", random_seed=28)
-)
+model = ClassicalMLModel(MLTrainingConfig(algorithm="ridge", task="regression", random_seed=28))
 evaluation = model.fit(dataset)
 print(evaluation.metrics)
 print(model.predict(((61.0,), (62.0,))).predictions)
