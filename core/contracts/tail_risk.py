@@ -3,18 +3,12 @@
 from __future__ import annotations
 
 import math
-from typing import Literal
+import typing
 
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    field_validator,
-    model_validator,
-)
+import pydantic
 
 
-TailRiskMethod = Literal[
+TailRiskMethod = typing.Literal[
     "historical",
     "parametric_normal",
     "monte_carlo_normal",
@@ -22,19 +16,19 @@ TailRiskMethod = Literal[
 ]
 
 
-class TailRiskEstimate(BaseModel):
+class TailRiskEstimate(pydantic.BaseModel):
     """Auditable Value-at-Risk and Expected Shortfall estimate.
 
     VaR and CVaR use signed losses as fractions of portfolio notional: positive
     values are losses and negative values indicate a gain at the tail threshold.
     """
 
-    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+    model_config = pydantic.ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     method: TailRiskMethod
     var: float
     cvar: float
-    confidence_level: float = Field(gt=0.5, lt=1.0)
+    confidence_level: float = pydantic.Field(gt=0.5, lt=1.0)
     horizon: int = Field(ge=1)
     observations: int = Field(ge=1)
     simulations: int | None = Field(default=None, ge=1)
@@ -42,7 +36,7 @@ class TailRiskEstimate(BaseModel):
     unit: Literal["fraction_of_notional"] = "fraction_of_notional"
     methodology: str = Field(min_length=1)
 
-    @model_validator(mode="after")
+    @pydantic.model_validator(mode="after")
     def validate_tail_estimate(self) -> TailRiskEstimate:
         """Enforce consistency between simulation metadata and the method."""
         if self.cvar + 1e-12 < self.var:
@@ -65,7 +59,7 @@ class StressScenario(BaseModel):
     description: str = Field(min_length=1)
     shocks: dict[str, float] = Field(min_length=1)
 
-    @field_validator("shocks")
+    @pydantic.field_validator("shocks")
     @classmethod
     def validate_shocks(cls, shocks: dict[str, float]) -> dict[str, float]:
         """Normalize symbols and reject duplicate or impossible simple-return shocks."""
