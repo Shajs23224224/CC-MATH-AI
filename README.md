@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F22 — Tail Risk**
+Current phase: **F23 — Correlation / Dependency**
 
 Completed:
 - F01 — System Specification
@@ -15,11 +15,12 @@ Completed:
 - F17 — Fundamental Analysis
 - F18 — Valuation
 - F19 — Time Series
-- F20 — Volatility & Stochastic (implementation complete; CI revalidation included in the F21 branch)
+- F20 — Volatility & Stochastic
+- F21 — Risk Engine (merged in PR #6)
+- F22 — Tail Risk (merged in PR #7; CI and Security passed)
+- F23 — Correlation / Dependency: Pearson/Spearman/Kendall matrices, sample/OAS covariance, rolling correlation and PCA factors; dedicated validation, regression tests, general CI and Security passed.
 
-Active:
-- F21 — Risk Engine: implementation exists on the dependent branch; PR #6 remains separate from main.
-- F22 — Tail Risk: historical/parametric/Monte Carlo VaR, CVaR, EVT and versioned stress testing; F22/F21 validation workflows passed on PR #7, pending integration after F21.
+Next phase in the roadmap: F24 — Cointegration / Statistical Arbitrage.
 
 ## Architecture
 
@@ -52,6 +53,7 @@ See:
 - [Detailed roadmap F16–F42](docs/ROADMAP_F16_F42.md)
 - [F21 Risk Engine](docs/RISK_ENGINE.md)
 - [F22 Tail Risk](docs/TAIL_RISK.md)
+- [F23 Correlation / Dependency](docs/DEPENDENCE.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 

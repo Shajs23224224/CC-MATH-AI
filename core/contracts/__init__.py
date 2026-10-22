@@ -3,6 +3,7 @@
 from .backtest import BacktestResult
 from .corporate_actions import CorporateAction, CorporateActionBatch, CorporateActionRequest
 from .decisions import DecisionRecord, Evidence, Forecast, Signal
+from .dependence import DependenceMatrix, PCAResult
 from .enums import (
     AssetType,
     CorporateActionType,
@@ -74,6 +75,7 @@ __all__ = [
     "DataQualityReport",
     "DataQualitySeverity",
     "DataQualityStatus",
+    "DependenceMatrix",
     "DecisionRecord",
     "Evidence",
     "ExecutionReport",
@@ -101,6 +103,7 @@ __all__ = [
     "Order",
     "OrderSide",
     "OrderType",
+    "PCAResult",
     "PerformanceMetrics",
     "Portfolio",
     "PortfolioExposureMetrics",
