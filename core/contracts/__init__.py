@@ -32,6 +32,15 @@ from .enums import (
     SignalType,
 )
 from .execution import ExecutionReport, Fill, Order
+from .forecasting import (
+    ForecastCalibrationResult,
+    ForecastingMethod,
+    ForecastInterval,
+    ForecastQuantile,
+    ProbabilisticForecast,
+    ReturnPathSimulation,
+    WalkForwardForecastEvaluation,
+)
 from .fundamental_data import FundamentalDataBatch, FundamentalDataRequest
 from .fundamentals import FundamentalGrowthPoint, FundamentalSnapshot
 from .macro_data import MacroDataBatch, MacroDataRequest, MacroFrequency, MacroObservation
@@ -121,6 +130,10 @@ __all__ = [
     "FeatureSet",
     "Fill",
     "Forecast",
+    "ForecastCalibrationResult",
+    "ForecastingMethod",
+    "ForecastInterval",
+    "ForecastQuantile",
     "Frequency",
     "FundamentalDataBatch",
     "FundamentalDataRequest",
@@ -147,7 +160,9 @@ __all__ = [
     "Portfolio",
     "PortfolioExposureMetrics",
     "Position",
+    "ProbabilisticForecast",
     "PriceSeries",
+    "ReturnPathSimulation",
     "ReturnSeries",
     "RegimeModelResult",
     "RegimeProbabilitySeries",
@@ -179,6 +194,7 @@ __all__ = [
     "VolatilityRegimeThresholds",
     "VolatilitySurface",
     "VolatilitySurfacePoint",
+    "WalkForwardForecastEvaluation",
     "SignalType",
     "SizingResult",
     "TargetAllocation",

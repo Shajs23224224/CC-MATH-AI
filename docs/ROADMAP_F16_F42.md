@@ -1,6 +1,6 @@
-# C-MATH-AI — Roadmap técnico F16–F42
+# C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F25 integradas en main; F26 EN IMPLEMENTACIÓN en rama aislada  
+**Estado:** F21–F25 integradas en main; F26 validada en PR #11 pendiente de merge; F27 en implementación en rama aislada  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -79,7 +79,7 @@
 **Cierre:** spreads reproducibles y temporalmente válidos.
 
 ## F25 — Derivatives
-**Estado:** EN IMPLEMENTACIÓN
+**Estado:** IMPLEMENTADA; PR #10 fusionada en main; F25, CI general y Security aprobados
 **Objetivo:** pricing y Greeks.  
 **Alcance:** Black-Scholes, binomial, trinomial, Monte Carlo, Greeks, implied volatility y superficies.  
 **Cambios:** quant/derivatives/, contratos, tests analíticos/numerical.  
@@ -87,107 +87,114 @@
 **Cierre:** pricing/Greeks reproducibles y auditables.
 
 ## F26 — Regime Detection
-**Estado:** EN IMPLEMENTACIÓN en `phase-26-regime-detection`; CI pendiente.
+**Estado:** IMPLEMENTADA en `phase-26-regime-detection`; PR #11 abierta, F26/CI general/Security y regresiones aprobados; pendiente de merge.
 **Objetivo:** detectar estados y transiciones de mercado.  
 **Alcance:** HMM, Markov switching, change-point, CUSUM, Bayesian change detection y volatility regimes.  
 **Reglas:** probabilidades cuando proceda, labels/versiones, estimación sin futuro, estabilidad por ventana.  
 **Cierre:** output probabilístico/explicable integrable con ensemble.
 
-## F27 — Classical ML
+## F27 — Probabilistic Forecasting Engine
+**Estado:** EN IMPLEMENTACIÓN en `phase-27-probabilistic-forecasting`; PR pendiente.
+**Objetivo:** estimar distribuciones predictivas de retornos futuros con incertidumbre explícita, no sólo una predicción puntual.  
+**Alcance:** bootstrap empírico, simulación de paths, cuantiles e intervalos centrales (50/80/90/95%), probabilidad de pérdida, bootstrap condicionado a regímenes de F26, calibración de cobertura/Brier/Winkler y evaluación walk-forward expansiva.  
+**Reglas:** retornos simples compuestos, semillas explícitas, entrenamiento anterior a cada origen, labels/transiciones de régimen causales y calibradas en train; documentar que IID bootstrap no conserva autocorrelación. No emite órdenes ni sustituye F21 Risk Engine.  
+**Cierre:** contratos reproducibles, pruebas numéricas y de leakage, calibración OOS, documentación y CI propia con regresiones F26 y F21–F25.
+
+## F28 — Classical ML
 **Objetivo:** modelos ML sobre features validadas.  
 **Alcance:** linear/logistic regression, Ridge, Lasso, Elastic Net, SVM/SVR, KNN, Decision Tree y Random Forest.  
 **Cambios:** contratos dataset/model/prediction, fit/predict, metadata, evaluación, calibration y artefactos.  
 **Reglas:** split temporal, preprocessing sólo sobre train, seeds y lineage.  
 **Cierre:** modelos reproducibles y OOS.
 
-## F28 — Gradient Boosting
+## F29 — Gradient Boosting
 **Objetivo:** boosting bajo el mismo contrato ML.  
 **Alcance:** Gradient Boosting y adapters XGBoost/LightGBM/CatBoost si se aprueban dependencias/licencias; stacking/blending sólo con validación adecuada.  
 **Reglas:** early stopping temporal, hiperparámetros versionados, feature importance no equivale a causalidad.  
 **Cierre:** boosting reproducible e integrado.
 
-## F29 — Unsupervised ML
+## F30 — Unsupervised ML
 **Objetivo:** clusters, factores y anomalías.  
 **Alcance:** K-Means, hierarchical clustering, DBSCAN, GMM, PCA, Kernel PCA, ICA y anomaly detection.  
 **Reglas:** scaling sin futuro, criterios/estabilidad registrados, no asumir que cluster = régimen.  
 **Cierre:** outputs reproducibles y separados de interpretación económica automática.
 
-## F30 — Deep Learning
+## F31 — Deep Learning
 **Objetivo:** modelos neuronales temporales/representacionales.  
 **Alcance:** MLP, LSTM, GRU, TCN, autoencoders, VAE, attention, Transformer y TFT.  
 **Reglas:** baselines clásicos previos, seeds, checkpoints, datasets/versiones reproducibles, early stopping temporal y OOS.  
 **Cierre:** ningún modelo profundo entra al ensemble sin protocolo de validación.
 
-## F31 — Feature Engineering
+## F32 — Feature Engineering
 **Objetivo:** catálogo/pipeline unificado de features.  
 **Alcance:** precio/retorno, volatilidad, volumen, fundamentales, macro, cross-sectional, régimen, riesgo, rolling/lagging e interacciones controladas.  
 **Reglas:** cada feature tendrá definición, frecuencia, unidades, lookback, disponibilidad, versión y lineage; point-in-time safe.  
 **Cierre:** feature catalog reproducible para ML/ensemble.
 
-## F32 — Algorithm Registry
+## F33 — Algorithm Registry
 **Objetivo:** formalizar el catálogo de 300+ algoritmos.  
 **Registro:** id, nombre, categoría, versión, inputs/outputs, parámetros, fórmula/método, unidades, frecuencia, requisitos, limitaciones y estado de tests.  
 **Cambios:** quant/registry/, metadata schema, discovery y validación.  
 **Cierre:** algoritmos descubribles sin imports manuales dispersos.
 
-## F33 — Quant Ensemble
+## F34 — Quant Ensemble
 **Objetivo:** combinar evidencia heterogénea conservando contribuciones.  
 **Alcance:** normalización, weighting, agreement/disagreement, score, uncertainty y attribution.  
 **Reglas:** pesos versionados, evitar doble conteo de señales correlacionadas, conservar evidencia original y no saltar Risk Governor.  
 **Cierre:** ensemble auditable y versionado.
 
-## F34 — Meta-model / Decision Engine
+## F35 — Meta-model / Decision Engine
 **Objetivo:** producir el DecisionRecord.  
 **Output:** BUY/HOLD/SELL, probabilidades, expected return/risk, horizon, confidence, agreement, evidence y constraints.  
 **Reglas:** calibración, thresholds versionados, abstención/reject, Risk Governor posterior, LLM sólo como orquestación/interpretación.  
 **Cierre:** decisión reproducible sin autoridad de ejecución.
 
-## F35 — Portfolio Optimization
+## F36 — Portfolio Optimization
 **Objetivo:** convertir señales elegibles en asignaciones.  
 **Alcance:** equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity/ERC, inverse volatility, HRP, Black-Litterman y maximum diversification.  
 **Reglas:** restricciones explícitas, solver status, infeasibility, costes/turnover y concentración.  
 **Cierre:** TargetAllocation validado.
 
-## F36 — Position Sizing
+## F37 — Position Sizing
 **Objetivo:** determinar tamaño dentro de límites.  
 **Alcance:** fixed fractional, volatility-based, risk-based, Kelly, fractional Kelly y confidence weighting.  
 **Reglas:** inputs válidos, límites, liquidez y riesgo; tamaño cero permitido.  
 **Cierre:** SizingResult auditable y subordinado a portfolio/risk.
 
-## F37 — Portfolio Risk Governor
+## F38 — Portfolio Risk Governor
 **Objetivo:** veto/reducción final antes de ejecución.  
 **Controles:** posición, leverage, sector/factor, correlación, drawdown, daily loss, liquidez, tail risk, turnover y calidad de datos/modelos.  
 **Output:** ALLOW/REDUCE/BLOCK + razones.  
 **Regla:** ningún módulo puede anular un BLOCK.  
 **Cierre:** Governor integrado con portfolio y execution mediante contratos.
 
-## F38 — Backtesting
+## F39 — Backtesting
 **Objetivo:** simulación histórica end-to-end.  
 **Flujo:** Signal → Order → Execution → Slippage → Commission → Portfolio → PnL.  
 **Cambios:** event loop, lifecycle de órdenes, fills, costes, accounting, métricas y audit trail.  
 **Reglas:** corporate actions, información disponible, delistings cuando existan, costes/slippage/liquidez realistas.  
 **Cierre:** backtest reproducible y contablemente consistente.
 
-## F39 — Walk-Forward / OOS
+## F40 — Walk-Forward / OOS
 **Objetivo:** validación temporal estricta.  
 **Modos:** rolling, expanding, anchored.  
 **Métricas:** retorno, volatilidad, drawdown, Sharpe/Sortino, turnover, costes y estabilidad por ventana/régimen.  
 **Reglas:** ningún fit con test; parámetros congelados durante test; dispersión visible.  
 **Cierre:** framework OOS reproducible.
 
-## F40 — Monte Carlo + Adversarial Validation
+## F41 — Monte Carlo + Adversarial Validation
 **Objetivo:** medir fragilidad.  
 **Alcance:** bootstrap/resampling, perturbación de parámetros, costes/slippage, execution delay, shocks de volatilidad/correlación y escenarios adversos.  
 **Reglas:** semillas, número de simulaciones, distribuciones y supuestos versionados.  
 **Cierre:** sensibilidad/fragilidad cuantificada, no sólo resultados favorables.
 
-## F41 — Paper Trading + Execution
+## F42 — Paper Trading + Execution
 **Objetivo:** reproducir operación sin dinero real y preparar adapters futuros.  
 **Cambios:** execution/paper/, orders, fills, execution policies, accounting y audit.  
 **Reglas:** sólo decisiones risk-approved, idempotencia, estados explícitos, slippage/comisiones configurables, credenciales aisladas y sin órdenes directas desde LLM.  
 **Cierre:** paper trading end-to-end.
 
-## F42 — C-MATH-AI Platform 1.0
+## F43 — C-MATH-AI Platform 1.0
 **Objetivo:** integración completa y operable.  
 **Cadena:** DATA → QUALITY → FEATURES → 300+ ALGORITHMS → REGIMES → ML → ENSEMBLE → DECISION → PORTFOLIO → RISK → BACKTEST/OOS → PAPER → EXECUTION ADAPTER.  
 **Cambios:** API/CLI/jobs, dashboard si procede, stores, registry, observabilidad, auditoría y deployment.  
@@ -201,15 +208,15 @@ F16 → F17 → F18 → F19 → F20
              ↓
 F21 → F22 → F23 → F24 → F25
              ↓
-F26 → F27 → F28 → F29 → F30
+F26 → F27 → F28 → F29 → F30 → F31
+                         ↓
+F32 → F33 → F34 → F35
              ↓
-F31 → F32 → F33 → F34
+F36 → F37 → F38
              ↓
-F35 → F36 → F37
+F39 → F40 → F41
              ↓
-F38 → F39 → F40
-             ↓
-F41 → F42
+F42 → F43
 ```
 
 La numeración orienta el roadmap; las dependencias contractuales tienen prioridad.
@@ -229,6 +236,7 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F23: matrices Pearson/Spearman/Kendall, covarianza, OAS shrinkage, dependencia rolling y PCA integradas en main mediante PR #8; Ruff, formato, mypy, tests numéricos, regresiones F21/F22, CI Python 3.11/3.12 y Security aprobados.
 - F24: ADF/KPSS/Phillips–Perron, Engle–Granger, Johansen, pares cointegrados, spread/z-score, half-life y Benjamini–Hochberg integrados en main mediante PR #9; CI F24, Ruff, mypy, pruebas numéricas, regresiones F21/F22/F23, CI general Python 3.11/3.12 y Security aprobados.
 - F25: Black–Scholes, árboles binomiales/trinomiales, Monte Carlo, Greeks, volatilidad implícita y superficie de volatilidad integrados en main mediante PR #10; F25, CI general y Security aprobados.
-- F26: HMM/Markov switching, CUSUM, Bayesian online change points y regímenes de volatilidad implementados en `phase-26-regime-detection`; pendiente validación CI.
-- F27–F42: alcance técnico documentado.
-- **Fase activa: F26.**
+- F26: HMM/Markov switching, CUSUM, Bayesian online change points y regímenes de volatilidad implementados en `phase-26-regime-detection`; PR #11 abierta, F26/general CI/Security y regresiones aprobados, pendiente de merge.
+- F27: engine probabilístico en desarrollo; bootstrap, simulación condicionada por regímenes, calibración, walk-forward, contratos, pruebas y workflow propios.
+- F28–F43: alcance técnico documentado; numeración posterior desplazada para insertar F27 forecasting.
+- **Fases activas: F26 (PR #11 pendiente de merge) y F27 (implementación en curso).**
