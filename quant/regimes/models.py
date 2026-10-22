@@ -16,6 +16,7 @@ from core.contracts.regimes import (
     CUSUMResult,
     RegimeModelResult,
     RegimeProbabilitySeries,
+    VolatilityRegimeLabel,
     VolatilityRegimeSeries,
     VolatilityRegimeThresholds,
 )
@@ -520,7 +521,7 @@ def apply_volatility_regimes(
     """Apply fixed training-calibrated thresholds to trailing realized volatility."""
     values = _validate_observations(returns, minimum=thresholds.window, name="returns")
     volatility_values = _rolling_standard_deviation(values, thresholds.window)
-    labels = tuple(
+    labels: tuple[VolatilityRegimeLabel, ...] = tuple(
         "low"
         if value < thresholds.low_threshold
         else "high"
