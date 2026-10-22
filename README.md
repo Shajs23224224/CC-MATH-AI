@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F21 — Risk Engine**
+Current phase: **F22 — Tail Risk**
 
 Completed:
 - F01 — System Specification
@@ -18,7 +18,8 @@ Completed:
 - F20 — Volatility & Stochastic (implementation complete; CI revalidation included in the F21 branch)
 
 Active:
-- F21 — Risk Engine: risk metrics, exposure, concentration, liquidity, turnover and typed ALLOW / REDUCE / BLOCK constraint evaluation.
+- F21 — Risk Engine: implementation exists on the dependent branch; PR #6 remains separate from main.
+- F22 — Tail Risk: historical/parametric/Monte Carlo VaR, CVaR, EVT and versioned stress testing; F22/F21 validation workflows passed on PR #7, pending integration after F21.
 
 ## Architecture
 
@@ -50,6 +51,7 @@ See:
 - [Full roadmap F01–F42](docs/ROADMAP_F01_F15.md) — phases F01–F15 and link to detailed phases F16–F42
 - [Detailed roadmap F16–F42](docs/ROADMAP_F16_F42.md)
 - [F21 Risk Engine](docs/RISK_ENGINE.md)
+- [F22 Tail Risk](docs/TAIL_RISK.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
