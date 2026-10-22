@@ -48,7 +48,9 @@ class RegimeModelResult(BaseModel):
             raise ValueError("regime variances must be positive")
         if len(self.initial_probabilities) != states:
             raise ValueError("initial probabilities must match state_count")
-        if len(self.transition_matrix) != states or any(len(row) != states for row in self.transition_matrix):
+        if len(self.transition_matrix) != states or any(
+            len(row) != states for row in self.transition_matrix
+        ):
             raise ValueError("transition matrix must be square and match state_count")
         for row in self.transition_matrix:
             if any(not 0.0 <= value <= 1.0 for value in row):
@@ -72,7 +74,10 @@ class RegimeModelResult(BaseModel):
                 if not math.isclose(sum(row), 1.0, abs_tol=1e-5):
                     raise ValueError(f"each {name} probability row must sum to one")
 
-        if len(self.filtered_states) != self.observations or len(self.smoothed_states) != self.observations:
+        if (
+            len(self.filtered_states) != self.observations
+            or len(self.smoothed_states) != self.observations
+        ):
             raise ValueError("regime labels must match observation count")
         if any(not 0 <= state < states for state in (*self.filtered_states, *self.smoothed_states)):
             raise ValueError("regime labels must be valid state indices")
@@ -103,7 +108,9 @@ class RegimeProbabilitySeries(BaseModel):
             raise ValueError("filtered probabilities must match observation count")
         for row in self.filtered_probabilities:
             if len(row) != self.state_count or any(not 0.0 <= value <= 1.0 for value in row):
-                raise ValueError("filtered probability rows must match state_count and lie in [0, 1]")
+                raise ValueError(
+                    "filtered probability rows must match state_count and lie in [0, 1]"
+                )
             if not math.isclose(sum(row), 1.0, abs_tol=1e-6):
                 raise ValueError("each filtered probability row must sum to one")
         if len(self.filtered_states) != self.observations:
@@ -236,8 +243,13 @@ class VolatilityRegimeSeries(BaseModel):
         """Validate trailing windows, index positions, and deterministic labels."""
         expected_indices = tuple(range(self.window, self.observations + 1))
         if self.window > self.observations or self.window_end_indices != expected_indices:
-            raise ValueError("window_end_indices must cover every trailing window with end-exclusive indices")
-        if len(self.realized_volatility) != len(expected_indices) or len(self.labels) != len(expected_indices):
+            raise ValueError(
+                "window_end_indices must cover every trailing window with end-exclusive indices"
+            )
+        if (
+            len(self.realized_volatility) != len(expected_indices)
+            or len(self.labels) != len(expected_indices)
+        ):
             raise ValueError("volatility values and labels must match trailing-window count")
         if self.thresholds.window != self.window:
             raise ValueError("volatility thresholds must use the same window length")
