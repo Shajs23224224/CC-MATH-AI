@@ -40,7 +40,9 @@ def _prepare_panel(
         if expected_length is None:
             expected_length = len(values)
         elif len(values) != expected_length:
-            raise ValueError("all asset return series must have the same length; no implicit alignment")
+            raise ValueError(
+                "all asset return series must have the same length; no implicit alignment"
+            )
         if len(values) < _MIN_OBSERVATIONS:
             raise ValueError(f"at least {_MIN_OBSERVATIONS} observations are required")
         if not all(math.isfinite(value) for value in values):
