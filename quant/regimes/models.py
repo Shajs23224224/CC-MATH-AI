@@ -602,4 +602,4 @@ def filter_regime_observations(
             "parameters estimated on the prior training window. No refitting or backward "
             "smoothing is performed on evaluation observations."
         ),
-    ) 
+    )
