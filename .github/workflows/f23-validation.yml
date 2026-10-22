@@ -1,0 +1,50 @@
+name: F23 Correlation and Dependency
+
+on:
+  push:
+    branches: ["phase-23-correlation-dependency"]
+    paths:
+      - "core/contracts/dependence.py"
+      - "core/contracts/__init__.py"
+      - "quant/dependence/**"
+      - "tests/numerical/test_dependence_references.py"
+      - "docs/DEPENDENCE.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f23-validation.yml"
+  pull_request:
+    paths:
+      - "core/contracts/dependence.py"
+      - "core/contracts/__init__.py"
+      - "quant/dependence/**"
+      - "tests/numerical/test_dependence_references.py"
+      - "docs/DEPENDENCE.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f23-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-f23:
+    name: Validate dependence matrices and PCA factors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip setuptools wheel && python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check core/contracts/dependence.py core/contracts/__init__.py quant/dependence tests/numerical/test_dependence_references.py
+      - name: Ruff format check
+        run: python -m ruff format --check core/contracts/dependence.py core/contracts/__init__.py quant/dependence tests/numerical/test_dependence_references.py
+      - name: Mypy
+        run: python -m mypy core/contracts/dependence.py quant/dependence
+      - name: F23 numerical and contract tests
+        run: python -m pytest tests/numerical/test_dependence_references.py -q
+      - name: F21/F22 regression tests
+        run: python -m pytest tests/numerical/test_risk_engine.py tests/unit/test_risk_engine_contracts.py tests/numerical/test_tail_risk.py tests/unit/test_tail_risk_contracts.py -q
