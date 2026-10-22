@@ -6,8 +6,8 @@ import math
 from collections.abc import Mapping, Sequence
 from typing import Literal
 
-import numpy as np
 from arch.unitroot import PhillipsPerron  # type: ignore[import-untyped]
+import numpy as np
 from statsmodels.tsa.stattools import adfuller, coint, kpss  # type: ignore[import-untyped]
 from statsmodels.tsa.vector_ar.vecm import coint_johansen  # type: ignore[import-untyped]
 
@@ -93,7 +93,7 @@ def adf_test(
         statistic=float(statistic),
         pvalue=float(pvalue),
         lags=int(used_lags),
-        observations=int(observations),
+        observations=int(checked.size),
         trend=trend,
         critical_values=_critical_values(critical),
         null_hypothesis="series contains a unit root",
