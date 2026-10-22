@@ -6,8 +6,8 @@ import math
 from collections.abc import Mapping, Sequence
 from typing import Literal
 
-from arch.unitroot import PhillipsPerron  # type: ignore[import-untyped]
 import numpy as np
+from arch.unitroot import PhillipsPerron  # type: ignore[import-untyped]
 from statsmodels.tsa.stattools import adfuller, coint, kpss  # type: ignore[import-untyped]
 from statsmodels.tsa.vector_ar.vecm import coint_johansen  # type: ignore[import-untyped]
 
@@ -87,7 +87,7 @@ def adf_test(
         regression=trend,
         autolag="AIC" if lag_limit is None else None,
     )
-    statistic, pvalue, used_lags, observations, critical, *_ = result
+    statistic, pvalue, used_lags, _, critical, *_ = result
     return UnitRootTestResult(
         test="adf",
         statistic=float(statistic),
