@@ -127,6 +127,72 @@ def test_missing_metric_blocks_even_for_soft_constraint() -> None:
     assert result.reduction_factor == 0.0
 
 
+
+def test_risk_evaluation_enforces_action_factor_invariants() -> None:
+    metric = RiskMetric(
+        name="drawdown",
+        value=0.1,
+        unit="fraction",
+        timestamp="2026-10-21T12:00:00+00:00",
+        methodology="test",
+    )
+    with pytest.raises(ValidationError, match="ALLOW requires"):
+        RiskEvaluation(action=RiskAction.ALLOW, metrics=(metric,), reduction_factor=0.5)
+    with pytest.raises(ValidationError, match="BLOCK requires"):
+        RiskEvaluation(action=RiskAction.BLOCK, metrics=(metric,), reduction_factor=1.0)
+    with pytest.raises(ValidationError, match="REDUCE requires"):
+        RiskEvaluation(action=RiskAction.REDUCE, metrics=(metric,), reduction_factor=1.0)
+
+
+def test_empty_constraints_fail_closed() -> None:
+    result = evaluate_constraints((), ())
+    assert result.action == RiskAction.BLOCK
+    assert result.reduction_factor == 0.0
+    assert "no risk constraints configured" in result.reasons[0]
+
+
+def test_metric_unit_mismatch_blocks_even_for_soft_constraint() -> None:
+    metric = RiskMetric(
+        name="drawdown",
+        value=0.2,
+        unit="percent",
+        timestamp="2026-10-21T12:00:00+00:00",
+        methodology="percentage points",
+    )
+    constraint = RiskConstraint(
+        constraint_id="drawdown",
+        name="Maximum drawdown",
+        metric_name="drawdown",
+        limit=0.25,
+        hard=False,
+        expected_unit="fraction",
+    )
+    result = evaluate_constraints((metric,), (constraint,))
+    assert result.action == RiskAction.BLOCK
+    assert result.reduction_factor == 0.0
+    assert "expected 'fraction'" in result.reasons[0]
+
+
+def test_matching_metric_unit_allows_constraint_evaluation() -> None:
+    metric = RiskMetric(
+        name="drawdown",
+        value=0.2,
+        unit="fraction",
+        timestamp="2026-10-21T12:00:00+00:00",
+        methodology="fractional drawdown",
+    )
+    constraint = RiskConstraint(
+        constraint_id="drawdown",
+        name="Maximum drawdown",
+        metric_name="drawdown",
+        limit=0.25,
+        expected_unit="fraction",
+    )
+    result = evaluate_constraints((metric,), (constraint,))
+    assert result.action == RiskAction.ALLOW
+    assert result.reduction_factor == 1.0
+
+
 def test_exposure_contract_fields_are_bounded() -> None:
     with pytest.raises(ValidationError):
         PortfolioExposureMetrics(
