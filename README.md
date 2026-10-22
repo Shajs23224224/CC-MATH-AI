@@ -18,9 +18,9 @@ Completed:
 - F20 — Volatility & Stochastic
 - F21 — Risk Engine (merged in PR #6)
 - F22 — Tail Risk (merged in PR #7; CI and Security passed)
+- F23 — Correlation / Dependency: Pearson/Spearman/Kendall matrices, sample/OAS covariance, rolling correlation and PCA factors; dedicated validation, regression tests, general CI and Security passed.
 
-Active:
-- F23 — Correlation / Dependency: covariance and correlation matrices, rolling dependency, OAS shrinkage and PCA factors; dedicated CI and regression tests in progress.
+Next phase in the roadmap: F24 — Cointegration / Statistical Arbitrage.
 
 ## Architecture
 
