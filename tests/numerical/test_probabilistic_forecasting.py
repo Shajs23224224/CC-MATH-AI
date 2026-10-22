@@ -52,6 +52,26 @@ def _manual_forecast(
     )
 
 
+def _causal_regime_provider(
+    calls: list[tuple[float, ...]],
+):
+    """Fit simple labels and transition probabilities only from each supplied prefix."""
+
+    def provide(
+        train_returns: tuple[float, ...],
+    ) -> tuple[tuple[int, ...], tuple[tuple[float, ...], ...]]:
+        calls.append(train_returns)
+        labels = tuple(0 if value < 0.0 else 1 for value in train_returns)
+        counts = np.ones((2, 2), dtype=np.float64)
+        for previous, current in zip(labels[:-1], labels[1:], strict=True):
+            counts[previous, current] += 1.0
+        transitions = counts / counts.sum(axis=1, keepdims=True)
+        matrix = tuple(tuple(float(value) for value in row) for row in transitions)
+        return labels, matrix
+
+    return provide
+
+
 def test_bootstrap_forecast_is_reproducible_and_has_ordered_intervals() -> None:
     returns = _sample_returns()
     first = forecast_return_distribution(returns, horizon=5, simulations=1_000, random_seed=2702)
@@ -242,6 +262,72 @@ def test_walk_forward_evaluation_trains_only_before_each_origin() -> None:
         forecast.training_observations == origin
         for origin, forecast in zip(original.origins, original.forecasts, strict=True)
     )
+
+
+def test_regime_walk_forward_provider_sees_only_each_training_prefix() -> None:
+    returns = _sample_returns(85)
+    calls: list[tuple[float, ...]] = []
+    result = walk_forward_forecast_evaluation(
+        returns,
+        horizon=1,
+        min_train_observations=40,
+        step=5,
+        simulations=200,
+        random_seed=2708,
+        regime_provider=_causal_regime_provider(calls),
+    )
+
+    assert tuple(len(prefix) for prefix in calls) == result.origins
+    assert all(
+        prefix == tuple(returns[:origin])
+        for prefix, origin in zip(calls, result.origins, strict=True)
+    )
+    assert all(forecast.model == "markov_regime_bootstrap" for forecast in result.forecasts)
+
+
+def test_regime_walk_forward_forecast_is_invariant_to_future_changes() -> None:
+    returns = _sample_returns(85)
+    altered_future = list(returns)
+    altered_future[60:] = [value + 0.08 for value in altered_future[60:]]
+    original_calls: list[tuple[float, ...]] = []
+    altered_calls: list[tuple[float, ...]] = []
+
+    original = walk_forward_forecast_evaluation(
+        returns,
+        horizon=1,
+        min_train_observations=40,
+        step=5,
+        simulations=200,
+        random_seed=2709,
+        regime_provider=_causal_regime_provider(original_calls),
+    )
+    altered = walk_forward_forecast_evaluation(
+        tuple(altered_future),
+        horizon=1,
+        min_train_observations=40,
+        step=5,
+        simulations=200,
+        random_seed=2709,
+        regime_provider=_causal_regime_provider(altered_calls),
+    )
+
+    original_index = original.origins.index(60)
+    altered_index = altered.origins.index(60)
+    assert original.forecasts[original_index] == altered.forecasts[altered_index]
+    assert original.realized_returns[original_index] != altered.realized_returns[altered_index]
+    assert original_calls[original_index] == altered_calls[altered_index]
+
+
+def test_regime_walk_forward_rejects_fixed_metadata_that_may_leak_future_data() -> None:
+    returns = _sample_returns(80)
+    labels = tuple(0 if value < 0.0 else 1 for value in returns)
+    with pytest.raises(ValueError, match="use regime_provider"):
+        walk_forward_forecast_evaluation(
+            returns,
+            min_train_observations=40,
+            regime_labels=labels,
+            transition_matrix=((0.8, 0.2), (0.2, 0.8)),
+        )
 
 
 def test_walk_forward_rejects_insufficient_out_of_sample_window() -> None:
