@@ -1,0 +1,50 @@
+name: F22 Tail Risk
+
+on:
+  push:
+    branches: ["phase-22-tail-risk"]
+    paths:
+      - "core/contracts/tail_risk.py"
+      - "core/contracts/__init__.py"
+      - "risk/tail/**"
+      - "risk/__init__.py"
+      - "tests/numerical/test_tail_risk.py"
+      - "tests/unit/test_tail_risk_contracts.py"
+      - "docs/TAIL_RISK.md"
+      - ".github/workflows/f22-validation.yml"
+  pull_request:
+    paths:
+      - "core/contracts/tail_risk.py"
+      - "core/contracts/__init__.py"
+      - "risk/tail/**"
+      - "risk/__init__.py"
+      - "tests/numerical/test_tail_risk.py"
+      - "tests/unit/test_tail_risk_contracts.py"
+      - "docs/TAIL_RISK.md"
+      - ".github/workflows/f22-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-f22:
+    name: Validate VaR, CVaR, Monte Carlo and stress testing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip setuptools wheel && python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check core/contracts/tail_risk.py core/contracts/__init__.py risk/tail risk/__init__.py tests/numerical/test_tail_risk.py tests/unit/test_tail_risk_contracts.py
+      - name: Ruff format check
+        run: python -m ruff format --check core/contracts/tail_risk.py core/contracts/__init__.py risk/tail risk/__init__.py tests/numerical/test_tail_risk.py tests/unit/test_tail_risk_contracts.py
+      - name: Mypy
+        run: python -m mypy core/contracts/tail_risk.py risk/tail
+      - name: F22 numerical and safety tests
+        run: python -m pytest tests/numerical/test_tail_risk.py tests/unit/test_tail_risk_contracts.py -q
+      - name: Regression tests for F21
+        run: python -m pytest tests/numerical/test_risk_engine.py tests/unit/test_risk_engine_contracts.py -q
