@@ -5,7 +5,13 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 
-from core.contracts import Portfolio, RiskAction, RiskConstraint, RiskEvaluation, RiskMetric
+from core.contracts import (
+    Portfolio,
+    RiskAction,
+    RiskConstraint,
+    RiskEvaluation,
+    RiskMetric,
+)
 from risk.metrics.portfolio import portfolio_risk_metrics
 
 
