@@ -200,8 +200,8 @@ def test_cointegration_helpers_reject_invalid_lags_and_series_labels() -> None:
         benjamini_hochberg(())
 
 
-def test_unit_root_contract_rejects_non_finite_critical_values() -> None:
-    with pytest.raises(ValidationError, match="critical values must be finite"):
+def test_unit_root_contract_requires_standard_critical_value_levels() -> None:
+    with pytest.raises(ValidationError, match="must include 1%, 5% and 10%"):
         UnitRootTestResult(
             test="adf",
             statistic=-4.0,
@@ -209,7 +209,7 @@ def test_unit_root_contract_rejects_non_finite_critical_values() -> None:
             lags=2,
             observations=100,
             trend="c",
-            critical_values={"1%": float("nan"), "5%": -2.8, "10%": -2.5},
+            critical_values={"5%": -2.8, "10%": -2.5},
             null_hypothesis="unit root",
             alternative_hypothesis="stationary",
         )
