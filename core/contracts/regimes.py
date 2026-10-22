@@ -193,9 +193,7 @@ class BayesianChangePointResult(BaseModel):
             for value in self.change_probabilities
         ):
             raise ValueError("change probabilities must be finite and between zero and one")
-        if any(
-            not 0 <= value < self.max_run_length for value in self.most_likely_run_lengths
-        ):
+        if any(not 0 <= value < self.max_run_length for value in self.most_likely_run_lengths):
             raise ValueError("most likely run lengths must be below max_run_length")
         return self
 
@@ -246,9 +244,8 @@ class VolatilityRegimeSeries(BaseModel):
             raise ValueError(
                 "window_end_indices must cover every trailing window with end-exclusive indices"
             )
-        if (
-            len(self.realized_volatility) != len(expected_indices)
-            or len(self.labels) != len(expected_indices)
+        if len(self.realized_volatility) != len(expected_indices) or len(self.labels) != len(
+            expected_indices
         ):
             raise ValueError("volatility values and labels must match trailing-window count")
         if self.thresholds.window != self.window:
@@ -257,8 +254,10 @@ class VolatilityRegimeSeries(BaseModel):
             raise ValueError("realized volatility values must be finite and non-negative")
         for value, label in zip(self.realized_volatility, self.labels, strict=True):
             expected = (
-                "low" if value < self.thresholds.low_threshold
-                else "high" if value > self.thresholds.high_threshold
+                "low"
+                if value < self.thresholds.low_threshold
+                else "high"
+                if value > self.thresholds.high_threshold
                 else "normal"
             )
             if label != expected:
