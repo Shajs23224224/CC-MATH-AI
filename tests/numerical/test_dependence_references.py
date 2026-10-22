@@ -58,7 +58,7 @@ def test_covariance_matches_sample_covariance_reference() -> None:
     panel = _returns_panel(20)
     result = covariance_matrix(panel)
     reference = np.cov(
-        np.asarray([panel[name] for name in result.assets], dtype=float),
+        np.asarray([panel[name.lower()] for name in result.assets], dtype=float),
         ddof=1,
     )
 
