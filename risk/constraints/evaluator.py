@@ -26,6 +26,14 @@ def evaluate_constraints(
 
     metric_items = tuple(metrics)
     constraint_items = tuple(constraints)
+    if not constraint_items:
+        return RiskEvaluation(
+            action=RiskAction.BLOCK,
+            reasons=("no risk constraints configured; evaluation fails closed",),
+            metrics=metric_items,
+            reduction_factor=0.0,
+        )
+
     metric_by_name: dict[str, RiskMetric] = {}
     for metric in metric_items:
         if metric.name in metric_by_name:
@@ -51,6 +59,19 @@ def evaluate_constraints(
             reasons.append(
                 f"{constraint.constraint_id}: required metric "
                 f"{constraint.metric_name!r} is missing; evaluation fails closed"
+            )
+            continue
+
+        if (
+            constraint.expected_unit is not None
+            and matched_metric.unit != constraint.expected_unit
+        ):
+            hard_breach = True
+            triggered.append(constraint.constraint_id)
+            reasons.append(
+                f"{constraint.constraint_id}: metric {constraint.metric_name!r} has unit "
+                f"{matched_metric.unit!r}; expected {constraint.expected_unit!r}; "
+                "evaluation fails closed"
             )
             continue
 
