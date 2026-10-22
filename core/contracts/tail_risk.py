@@ -7,7 +7,6 @@ import typing
 
 import pydantic
 
-
 TailRiskMethod = typing.Literal[
     "historical",
     "parametric_normal",
