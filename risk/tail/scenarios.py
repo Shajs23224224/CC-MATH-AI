@@ -39,8 +39,7 @@ def evaluate_stress_scenario(
         )
 
     portfolio_return = sum(
-        weight * scenario.shocks[symbol]
-        for symbol, weight in normalized_weights.items()
+        weight * scenario.shocks[symbol] for symbol, weight in normalized_weights.items()
     )
     portfolio_loss = -portfolio_return
     return StressTestResult(
