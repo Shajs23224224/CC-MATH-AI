@@ -27,7 +27,7 @@ def test_historical_var_and_cvar_reference_values() -> None:
 
 
 def test_historical_horizon_uses_rolling_arithmetic_return_sums() -> None:
-    returns = tuple(float(value) for value in range(-10, 10))
+    returns = tuple(float(value) for value in range(-10, 11))
     estimate = historical_var_cvar(returns, confidence_level=0.90, horizon=2)
 
     assert estimate.horizon == 2
