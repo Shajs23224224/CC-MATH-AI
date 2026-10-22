@@ -216,4 +216,3 @@ def test_held_out_filter_uses_fixed_training_parameters_and_is_causal() -> None:
     assert np.allclose(first.filtered_probabilities, full.filtered_probabilities[:40], atol=1e-10)
     assert np.allclose(np.asarray(full.filtered_probabilities).sum(axis=1), 1.0)
     assert "fixed parameters" in full.methodology
-
