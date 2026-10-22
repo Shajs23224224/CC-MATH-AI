@@ -79,11 +79,19 @@ def _validate_exercise_style(exercise_style: str) -> ExerciseStyle:
     raise ValueError("exercise_style must be 'european' or 'american'")
 
 
-def _intrinsic_value(spot: float | np.ndarray, strike: float, option_type: OptionType) -> float | np.ndarray:
+def _intrinsic_value(
+    spot: float | np.ndarray,
+    strike: float,
+    option_type: OptionType,
+) -> float | np.ndarray:
     """Return the immediate exercise value."""
+    if isinstance(spot, np.ndarray):
+        if option_type == "call":
+            return np.maximum(spot - strike, 0.0)
+        return np.maximum(strike - spot, 0.0)
     if option_type == "call":
-        return np.maximum(spot - strike, 0.0) if isinstance(spot, np.ndarray) else max(spot - strike, 0.0)
-    return np.maximum(strike - spot, 0.0) if isinstance(spot, np.ndarray) else max(strike - spot, 0.0)
+        return max(spot - strike, 0.0)
+    return max(strike - spot, 0.0)
 
 
 def _black_scholes_value(
