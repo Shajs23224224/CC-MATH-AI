@@ -22,7 +22,7 @@ Completed:
 - F24 — Cointegration / Statistical Arbitrage (merged in PR #9; F24/CI/Security passed).
 
 Active:
-- F25 — Derivatives: Black–Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and versioned volatility surfaces (merged in PR #10; F25, general CI, Security and dependent regression workflows passed).
+- F26 — Regime Detection: Gaussian HMM / Markov-switching, sequential CUSUM, Bayesian online change-point probabilities and calibrated trailing-volatility regimes; implementation and CI validation in progress.
 
 ## Architecture
 
