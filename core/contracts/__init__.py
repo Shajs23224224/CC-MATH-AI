@@ -51,6 +51,7 @@ from .quality import (
 from .quant import AlgorithmMetadata, AlgorithmResult
 from .regimes import (
     BayesianChangePointResult,
+    RegimeProbabilitySeries,
     ChangePoint,
     CUSUMResult,
     RegimeModelResult,
