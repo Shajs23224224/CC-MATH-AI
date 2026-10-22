@@ -51,7 +51,14 @@ def _validate_option_inputs(
         raise ValueError("maturity_years must be non-negative")
     if volatility <= 0.0:
         raise ValueError("volatility must be positive")
-    return tuple(float(value) for value in values)
+    return (
+        float(spot),
+        float(strike),
+        float(maturity_years),
+        float(risk_free_rate),
+        float(dividend_yield),
+        float(volatility),
+    )
 
 
 def _validate_option_type(option_type: str) -> OptionType:
@@ -457,7 +464,7 @@ def implied_volatility(
 ) -> ImpliedVolatilityResult:
     """Invert the European Black-Scholes price with a bracketed Brent solver."""
     s, k, t, rate, dividend, _ = _validate_option_inputs(
-        spot, strike, maturity_years, risk_free_rate, dividend_yield, max(min_volatility, _EPSILON)
+        spot, strike, maturity_years, risk_free_rate, dividend_yield, 1.0
     )
     kind = _validate_option_type(option_type)
     if t <= 0.0:
