@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F25 — Derivatives**
+Current phase: **F26 — Regime Detection**
 
 Completed:
 - F01 — System Specification
@@ -22,7 +22,7 @@ Completed:
 - F24 — Cointegration / Statistical Arbitrage (merged in PR #9; F24/CI/Security passed).
 
 Active:
-- F25 — Derivatives: Black-Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and sparse versioned volatility surfaces; implementation and validation in progress.
+- F25 — Derivatives: Black–Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and versioned volatility surfaces (merged in PR #10; F25, general CI, Security and dependent regression workflows passed).
 
 ## Architecture
 
