@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from typing import Literal
 
 import numpy as np
-from scipy.stats import genpareto, norm
+from scipy.stats import genpareto, norm  # type: ignore[import-untyped]
 
 from core.contracts import TailRiskEstimate
+from core.contracts.tail_risk import TailRiskMethod
 
 _MIN_OBSERVATIONS = 20
 _MIN_EVT_OBSERVATIONS = 200
@@ -52,7 +54,7 @@ def _validate_horizon(horizon: int) -> int:
 def _estimate_from_losses(
     losses: np.ndarray,
     *,
-    method: str,
+    method: TailRiskMethod,
     confidence_level: float,
     horizon: int,
     observations: int,
