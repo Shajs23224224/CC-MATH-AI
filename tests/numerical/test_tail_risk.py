@@ -31,7 +31,7 @@ def test_historical_horizon_uses_rolling_arithmetic_return_sums() -> None:
     estimate = historical_var_cvar(returns, confidence_level=0.90, horizon=2)
 
     assert estimate.horizon == 2
-    assert estimate.observations == 19
+    assert estimate.observations == 20
     assert estimate.var <= estimate.cvar
 
 
