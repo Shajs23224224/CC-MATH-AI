@@ -42,7 +42,9 @@ def _validate_series(
     if checked.size < minimum:
         raise ValueError(f"{name} requires at least {minimum} observations")
     if not np.all(np.isfinite(checked)):
-        raise ValueError(f"{name} must contain only finite observations; missing data is not imputed")
+        raise ValueError(
+            f"{name} must contain only finite observations; missing data is not imputed"
+        )
     if require_variance and float(np.var(checked, ddof=1)) <= _EPSILON:
         raise ValueError(f"{name} must have positive sample variance")
     return checked
@@ -231,7 +233,9 @@ def _prepare_multivariate(
         if length is None:
             length = int(checked.size)
         elif checked.size != length:
-            raise ValueError("all series must have identical lengths; implicit alignment is forbidden")
+            raise ValueError(
+                "all series must have identical lengths; implicit alignment is forbidden"
+            )
         if float(np.var(checked, ddof=1)) <= _EPSILON:
             raise ValueError(f"series {name} must have positive sample variance")
         normalized[name] = tuple(float(value) for value in checked)
@@ -250,9 +254,17 @@ def johansen_test(
     """Run the multivariate Johansen trace and max-eigenvalue tests."""
     assets, panel = _prepare_multivariate(series)
     observations, asset_count = panel.shape
-    if not isinstance(det_order, int) or isinstance(det_order, bool) or det_order not in {-1, 0, 1}:
+    if (
+        not isinstance(det_order, int)
+        or isinstance(det_order, bool)
+        or det_order not in {-1, 0, 1}
+    ):
         raise ValueError("det_order must be -1, 0 or 1")
-    if not isinstance(k_ar_diff, int) or isinstance(k_ar_diff, bool) or not 0 <= k_ar_diff < observations - 1:
+    if (
+        not isinstance(k_ar_diff, int)
+        or isinstance(k_ar_diff, bool)
+        or not 0 <= k_ar_diff < observations - 1
+    ):
         raise ValueError("k_ar_diff must be a non-negative lag order below observations - 1")
 
     result = coint_johansen(panel, det_order=det_order, k_ar_diff=k_ar_diff)
