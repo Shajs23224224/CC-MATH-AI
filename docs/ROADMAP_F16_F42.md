@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F42
 
-**Estado:** F21–F23 integradas en main; F24 EN IMPLEMENTACIÓN en rama aislada  
+**Estado:** F21–F23 integradas en main; F24 implementada y validada en PR #9, pendiente de integración  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -72,7 +72,7 @@
 **Cierre:** matrices validadas para portfolio/risk/stat-arb.
 
 ## F24 — Cointegration / Statistical Arbitrage
-**Estado:** EN IMPLEMENTACIÓN
+**Estado:** IMPLEMENTADA; CI F24, CI general Python 3.11/3.12 y Security aprobados; PR #9 pendiente de integración
 **Objetivo:** relaciones de largo plazo y spreads.  
 **Alcance:** ADF, KPSS, Phillips-Perron, Engle-Granger, Johansen, hedge ratio, spread, z-score, half-life y pairs statistics.  
 **Reglas:** supuestos estadísticos explícitos, estimación sin futuro, distinguir correlación de cointegración y controlar selection/multiple testing.  
@@ -225,6 +225,6 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F21: Risk Engine integrado en main mediante PR #6; CI general, Security y validación de fase aprobadas.
 - F22: VaR histórico/paramétrico/Monte Carlo, CVaR, EVT y stress testing integrados en main mediante PR #7; CI general Python 3.11/3.12, Security, tests F22 y regresión F21 aprobados.
 - F23: matrices Pearson/Spearman/Kendall, covarianza, OAS shrinkage, dependencia rolling y PCA integradas en main mediante PR #8; Ruff, formato, mypy, tests numéricos, regresiones F21/F22, CI Python 3.11/3.12 y Security aprobados.
-- F24: ADF/KPSS/Phillips–Perron, Engle–Granger, Johansen, pares cointegrados, spread/z-score, half-life y Benjamini–Hochberg en desarrollo sobre rama aislada.
+- F24: ADF/KPSS/Phillips–Perron, Engle–Granger, Johansen, pares cointegrados, spread/z-score, half-life y Benjamini–Hochberg implementados; CI F24, Ruff, mypy, pruebas numéricas, regresiones F21/F22/F23, CI general Python 3.11/3.12 y Security aprobados en PR #9.
 - F25–F42: alcance técnico documentado.
-- **Fase activa: F24.**
+- **Fase activa: F24 (validada; pendiente de fusión).**
