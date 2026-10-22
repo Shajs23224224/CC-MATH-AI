@@ -8,6 +8,14 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
+TailRiskMethod = Literal[
+    "historical",
+    "parametric_normal",
+    "monte_carlo_normal",
+    "evt_peaks_over_threshold",
+]
+
+
 class TailRiskEstimate(BaseModel):
     """Auditable Value-at-Risk and Expected Shortfall estimate.
 
@@ -17,12 +25,7 @@ class TailRiskEstimate(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
-    method: Literal[
-        "historical",
-        "parametric_normal",
-        "monte_carlo_normal",
-        "evt_peaks_over_threshold",
-    ]
+    method: TailRiskMethod
     var: float
     cvar: float
     confidence_level: float = Field(gt=0.5, lt=1.0)
