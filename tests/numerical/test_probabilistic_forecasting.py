@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import numpy as np
 import pytest
 from pydantic import ValidationError
@@ -54,7 +56,9 @@ def _manual_forecast(
 
 def _causal_regime_provider(
     calls: list[tuple[float, ...]],
-):
+) -> Callable[
+    [tuple[float, ...]], tuple[tuple[int, ...], tuple[tuple[float, ...], ...]]
+]:
     """Fit simple labels and transition probabilities only from each supplied prefix."""
 
     def provide(
