@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F42
 
-**Estado:** F21 y F22 fusionadas en main; F23 EN IMPLEMENTACIÓN  
+**Estado:** F21 y F22 integradas en main; F23 implementada y con CI/Security aprobados  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -65,7 +65,7 @@
 **Cierre:** métricas extremas reproducibles y consumibles por Risk Governor.
 
 ## F23 — Correlation / Dependency
-**Estado:** EN IMPLEMENTACIÓN
+**Estado:** IMPLEMENTADA; CI F23, CI general y Security aprobados
 **Objetivo:** dependencia entre activos y factores.  
 **Alcance:** covarianza/correlación, rolling dependency, rank correlations, shrinkage, PCA/factores y copulas cuando proceda.  
 **Reglas:** simetría, PSD cuando aplique, muestra mínima, ventanas y missing data explícitos.  
@@ -223,6 +223,6 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F20: implementación y pruebas específicas incorporadas; la corrección de formato de Ruff se revalida en la rama F21.
 - F21: Risk Engine integrado en main mediante PR #6; CI general, Security y validación de fase aprobadas.
 - F22: VaR histórico/paramétrico/Monte Carlo, CVaR, EVT y stress testing integrados en main mediante PR #7; CI general Python 3.11/3.12, Security, tests F22 y regresión F21 aprobados.
-- F23: matrices Pearson/Spearman/Kendall, covarianza, OAS shrinkage, dependencia rolling y PCA en desarrollo sobre rama aislada.
+- F23: matrices Pearson/Spearman/Kendall, covarianza, OAS shrinkage, dependencia rolling y PCA implementadas; Ruff, formato, mypy, tests numéricos, regresiones F21/F22, CI Python 3.11/3.12 y Security aprobados.
 - F24–F42: alcance técnico documentado.
-- **Fase activa: F23.**
+- **Fase activa: F23 (validada; lista para integración).**
