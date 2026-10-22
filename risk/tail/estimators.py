@@ -224,9 +224,7 @@ def evt_var_cvar(
     exceedances = losses[losses > threshold] - threshold
     exceedance_count = int(exceedances.size)
     if exceedance_count < _MIN_EVT_EXCEEDANCES:
-        raise ValueError(
-            f"EVT requires at least {_MIN_EVT_EXCEEDANCES} threshold exceedances"
-        )
+        raise ValueError(f"EVT requires at least {_MIN_EVT_EXCEEDANCES} threshold exceedances")
 
     shape, _, scale = genpareto.fit(exceedances, floc=0.0)
     shape = float(shape)
