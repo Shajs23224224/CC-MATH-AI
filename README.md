@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F26 — Regime Detection**
+Current phase: **F27 — Probabilistic Forecasting Engine**
 
 Completed:
 - F01 — System Specification
@@ -23,7 +23,8 @@ Completed:
 - F25 — Derivatives: Black–Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and versioned volatility surfaces (merged in PR #10; F25, general CI and Security passed).
 
 Active:
-- F26 — Regime Detection: Gaussian HMM / Markov-switching, sequential CUSUM, Bayesian online change-point probabilities and calibrated trailing-volatility regimes; implementation and CI validation in progress.
+- F26 — Regime Detection: Gaussian HMM / Markov-switching, sequential CUSUM, Bayesian online change-point probabilities and calibrated trailing-volatility regimes; PR #11 open, F26/general CI/Security and regression workflows validated, awaiting merge.
+- F27 — Probabilistic Forecasting Engine: empirical bootstrap distributions, cumulative-return quantiles/intervals, loss probabilities, Markov regime-conditioned paths, calibration scores and expanding-window walk-forward evaluation; implementation and CI validation in progress.
 
 ## Architecture
 
@@ -52,13 +53,15 @@ Future Execution Adapters
 ```
 
 See:
-- [Full roadmap F01–F42](docs/ROADMAP_F01_F15.md) — phases F01–F15 and link to detailed phases F16–F42
-- [Detailed roadmap F16–F42](docs/ROADMAP_F16_F42.md)
+- [Full roadmap F01–F43](docs/ROADMAP_F01_F15.md) — phases F01–F15 and link to detailed phases F16–F43
+- [Detailed roadmap F16–F43](docs/ROADMAP_F16_F42.md)
 - [F21 Risk Engine](docs/RISK_ENGINE.md)
 - [F22 Tail Risk](docs/TAIL_RISK.md)
 - [F23 Correlation / Dependency](docs/DEPENDENCE.md)
 - [F24 Cointegration / Statistical Arbitrage](docs/COINTEGRATION.md)
 - [F25 Derivatives](docs/DERIVATIVES.md)
+- [F26 Regime Detection](docs/REGIME_DETECTION.md)
+- [F27 Probabilistic Forecasting](docs/PROBABILISTIC_FORECASTING.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
