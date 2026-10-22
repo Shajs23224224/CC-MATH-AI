@@ -173,10 +173,10 @@ def _validate_pair(
     independent: Sequence[float],
 ) -> tuple[np.ndarray, np.ndarray]:
     """Validate a temporally aligned series pair."""
+    if len(dependent) != len(independent):
+        raise ValueError("dependent and independent series must have identical lengths")
     left = _validate_series(dependent, name="dependent", require_variance=True)
     right = _validate_series(independent, name="independent", require_variance=True)
-    if left.size != right.size:
-        raise ValueError("dependent and independent series must have identical lengths")
     return left, right
 
 
@@ -374,7 +374,7 @@ def benjamini_hochberg(
     """
     if not math.isfinite(alpha) or not 0.0 < alpha < 1.0:
         raise ValueError("alpha must be finite and strictly between 0 and 1")
-    if not pvalues:
+    if len(pvalues) == 0:
         raise ValueError("at least one p-value is required")
     checked = tuple(float(value) for value in pvalues)
     if not all(math.isfinite(value) and 0.0 <= value <= 1.0 for value in checked):
