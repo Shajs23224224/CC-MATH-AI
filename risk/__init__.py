@@ -1,14 +1,6 @@
 """Public Risk Engine API."""
 
 from .constraints import evaluate_constraints, evaluate_portfolio_risk
-from .tail import (
-    evaluate_stress_scenario,
-    evt_var_cvar,
-    historical_var_cvar,
-    monte_carlo_var_cvar,
-    parametric_var_cvar,
-    stress_test_portfolio,
-)
 from .metrics import (
     beta,
     calmar_ratio,
@@ -19,6 +11,14 @@ from .metrics import (
     portfolio_risk_metrics,
     treynor_ratio,
     turnover_risk_metrics,
+)
+from .tail import (
+    evaluate_stress_scenario,
+    evt_var_cvar,
+    historical_var_cvar,
+    monte_carlo_var_cvar,
+    parametric_var_cvar,
+    stress_test_portfolio,
 )
 
 __all__ = [
