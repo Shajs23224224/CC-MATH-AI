@@ -1,7 +1,6 @@
 """Stable domain contracts used across C-MATH-AI."""
 
 from .backtest import BacktestResult
-from .corporate_actions import CorporateAction, CorporateActionBatch, CorporateActionRequest
 from .cointegration import (
     CointegratingPairResult,
     CointegrationTestResult,
@@ -9,6 +8,7 @@ from .cointegration import (
     MultipleTestingResult,
     UnitRootTestResult,
 )
+from .corporate_actions import CorporateAction, CorporateActionBatch, CorporateActionRequest
 from .decisions import DecisionRecord, Evidence, Forecast, Signal
 from .dependence import DependenceMatrix, PCAResult
 from .enums import (
