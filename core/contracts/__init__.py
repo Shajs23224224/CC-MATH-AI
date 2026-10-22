@@ -41,6 +41,7 @@ from .risk import (
     TurnoverMetrics,
 )
 from .statistics import StatisticalSummary
+from .tail_risk import StressScenario, StressTestResult, TailRiskEstimate
 from .technical import TechnicalIndicatorSeries
 from .time_series import (
     ResidualDiagnostics,
@@ -113,6 +114,9 @@ __all__ = [
     "ResidualDiagnostics",
     "Signal",
     "StatisticalSummary",
+    "StressScenario",
+    "StressTestResult",
+    "TailRiskEstimate",
     "TechnicalIndicatorSeries",
     "TemporalSplit",
     "TimeSeriesFamily",
