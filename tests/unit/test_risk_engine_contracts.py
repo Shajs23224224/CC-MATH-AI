@@ -127,7 +127,6 @@ def test_missing_metric_blocks_even_for_soft_constraint() -> None:
     assert result.reduction_factor == 0.0
 
 
-
 def test_risk_evaluation_enforces_action_factor_invariants() -> None:
     metric = RiskMetric(
         name="drawdown",
