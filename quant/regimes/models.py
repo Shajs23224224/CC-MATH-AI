@@ -14,7 +14,6 @@ from core.contracts.regimes import (
     BayesianChangePointResult,
     ChangePoint,
     CUSUMResult,
-    RegimeModel,
     RegimeModelResult,
     RegimeProbabilitySeries,
     VolatilityRegimeSeries,
@@ -121,7 +120,11 @@ def _fit_gaussian_markov_model(
     values = _validate_observations(observations, minimum=max(20, n_states * 5))
     if not isinstance(n_states, int) or isinstance(n_states, bool) or not 2 <= n_states <= 6:
         raise ValueError("n_states must be an integer between 2 and 6")
-    if not isinstance(max_iterations, int) or isinstance(max_iterations, bool) or max_iterations < 1:
+    if (
+        not isinstance(max_iterations, int)
+        or isinstance(max_iterations, bool)
+        or max_iterations < 1
+    ):
         raise ValueError("max_iterations must be a positive integer")
     if not math.isfinite(tolerance) or tolerance <= 0.0:
         raise ValueError("tolerance must be finite and positive")
@@ -498,7 +501,9 @@ def fit_volatility_regime_thresholds(
     version: str = "rolling-vol-quantiles-v1",
 ) -> VolatilityRegimeThresholds:
     """Fit low/high realized-volatility quantiles using calibration data only."""
-    values = _validate_observations(calibration_returns, minimum=window + 9, name="calibration_returns")
+    values = _validate_observations(
+        calibration_returns, minimum=window + 9, name="calibration_returns"
+    )
     if not isinstance(window, int) or isinstance(window, bool) or window < 3:
         raise ValueError("window must be an integer of at least three")
     if window > values.size - 9:
