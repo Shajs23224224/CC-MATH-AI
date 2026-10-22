@@ -47,6 +47,18 @@ from .macro_data import MacroDataBatch, MacroDataRequest, MacroFrequency, MacroO
 from .market import Asset, MarketBar, PriceSeries
 from .market_data import MarketDataBatch, MarketDataRequest
 from .math import OptimizationResult
+from .ml import (
+    CandidateStatus,
+    ExperimentRecord,
+    MLDataset,
+    MLEvaluation,
+    MLModelMetadata,
+    MLPrediction,
+    MLTask,
+    MLTrainingConfig,
+    PatternRecord,
+    SymbolicRegressionResult,
+)
 from .normalization import NormalizationReport, NormalizationStatus
 from .portfolio import Portfolio, Position, SizingResult, TargetAllocation
 from .quality import (
@@ -148,6 +160,16 @@ __all__ = [
     "MarketBar",
     "MarketDataBatch",
     "MarketDataRequest",
+    "CandidateStatus",
+    "ExperimentRecord",
+    "MLDataset",
+    "MLEvaluation",
+    "MLModelMetadata",
+    "MLPrediction",
+    "MLTask",
+    "MLTrainingConfig",
+    "PatternRecord",
+    "SymbolicRegressionResult",
     "MultipleTestingResult",
     "NormalizationReport",
     "NormalizationStatus",
