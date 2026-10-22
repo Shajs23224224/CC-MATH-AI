@@ -5,8 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from collections.abc import Sequence
-from typing import Any, Callable
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import numpy as np
 import sklearn
@@ -113,7 +113,8 @@ class ClassicalMLModel:
         factories = _REGRESSORS if self.config.task == "regression" else _CLASSIFIERS
         if self.config.algorithm not in factories:
             raise MLInputError(
-                f"unsupported algorithm/task combination: {self.config.algorithm}/{self.config.task}"
+                "unsupported algorithm/task combination: "
+                f"{self.config.algorithm}/{self.config.task}"
             )
         matrix = _as_matrix(dataset.features, width=len(dataset.feature_names))
         target = np.asarray(dataset.target)
@@ -154,7 +155,9 @@ class ClassicalMLModel:
             raise MLTrainingError(f"model training failed for {self.config.algorithm}") from exc
 
         if predictions.shape[0] != len(y_test):
-            raise MLTrainingError("estimator returned a prediction count inconsistent with the test set")
+            raise MLTrainingError(
+                "estimator returned a prediction count inconsistent with the test set"
+            )
         if self.config.task == "regression":
             predicted_numeric = predictions.astype(np.float64)
             actual_numeric = y_test.astype(np.float64)
@@ -180,16 +183,31 @@ class ClassicalMLModel:
         if any(not math.isfinite(value) for value in metrics.values()):
             raise MLTrainingError("model evaluation produced non-finite metrics")
 
+        training_fingerprint = _fingerprint(x_train, tuple(y_train.tolist()))
+        identity_payload = json.dumps(
+            {
+                "algorithm": self.config.algorithm,
+                "seed": self.config.random_seed,
+                "parameters": supplied,
+                "data_fingerprint": training_fingerprint,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
         self._pipeline = pipeline
         self.metadata = MLModelMetadata(
-            model_id=f"{self.config.algorithm}:{hashlib.sha256((_fingerprint(x_train, tuple(y_train.tolist())) + str(self.config.random_seed) + json.dumps(supplied, sort_keys=True)).encode()).hexdigest()[:16]}",
+            model_id=(
+                f"{self.config.algorithm}:"
+                f"{hashlib.sha256(identity_payload.encode()).hexdigest()[:16]}"
+            ),
             algorithm=self.config.algorithm,
             task=self.config.task,
             feature_names=dataset.feature_names,
             training_observations=train_end,
             random_seed=self.config.random_seed,
             library_version=sklearn.__version__,
-            data_fingerprint=_fingerprint(x_train, tuple(y_train.tolist())),
+            data_fingerprint=training_fingerprint,
             parameters={
                 **{key: value for key, value in estimator.get_params(deep=False).items()
                    if isinstance(value, (str, int, float, bool)) or value is None},
@@ -219,7 +237,9 @@ class ClassicalMLModel:
             classes: tuple[float | str, ...] | None = None
             probabilities: tuple[tuple[float, ...], ...] | None = None
             if self.config.task == "classification" and hasattr(estimator, "predict_proba"):
-                raw_probabilities = np.asarray(self._pipeline.predict_proba(matrix), dtype=np.float64)
+                raw_probabilities = np.asarray(
+                    self._pipeline.predict_proba(matrix), dtype=np.float64
+                )
                 if raw_probabilities.ndim != 2 or not np.all(np.isfinite(raw_probabilities)):
                     raise MLPredictionError("model returned invalid class probabilities")
                 class_values = tuple(

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Literal
 from uuid import uuid4
 
@@ -182,7 +182,7 @@ class PatternRecord(BaseModel):
 
 
 class SymbolicRegressionResult(BaseModel):
-    """Polynomial-basis candidate chosen on validation data and reported on an untouched test tail."""
+    """Polynomial candidate selected on validation and reported on an untouched test tail."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
@@ -234,7 +234,7 @@ class ExperimentRecord(BaseModel):
 
     experiment_id: str = Field(default_factory=lambda: str(uuid4()), min_length=1)
     schema_version: Literal["1.0"] = "1.0"
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     kind: str = Field(min_length=1, max_length=100)
     subject_id: str = Field(min_length=1, max_length=200)
     status: CandidateStatus
@@ -247,6 +247,9 @@ class ExperimentRecord(BaseModel):
         if self.created_at.tzinfo is None or self.created_at.utcoffset() is None:
             raise ValueError("created_at must be timezone-aware")
         for values in (self.configuration, self.results):
-            if any(isinstance(value, float) and not math.isfinite(value) for value in values.values()):
+            if any(
+                isinstance(value, float) and not math.isfinite(value)
+                for value in values.values()
+            ):
                 raise ValueError("experiment values must be finite")
         return self

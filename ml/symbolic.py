@@ -12,6 +12,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
 from core.contracts.ml import MLDataset, SymbolicRegressionResult
+
 from .errors import MLInputError
 
 
@@ -80,20 +81,25 @@ def discover_polynomial_relation(
     validation_size = max(2, int(math.ceil(development_end * 0.2)))
     train_end = development_end - validation_size
     if train_end < max(6, width + 2):
-        raise MLInputError("dataset is too small for chronological train/validation/test partitions")
+        raise MLInputError(
+            "dataset is too small for chronological train/validation/test partitions"
+        )
     x_train, y_train = features[:train_end], target[:train_end]
     x_validation = features[train_end:development_end]
     y_validation = target[train_end:development_end]
     x_development, y_development = features[:development_end], target[:development_end]
     x_test, y_test = features[development_end:], target[development_end:]
 
-    best: tuple[float, int, int, np.ndarray, np.ndarray, np.ndarray] | None = None
+    best: tuple[float, int] | None = None
     for degree in range(1, max_degree + 1):
         basis = PolynomialFeatures(degree=degree, include_bias=False)
         try:
             x_train_basis = basis.fit_transform(x_train)
             x_validation_basis = basis.transform(x_validation)
-            if not np.all(np.isfinite(x_train_basis)) or not np.all(np.isfinite(x_validation_basis)):
+            if (
+                not np.all(np.isfinite(x_train_basis))
+                or not np.all(np.isfinite(x_validation_basis))
+            ):
                 raise MLInputError("polynomial expansion overflowed; rescale features")
             estimator = LinearRegression()
             estimator.fit(x_train_basis, y_train)
@@ -106,11 +112,11 @@ def discover_polynomial_relation(
         if not math.isfinite(score):
             continue
         if best is None or score < best[0]:
-            best = (score, degree, term_count, basis.powers_.copy(), x_validation_basis, validation_predictions)
+            best = (score, degree)
     if best is None:
         raise MLInputError("no finite polynomial candidate was found")
 
-    _, selected_degree, term_count, _, _, _ = best
+    _, selected_degree = best
     selected_basis = PolynomialFeatures(degree=selected_degree, include_bias=False)
     x_development_basis = selected_basis.fit_transform(x_development)
     x_test_basis = selected_basis.transform(x_test)
@@ -167,7 +173,8 @@ def discover_polynomial_relation(
             "Search space is limited to polynomial terms of the configured maximum degree.",
             "The test tail is evaluated once and is not used to select the degree.",
             "A low test error does not prove uniqueness or mathematical truth of the expression.",
-            "No generated source code is executed; evaluation uses authorized scikit-learn primitives.",
+            "No generated source code is executed; evaluation uses authorized "
+            "scikit-learn primitives.",
         ),
     )
 

@@ -63,7 +63,8 @@ def discover_patterns(
                 ),
                 limitations=(
                     "Correlation does not imply causation.",
-                    "Thresholded discovery is exploratory and can miss nonlinear or weak relationships.",
+                    "Thresholded discovery is exploratory and can miss nonlinear or weak "
+                    "relationships.",
                     "Half-window stability is a diagnostic, not a significance test.",
                 ),
             )
