@@ -81,6 +81,40 @@ class RegimeModelResult(BaseModel):
         return self
 
 
+class RegimeProbabilitySeries(BaseModel):
+    """Causal filtered probabilities for observations after model calibration."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+
+    model: RegimeModel
+    version: str = Field(min_length=1)
+    training_observations: int = Field(ge=20)
+    observations: int = Field(ge=20)
+    state_count: int = Field(ge=2, le=6)
+    filtered_probabilities: tuple[tuple[float, ...], ...]
+    filtered_states: tuple[int, ...]
+    log_likelihood: float
+    methodology: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_probability_series(self) -> RegimeProbabilitySeries:
+        """Validate each causal posterior row and the state labels."""
+        if len(self.filtered_probabilities) != self.observations:
+            raise ValueError("filtered probabilities must match observation count")
+        for row in self.filtered_probabilities:
+            if len(row) != self.state_count or any(not 0.0 <= value <= 1.0 for value in row):
+                raise ValueError("filtered probability rows must match state_count and lie in [0, 1]")
+            if not math.isclose(sum(row), 1.0, abs_tol=1e-6):
+                raise ValueError("each filtered probability row must sum to one")
+        if len(self.filtered_states) != self.observations:
+            raise ValueError("filtered states must match observation count")
+        if any(not 0 <= state < self.state_count for state in self.filtered_states):
+            raise ValueError("filtered states must be valid state indices")
+        if not math.isfinite(self.log_likelihood):
+            raise ValueError("log_likelihood must be finite")
+        return self
+
+
 class ChangePoint(BaseModel):
     """One detected CUSUM event at an observation index."""
 
