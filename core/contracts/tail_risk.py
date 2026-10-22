@@ -29,12 +29,12 @@ class TailRiskEstimate(pydantic.BaseModel):
     var: float
     cvar: float
     confidence_level: float = pydantic.Field(gt=0.5, lt=1.0)
-    horizon: int = Field(ge=1)
-    observations: int = Field(ge=1)
-    simulations: int | None = Field(default=None, ge=1)
-    random_seed: int | None = Field(default=None, ge=0)
-    unit: Literal["fraction_of_notional"] = "fraction_of_notional"
-    methodology: str = Field(min_length=1)
+    horizon: int = pydantic.Field(ge=1)
+    observations: int = pydantic.Field(ge=1)
+    simulations: int | None = pydantic.Field(default=None, ge=1)
+    random_seed: int | None = pydantic.Field(default=None, ge=0)
+    unit: typing.Literal["fraction_of_notional"] = "fraction_of_notional"
+    methodology: str = pydantic.Field(min_length=1)
 
     @pydantic.model_validator(mode="after")
     def validate_tail_estimate(self) -> TailRiskEstimate:
@@ -49,15 +49,15 @@ class TailRiskEstimate(pydantic.BaseModel):
         return self
 
 
-class StressScenario(BaseModel):
+class StressScenario(pydantic.BaseModel):
     """Versioned asset-return shocks used for deterministic portfolio stress tests."""
 
-    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+    model_config = pydantic.ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
-    scenario_id: str = Field(min_length=1)
-    version: str = Field(min_length=1)
-    description: str = Field(min_length=1)
-    shocks: dict[str, float] = Field(min_length=1)
+    scenario_id: str = pydantic.Field(min_length=1)
+    version: str = pydantic.Field(min_length=1)
+    description: str = pydantic.Field(min_length=1)
+    shocks: dict[str, float] = pydantic.Field(min_length=1)
 
     @pydantic.field_validator("shocks")
     @classmethod
@@ -76,20 +76,20 @@ class StressScenario(BaseModel):
         return dict(sorted(normalized.items()))
 
 
-class StressTestResult(BaseModel):
+class StressTestResult(pydantic.BaseModel):
     """Deterministic result for one versioned stress scenario."""
 
-    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+    model_config = pydantic.ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
-    scenario_id: str = Field(min_length=1)
-    scenario_version: str = Field(min_length=1)
+    scenario_id: str = pydantic.Field(min_length=1)
+    scenario_version: str = pydantic.Field(min_length=1)
     portfolio_return: float
     portfolio_loss: float
-    covered_positions: int = Field(ge=1)
-    unit: Literal["fraction_of_equity"] = "fraction_of_equity"
-    methodology: str = Field(min_length=1)
+    covered_positions: int = pydantic.Field(ge=1)
+    unit: typing.Literal["fraction_of_equity"] = "fraction_of_equity"
+    methodology: str = pydantic.Field(min_length=1)
 
-    @model_validator(mode="after")
+    @pydantic.model_validator(mode="after")
     def validate_return_loss_sign(self) -> StressTestResult:
         """Keep reported P&L and loss sign conventions aligned."""
         if not math.isclose(self.portfolio_loss, -self.portfolio_return, abs_tol=1e-12):
