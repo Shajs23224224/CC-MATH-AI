@@ -80,9 +80,7 @@ def evaluate_constraints(
             )
             continue
 
-        expected_unit = constraint.expected_unit or _CANONICAL_UNITS.get(
-            constraint.metric_name
-        )
+        expected_unit = constraint.expected_unit or _CANONICAL_UNITS.get(constraint.metric_name)
         if expected_unit is not None and matched_metric.unit != expected_unit:
             hard_breach = True
             triggered.append(constraint.constraint_id)
