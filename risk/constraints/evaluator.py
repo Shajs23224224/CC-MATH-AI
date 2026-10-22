@@ -14,7 +14,6 @@ from core.contracts import (
 )
 from risk.metrics.portfolio import portfolio_risk_metrics
 
-
 _CANONICAL_UNITS = {
     "gross_leverage": "multiple_of_equity",
     "net_exposure_ratio": "multiple_of_equity",
