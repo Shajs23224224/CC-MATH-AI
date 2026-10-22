@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 import numpy as np
 
@@ -15,6 +15,10 @@ from core.contracts import (
 
 from .models import forecast_return_distribution
 from .simulation import _prepare_returns, _validate_integer
+
+RegimeMetadataProvider = Callable[
+    [tuple[float, ...]], tuple[Sequence[int], Sequence[Sequence[float]]]
+]
 
 
 def evaluate_forecast_calibration(
@@ -93,15 +97,18 @@ def walk_forward_forecast_evaluation(
     simulations: int = 2_000,
     random_seed: int = 27,
     interval_coverage: float = 0.90,
+    regime_provider: RegimeMetadataProvider | None = None,
     regime_labels: Sequence[int] | None = None,
     transition_matrix: Sequence[Sequence[float]] | None = None,
 ) -> WalkForwardForecastEvaluation:
-    """Run expanding-window evaluation without fitting on the evaluated outcomes.
+    """Run expanding-window evaluation without fitting on evaluated outcomes.
 
-    At each origin, the forecast receives only returns and regime labels strictly before
-    the origin. The realized outcome compounds the following `horizon` simple returns.
-    For regime conditioning, labels must themselves be causal and generated without
-    using future observations.
+    At every forecast origin, this function gives a regime provider only the exact
+    historical prefix strictly before that origin. The provider must fit/derive both
+    labels and transition probabilities from that prefix and return metadata aligned
+    to it. Fixed labels or transition matrices are rejected: their estimation window
+    cannot be verified here, and a matrix fitted on the complete sample leaks future
+    information into earlier forecasts.
     """
     checked = _prepare_returns(returns)
     steps = _validate_integer(horizon, "horizon", 1)
@@ -112,13 +119,13 @@ def walk_forward_forecast_evaluation(
     if not math.isfinite(interval_coverage) or not 0.0 < interval_coverage < 1.0:
         raise ValueError("interval_coverage must be strictly between 0 and 1")
 
-    labels: tuple[int, ...] | None = None
-    if regime_labels is not None:
-        labels = tuple(regime_labels)
-        if len(labels) != len(checked):
-            raise ValueError("regime_labels must align exactly with returns")
-    if (labels is None) != (transition_matrix is None):
-        raise ValueError("regime_labels and transition_matrix must be supplied together")
+    if regime_labels is not None or transition_matrix is not None:
+        raise ValueError(
+            "walk-forward rejects fixed regime_labels/transition_matrix; "
+            "use regime_provider to fit metadata on each training prefix"
+        )
+    if regime_provider is not None and not callable(regime_provider):
+        raise ValueError("regime_provider must be callable")
 
     origins = tuple(range(minimum, len(checked) - steps + 1, stride))
     if not origins:
@@ -128,7 +135,21 @@ def walk_forward_forecast_evaluation(
     realized: list[float] = []
     for origin in origins:
         train = checked[:origin]
-        train_labels = labels[:origin] if labels is not None else None
+        train_values = tuple(float(value) for value in train)
+        train_labels: Sequence[int] | None = None
+        train_transition_matrix: Sequence[Sequence[float]] | None = None
+        if regime_provider is not None:
+            metadata = regime_provider(train_values)
+            if not isinstance(metadata, tuple) or len(metadata) != 2:
+                raise ValueError(
+                    "regime_provider must return (training_regime_labels, transition_matrix)"
+                )
+            train_labels, train_transition_matrix = metadata
+            if len(train_labels) != origin:
+                raise ValueError(
+                    "regime_provider labels must align exactly with the training prefix"
+                )
+
         forecast = forecast_return_distribution(
             train,
             horizon=steps,
@@ -136,7 +157,7 @@ def walk_forward_forecast_evaluation(
             random_seed=seed + origin,
             interval_levels=(interval_coverage,),
             regime_labels=train_labels,
-            transition_matrix=transition_matrix,
+            transition_matrix=train_transition_matrix,
         )
         test_window = checked[origin : origin + steps]
         realized.append(float(np.prod(1.0 + test_window) - 1.0))
