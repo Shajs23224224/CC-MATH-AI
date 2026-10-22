@@ -39,7 +39,9 @@ class OptionPriceResult(BaseModel):
         """Keep exercise style and solver metadata consistent with the method."""
         if self.method == "black_scholes":
             if self.exercise_style != "european":
-                raise ValueError("Black-Scholes closed-form pricing supports European exercise only")
+                raise ValueError(
+                    "Black-Scholes closed-form pricing supports European exercise only"
+                )
             if any(
                 value is not None
                 for value in (
@@ -56,14 +58,23 @@ class OptionPriceResult(BaseModel):
                 raise ValueError("tree pricing requires tree_steps")
             if any(
                 value is not None
-                for value in (self.simulations, self.random_seed, self.antithetic, self.standard_error)
+                for value in (
+                    self.simulations,
+                    self.random_seed,
+                    self.antithetic,
+                    self.standard_error,
+                )
             ):
                 raise ValueError("tree pricing cannot include Monte Carlo metadata")
         else:
             if self.exercise_style != "european":
-                raise ValueError("Monte Carlo pricing in F25 supports European exercise only")
+                raise ValueError(
+                    "Monte Carlo pricing in F25 supports European exercise only"
+                )
             if self.simulations is None or self.random_seed is None or self.antithetic is None:
-                raise ValueError("Monte Carlo output requires simulations, seed and antithetic flag")
+                raise ValueError(
+                    "Monte Carlo output requires simulations, seed and antithetic flag"
+                )
             if self.standard_error is None:
                 raise ValueError("Monte Carlo output requires standard_error")
             if self.tree_steps is not None:
