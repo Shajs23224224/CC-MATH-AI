@@ -61,8 +61,14 @@ _CLASSIFIERS: dict[str, EstimatorFactory] = {
     ),
 }
 _SCALED_MODELS = {
-    "ridge", "lasso", "elastic_net", "svr", "knn_regressor",
-    "logistic_regression", "svc", "knn_classifier",
+    "ridge",
+    "lasso",
+    "elastic_net",
+    "svr",
+    "knn_regressor",
+    "logistic_regression",
+    "svc",
+    "knn_classifier",
 }
 
 
@@ -210,8 +216,11 @@ class ClassicalMLModel:
             library_version=sklearn.__version__,
             data_fingerprint=training_fingerprint,
             parameters={
-                **{key: value for key, value in estimator.get_params(deep=False).items()
-                   if isinstance(value, (str, int, float, bool)) or value is None},
+                **{
+                    key: value
+                    for key, value in estimator.get_params(deep=False).items()
+                    if isinstance(value, (str, int, float, bool)) or value is None
+                },
                 "random_seed": self.config.random_seed,
             },
         )
@@ -248,8 +257,9 @@ class ClassicalMLModel:
                     for value in estimator.classes_
                 )
                 classes = class_values
-                probabilities = tuple(tuple(float(value) for value in row)
-                                      for row in raw_probabilities)
+                probabilities = tuple(
+                    tuple(float(value) for value in row) for row in raw_probabilities
+                )
             values = tuple(
                 value.item() if isinstance(value, np.generic) else value
                 for value in raw_predictions

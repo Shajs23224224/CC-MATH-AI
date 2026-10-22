@@ -10,9 +10,7 @@ from uuid import uuid4
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 MLTask = Literal["regression", "classification"]
-CandidateStatus = Literal[
-    "CANDIDATE", "EXPERIMENTAL", "VALIDATED", "REJECTED", "DEPRECATED"
-]
+CandidateStatus = Literal["CANDIDATE", "EXPERIMENTAL", "VALIDATED", "REJECTED", "DEPRECATED"]
 
 
 class MLDataset(BaseModel):
@@ -248,8 +246,7 @@ class ExperimentRecord(BaseModel):
             raise ValueError("created_at must be timezone-aware")
         for values in (self.configuration, self.results):
             if any(
-                isinstance(value, float) and not math.isfinite(value)
-                for value in values.values()
+                isinstance(value, float) and not math.isfinite(value) for value in values.values()
             ):
                 raise ValueError("experiment values must be finite")
         return self

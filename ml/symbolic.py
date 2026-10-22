@@ -96,9 +96,8 @@ def discover_polynomial_relation(
         try:
             x_train_basis = basis.fit_transform(x_train)
             x_validation_basis = basis.transform(x_validation)
-            if (
-                not np.all(np.isfinite(x_train_basis))
-                or not np.all(np.isfinite(x_validation_basis))
+            if not np.all(np.isfinite(x_train_basis)) or not np.all(
+                np.isfinite(x_validation_basis)
             ):
                 raise MLInputError("polynomial expansion overflowed; rescale features")
             estimator = LinearRegression()
@@ -120,10 +119,7 @@ def discover_polynomial_relation(
     selected_basis = PolynomialFeatures(degree=selected_degree, include_bias=False)
     x_development_basis = selected_basis.fit_transform(x_development)
     x_test_basis = selected_basis.transform(x_test)
-    if (
-        not np.all(np.isfinite(x_development_basis))
-        or not np.all(np.isfinite(x_test_basis))
-    ):
+    if not np.all(np.isfinite(x_development_basis)) or not np.all(np.isfinite(x_test_basis)):
         raise MLInputError("selected polynomial expansion overflowed; rescale features")
     final_estimator = LinearRegression()
     final_estimator.fit(x_development_basis, y_development)
@@ -144,9 +140,7 @@ def discover_polynomial_relation(
     coefficients = tuple(float(value) for value in final_estimator.coef_)
     intercept = float(final_estimator.intercept_)
     formula = _expression(intercept, terms, coefficients)
-    signature = (
-        f"{dataset.dataset_id}|{selected_degree}|{formula}|{train_end}|{development_end}"
-    )
+    signature = f"{dataset.dataset_id}|{selected_degree}|{formula}|{train_end}|{development_end}"
     return SymbolicRegressionResult(
         candidate_id=hashlib.sha256(signature.encode("utf-8")).hexdigest()[:24],
         dataset_id=dataset.dataset_id,

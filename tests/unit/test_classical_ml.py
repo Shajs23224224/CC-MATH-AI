@@ -29,9 +29,7 @@ def test_supported_models_are_task_scoped() -> None:
 
 
 def test_ridge_fits_and_reports_chronological_oos_metrics() -> None:
-    model = ClassicalMLModel(
-        MLTrainingConfig(algorithm="ridge", task="regression", random_seed=11)
-    )
+    model = ClassicalMLModel(MLTrainingConfig(algorithm="ridge", task="regression", random_seed=11))
     result = model.fit(regression_dataset())
     assert result.train_end_index == result.test_start_index
     assert result.test_end_index == 60
@@ -83,16 +81,14 @@ def test_classifier_returns_probabilities_and_metrics() -> None:
 
 def test_invalid_parameters_and_unfitted_prediction_fail_closed() -> None:
     with pytest.raises(ValueError, match="random_state"):
-        MLTrainingConfig(
-            algorithm="ridge", task="regression", parameters={"random_state": 4}
-        )
+        MLTrainingConfig(algorithm="ridge", task="regression", parameters={"random_state": 4})
     model = ClassicalMLModel(MLTrainingConfig(algorithm="ridge", task="regression"))
     with pytest.raises(RuntimeError, match="fitted"):
         model.predict(((1.0,),))
     with pytest.raises(MLInputError, match="unsupported"):
-        ClassicalMLModel(
-            MLTrainingConfig(algorithm="unknown", task="regression")
-        ).fit(regression_dataset())
+        ClassicalMLModel(MLTrainingConfig(algorithm="unknown", task="regression")).fit(
+            regression_dataset()
+        )
 
 
 def test_rejects_misaligned_or_non_finite_dataset() -> None:
