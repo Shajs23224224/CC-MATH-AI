@@ -213,8 +213,14 @@ def test_surface_rejects_duplicate_maturity_strike_quote() -> None:
         (lambda: black_scholes_price(0.0, 100.0, 1.0, 0.05, 0.2), "spot and strike"),
         (lambda: black_scholes_price(100.0, 100.0, 1.0, 0.05, 0.0), "volatility must be positive"),
         (lambda: binomial_tree_price(100.0, 100.0, 1.0, 0.05, 0.2, steps=0), "steps must"),
-        (lambda: monte_carlo_price(100.0, 100.0, 1.0, 0.05, 0.2, simulations=99), "simulations must"),
-        (lambda: monte_carlo_price(100.0, 100.0, 1.0, 0.05, 0.2, simulations=101), "even simulation count"),
+        (
+            lambda: monte_carlo_price(100.0, 100.0, 1.0, 0.05, 0.2, simulations=99),
+            "simulations must",
+        ),
+        (
+            lambda: monte_carlo_price(100.0, 100.0, 1.0, 0.05, 0.2, simulations=101),
+            "even simulation count",
+        ),
         (lambda: black_scholes_greeks(100.0, 100.0, 0.0, 0.05, 0.2), "undefined at expiration"),
     ],
 )
