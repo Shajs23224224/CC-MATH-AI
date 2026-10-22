@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F42
 
-**Estado:** F21–F24 integradas en main; F25 EN IMPLEMENTACIÓN en rama aislada  
+**Estado:** F21–F25 integradas en main; F26 EN IMPLEMENTACIÓN en rama aislada  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -87,6 +87,7 @@
 **Cierre:** pricing/Greeks reproducibles y auditables.
 
 ## F26 — Regime Detection
+**Estado:** EN IMPLEMENTACIÓN en `phase-26-regime-detection`; CI pendiente.
 **Objetivo:** detectar estados y transiciones de mercado.  
 **Alcance:** HMM, Markov switching, change-point, CUSUM, Bayesian change detection y volatility regimes.  
 **Reglas:** probabilidades cuando proceda, labels/versiones, estimación sin futuro, estabilidad por ventana.  
@@ -227,6 +228,7 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F22: VaR histórico/paramétrico/Monte Carlo, CVaR, EVT y stress testing integrados en main mediante PR #7; CI general Python 3.11/3.12, Security, tests F22 y regresión F21 aprobados.
 - F23: matrices Pearson/Spearman/Kendall, covarianza, OAS shrinkage, dependencia rolling y PCA integradas en main mediante PR #8; Ruff, formato, mypy, tests numéricos, regresiones F21/F22, CI Python 3.11/3.12 y Security aprobados.
 - F24: ADF/KPSS/Phillips–Perron, Engle–Granger, Johansen, pares cointegrados, spread/z-score, half-life y Benjamini–Hochberg integrados en main mediante PR #9; CI F24, Ruff, mypy, pruebas numéricas, regresiones F21/F22/F23, CI general Python 3.11/3.12 y Security aprobados.
-- F25: Black-Scholes, árboles binomiales/trinomiales, Monte Carlo, Greeks, volatilidad implícita y superficie de volatilidad en desarrollo sobre rama aislada.
-- F26–F42: alcance técnico documentado.
-- **Fase activa: F25.**
+- F25: Black–Scholes, árboles binomiales/trinomiales, Monte Carlo, Greeks, volatilidad implícita y superficie de volatilidad integrados en main mediante PR #10; F25, CI general y Security aprobados.
+- F26: HMM/Markov switching, CUSUM, Bayesian online change points y regímenes de volatilidad implementados en `phase-26-regime-detection`; pendiente validación CI.
+- F27–F42: alcance técnico documentado.
+- **Fase activa: F26.**

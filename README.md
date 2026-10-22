@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F25 — Derivatives**
+Current phase: **F26 — Regime Detection**
 
 Completed:
 - F01 — System Specification
@@ -20,9 +20,10 @@ Completed:
 - F22 — Tail Risk (merged in PR #7; CI and Security passed)
 - F23 — Correlation / Dependency: Pearson/Spearman/Kendall matrices, sample/OAS covariance, rolling correlation and PCA factors; dedicated validation, regression tests, general CI and Security passed.
 - F24 — Cointegration / Statistical Arbitrage (merged in PR #9; F24/CI/Security passed).
+- F25 — Derivatives: Black–Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and versioned volatility surfaces (merged in PR #10; F25, general CI and Security passed).
 
 Active:
-- F25 — Derivatives: Black-Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and sparse versioned volatility surfaces; implementation and validation in progress.
+- F26 — Regime Detection: Gaussian HMM / Markov-switching, sequential CUSUM, Bayesian online change-point probabilities and calibrated trailing-volatility regimes; implementation and CI validation in progress.
 
 ## Architecture
 

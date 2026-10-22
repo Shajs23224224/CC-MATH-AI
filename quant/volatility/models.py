@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Any, cast
 
 import numpy as np
-from scipy.optimize import minimize  # type: ignore[import-untyped]
+from scipy.optimize import minimize
 
 from core.contracts import (
     DynamicCorrelationForecast,

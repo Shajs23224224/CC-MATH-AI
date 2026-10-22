@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Literal
 
 import numpy as np
-from scipy.stats import kendalltau  # type: ignore[import-untyped]
+from scipy.stats import kendalltau
 
 from core.contracts import DependenceMatrix, PCAResult
 from quant.statistics import rankdata

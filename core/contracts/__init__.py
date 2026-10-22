@@ -49,6 +49,15 @@ from .quality import (
     FeatureSet,
 )
 from .quant import AlgorithmMetadata, AlgorithmResult
+from .regimes import (
+    BayesianChangePointResult,
+    ChangePoint,
+    CUSUMResult,
+    RegimeModelResult,
+    RegimeProbabilitySeries,
+    VolatilityRegimeSeries,
+    VolatilityRegimeThresholds,
+)
 from .returns import PerformanceMetrics, ReturnSeries
 from .risk import (
     LiquidityRiskMetrics,
@@ -84,11 +93,14 @@ __all__ = [
     "Asset",
     "AssetType",
     "BacktestResult",
+    "BayesianChangePointResult",
     "CorporateAction",
     "CorporateActionBatch",
     "CorporateActionRequest",
     "CointegratingPairResult",
     "CointegrationTestResult",
+    "ChangePoint",
+    "CUSUMResult",
     "CorporateActionType",
     "DataQualityIssue",
     "DataQualityReport",
@@ -137,6 +149,8 @@ __all__ = [
     "Position",
     "PriceSeries",
     "ReturnSeries",
+    "RegimeModelResult",
+    "RegimeProbabilitySeries",
     "RiskAction",
     "RiskConstraint",
     "RiskEvaluation",
@@ -161,6 +175,8 @@ __all__ = [
     "VolatilityFamily",
     "VolatilityFitSummary",
     "VolatilityForecast",
+    "VolatilityRegimeSeries",
+    "VolatilityRegimeThresholds",
     "VolatilitySurface",
     "VolatilitySurfacePoint",
     "SignalType",
