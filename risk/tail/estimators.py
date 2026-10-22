@@ -6,7 +6,7 @@ import math
 from collections.abc import Sequence
 
 import numpy as np
-from scipy.stats import genpareto, norm  # type: ignore[import-untyped]
+from scipy.stats import genpareto, norm
 
 from core.contracts import TailRiskEstimate
 from core.contracts.tail_risk import TailRiskMethod
