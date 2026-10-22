@@ -52,8 +52,7 @@ def test_parametric_var_cvar_matches_normal_tail_formula() -> None:
 
     assert estimate.var == pytest.approx(-mean * horizon + std * np.sqrt(horizon) * z_score)
     assert estimate.cvar == pytest.approx(
-        -mean * horizon
-        + std * np.sqrt(horizon) * float(norm.pdf(z_score)) / (1.0 - confidence)
+        -mean * horizon + std * np.sqrt(horizon) * float(norm.pdf(z_score)) / (1.0 - confidence)
     )
 
 
