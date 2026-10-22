@@ -556,6 +556,7 @@ def apply_volatility_regimes(
         ),
     )
 
+
 def filter_regime_observations(
     observations: Sequence[float],
     fitted_model: RegimeModelResult,
