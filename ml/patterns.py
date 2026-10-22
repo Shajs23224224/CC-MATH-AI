@@ -8,6 +8,7 @@ import numpy as np
 from scipy.stats import spearmanr
 
 from core.contracts.ml import MLDataset, PatternRecord
+
 from .errors import MLInputError
 
 
