@@ -16,6 +16,7 @@ from core.contracts.regimes import (
     CUSUMResult,
     RegimeModel,
     RegimeModelResult,
+    RegimeProbabilitySeries,
     VolatilityRegimeSeries,
     VolatilityRegimeThresholds,
 )
@@ -554,3 +555,57 @@ def apply_volatility_regimes(
             "are used to fit thresholds."
         ),
     )
+
+def filter_regime_observations(
+    observations: Sequence[float],
+    fitted_model: RegimeModelResult,
+) -> RegimeProbabilitySeries:
+    """Filter a new chronological sample using parameters fitted on a prior training window.
+
+    The model parameters are held fixed. Each probability at time t conditions only on
+    the new observations through t; no parameter refit or backward smoothing is performed.
+    """
+    values = _validate_observations(observations, name="observations")
+    state_count = fitted_model.state_count
+    means = np.asarray(fitted_model.means, dtype=np.float64)
+    variances = np.asarray(fitted_model.variances, dtype=np.float64)
+    initial = np.asarray(fitted_model.initial_probabilities, dtype=np.float64)
+    transition = np.asarray(fitted_model.transition_matrix, dtype=np.float64)
+    log_transition = np.log(np.maximum(transition, _EPSILON))
+    log_emissions = _log_emissions(values, means, variances)
+
+    log_alpha = np.empty((values.size, state_count), dtype=np.float64)
+    filtered = np.empty((values.size, state_count), dtype=np.float64)
+    log_likelihood = 0.0
+    current = np.log(np.maximum(initial, _EPSILON)) + log_emissions[0]
+    scale = float(logsumexp(current))
+    current -= scale
+    log_likelihood += scale
+    log_alpha[0] = current
+    filtered[0] = np.exp(current)
+
+    for index in range(1, values.size):
+        predicted = logsumexp(log_alpha[index - 1][:, None] + log_transition, axis=0)
+        current = predicted + log_emissions[index]
+        scale = float(logsumexp(current))
+        current -= scale
+        log_likelihood += scale
+        log_alpha[index] = current
+        filtered[index] = np.exp(current)
+
+    return RegimeProbabilitySeries(
+        model=fitted_model.model,
+        version=fitted_model.version,
+        training_observations=fitted_model.observations,
+        observations=int(values.size),
+        state_count=state_count,
+        filtered_probabilities=tuple(tuple(float(x) for x in row) for row in filtered),
+        filtered_states=tuple(int(x) for x in np.argmax(filtered, axis=1)),
+        log_likelihood=float(log_likelihood),
+        methodology=(
+            "Causal forward filtering on a separate chronological sample with fixed "
+            "parameters estimated on the prior training window. No refitting or backward "
+            "smoothing is performed on evaluation observations."
+        ),
+    )
+
