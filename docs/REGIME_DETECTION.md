@@ -10,6 +10,7 @@ Import from `quant.regimes`:
 
 - `fit_gaussian_hmm(observations, n_states=2, max_iterations=100, tolerance=1e-4)`
 - `fit_markov_switching_gaussian(observations, n_states=2, max_iterations=100, tolerance=1e-4)`
+- `filter_regime_observations(observations, fitted_model)`
 - `cusum_change_points(observations, reference_mean, reference_std, drift=0.5, threshold=5.0)`
 - `bayesian_change_point_probabilities(observations, hazard=0.01, ...)`
 - `fit_volatility_regime_thresholds(calibration_returns, window=20, low_quantile=0.33, high_quantile=0.67, version=...)`
@@ -21,8 +22,9 @@ Both model helpers fit a univariate Gaussian-emission latent Markov chain using 
 
 Results retain likelihood, convergence flag, iteration count, initial probabilities, transition matrix, emission parameters and per-observation probabilities:
 
-- **Filtered probabilities** condition only on observations available through that index. Use these for live/forward decisions.
-- **Smoothed probabilities** condition on the entire supplied sample, including future observations. They are useful for retrospective diagnostics, but must not be used as historical live signals in a backtest.
+- **In-sample filtered probabilities** condition on observations available through that index, but the parameters were fitted on the entire sample passed to `fit_*`; they are not automatically leakage-free for historical evaluation.
+- **Smoothed probabilities** condition on the entire supplied sample, including future observations. They are retrospective only and must not be used as historical live signals in a backtest.
+- For strict chronological evaluation, fit the model on a training window and pass held-out observations to `filter_regime_observations`. This freezes the fitted parameters and computes only forward probabilities, without refitting or backward smoothing.
 - Filtered and smoothed state indices are retained separately.
 
 The current implementation is univariate; multivariate emissions and state-dependent regression designs require a separate validated contract. Labels are statistical states ordered by fitted mean, not semantic facts such as “risk-on” or “risk-off”. State identity and transition estimates can shift across samples; compare fits only after explicit alignment.
@@ -47,4 +49,4 @@ Fit thresholds with `fit_volatility_regime_thresholds` using a **training/calibr
 - Model outputs are descriptive/statistical, not causal conclusions or profitability guarantees.
 - No broker, order placement or override of F21 ALLOW/REDUCE/BLOCK decisions is added.
 
-The dedicated `.github/workflows/f26-validation.yml` runs Ruff lint/format, mypy, F26 tests and F21–F25 regressions. General CI runs on Python 3.11/3.12 and Security performs dependency audit plus static analysis.
+The dedicated `.github/workflows/f26-validation.yml` runs Ruff lint/format, mypy, F26 tests (including a no-look-ahead regression for held-out filtering) and F21–F25 regressions. General CI runs on Python 3.11/3.12 and Security performs dependency audit plus static analysis.
