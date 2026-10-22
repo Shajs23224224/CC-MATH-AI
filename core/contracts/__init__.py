@@ -149,6 +149,7 @@ __all__ = [
     "PriceSeries",
     "ReturnSeries",
     "RegimeModelResult",
+    "RegimeProbabilitySeries",
     "RiskAction",
     "RiskConstraint",
     "RiskEvaluation",
