@@ -254,11 +254,7 @@ def johansen_test(
     """Run the multivariate Johansen trace and max-eigenvalue tests."""
     assets, panel = _prepare_multivariate(series)
     observations, asset_count = panel.shape
-    if (
-        not isinstance(det_order, int)
-        or isinstance(det_order, bool)
-        or det_order not in {-1, 0, 1}
-    ):
+    if not isinstance(det_order, int) or isinstance(det_order, bool) or det_order not in {-1, 0, 1}:
         raise ValueError("det_order must be -1, 0 or 1")
     if (
         not isinstance(k_ar_diff, int)
@@ -288,9 +284,7 @@ def johansen_test(
         eigenvalues=tuple(float(value) for value in result.eig),
         trace_statistics=tuple(float(value) for value in trace_statistics),
         max_eigen_statistics=tuple(float(value) for value in max_statistics),
-        trace_critical_values=tuple(
-            tuple(float(value) for value in row) for row in trace_critical
-        ),
+        trace_critical_values=tuple(tuple(float(value) for value in row) for row in trace_critical),
         max_eigen_critical_values=tuple(
             tuple(float(value) for value in row) for row in max_critical
         ),
