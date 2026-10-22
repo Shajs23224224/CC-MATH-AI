@@ -134,7 +134,7 @@ def parametric_var_cvar(
     z_score = float(norm.ppf(confidence))
     horizon_mean = mean * periods
     horizon_std = standard_deviation * math.sqrt(periods)
-    var = -(horizon_mean + horizon_std * z_score)
+    var = -horizon_mean + horizon_std * z_score
     cvar = -horizon_mean + horizon_std * float(norm.pdf(z_score)) / (1.0 - confidence)
     return TailRiskEstimate(
         method="parametric_normal",
