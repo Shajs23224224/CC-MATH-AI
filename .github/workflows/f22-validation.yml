@@ -11,6 +11,8 @@ on:
       - "tests/numerical/test_tail_risk.py"
       - "tests/unit/test_tail_risk_contracts.py"
       - "docs/TAIL_RISK.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
       - ".github/workflows/f22-validation.yml"
   pull_request:
     paths:
@@ -21,6 +23,8 @@ on:
       - "tests/numerical/test_tail_risk.py"
       - "tests/unit/test_tail_risk_contracts.py"
       - "docs/TAIL_RISK.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
       - ".github/workflows/f22-validation.yml"
 
 permissions:
