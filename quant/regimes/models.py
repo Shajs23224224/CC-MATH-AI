@@ -575,7 +575,9 @@ def filter_regime_observations(
     state_count = fitted_model.state_count
     means = np.asarray(fitted_model.means, dtype=np.float64)
     variances = np.asarray(fitted_model.variances, dtype=np.float64)
-    initial = np.asarray(fitted_model.initial_probabilities, dtype=np.float64)
+    last_training_posterior = np.asarray(
+        fitted_model.filtered_probabilities[-1], dtype=np.float64
+    )
     transition = np.asarray(fitted_model.transition_matrix, dtype=np.float64)
     log_transition = np.log(np.maximum(transition, _EPSILON))
     log_emissions = _log_emissions(values, means, variances)
@@ -583,7 +585,12 @@ def filter_regime_observations(
     log_alpha = np.empty((values.size, state_count), dtype=np.float64)
     filtered = np.empty((values.size, state_count), dtype=np.float64)
     log_likelihood = 0.0
-    current = np.log(np.maximum(initial, _EPSILON)) + log_emissions[0]
+    # Carry the final training posterior forward by one Markov transition.
+    predicted_initial = logsumexp(
+        np.log(np.maximum(last_training_posterior, _EPSILON))[:, None] + log_transition,
+        axis=0,
+    )
+    current = predicted_initial + log_emissions[0]
     scale = float(logsumexp(current))
     current -= scale
     log_likelihood += scale
