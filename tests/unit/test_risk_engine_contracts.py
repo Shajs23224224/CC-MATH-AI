@@ -173,6 +173,26 @@ def test_metric_unit_mismatch_blocks_even_for_soft_constraint() -> None:
     assert "expected 'fraction'" in result.reasons[0]
 
 
+def test_canonical_drawdown_unit_is_checked_without_explicit_expected_unit() -> None:
+    metric = RiskMetric(
+        name="drawdown",
+        value=20.0,
+        unit="percent",
+        timestamp="2026-10-21T12:00:00+00:00",
+        methodology="percentage points",
+    )
+    constraint = RiskConstraint(
+        constraint_id="drawdown",
+        name="Maximum drawdown",
+        metric_name="drawdown",
+        limit=0.25,
+        hard=False,
+    )
+    result = evaluate_constraints((metric,), (constraint,))
+    assert result.action == RiskAction.BLOCK
+    assert "expected 'fraction'" in result.reasons[0]
+
+
 def test_matching_metric_unit_allows_constraint_evaluation() -> None:
     metric = RiskMetric(
         name="drawdown",
