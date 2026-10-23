@@ -155,7 +155,13 @@ def _risk_constraints(policy: RiskGovernorConfig) -> tuple[RiskConstraint, ...]:
     )
 
 
-def _metric(name: str, value: float, unit: str, request: RiskGovernorRequest, method: str) -> RiskMetric:
+def _metric(
+    name: str,
+    value: float,
+    unit: str,
+    request: RiskGovernorRequest,
+    method: str,
+) -> RiskMetric:
     """Make a derived metric with a consistent timestamp and methodology."""
     return RiskMetric(
         name=name,
@@ -296,7 +302,7 @@ def _derived_metrics(
                 max(liquidation_days),
                 "trading_days",
                 request,
-                "Maximum F21 estimated liquidation days using ADV and the configured participation cap.",
+                "Maximum estimated liquidation days using ADV and the configured participation cap.",
             )
         )
 
@@ -340,7 +346,9 @@ def _freshness_failures(
     for metric in request.risk_metrics:
         timestamp = _parse_timestamp(metric.timestamp)
         if timestamp is None:
-            failures.append(f"risk metric {metric.name!r} has an invalid or timezone-free timestamp")
+            failures.append(
+                f"risk metric {metric.name!r} has an invalid or timezone-free timestamp"
+            )
         else:
             check(f"risk metric {metric.name!r}", timestamp)
     return tuple(failures)
@@ -435,7 +443,9 @@ def evaluate_risk_governor(
                 rationale = "F38 reduced F37 quantity and rounded down to the configured lot size."
             else:
                 status = "APPROVED"
-                rationale = "F38 controls passed; the F37 quantity remains within configured limits."
+                rationale = (
+                    "F38 controls passed; the F37 quantity remains within configured limits."
+                )
 
         approved_weight = approved_notional / request.sizing_result.equity
         positions.append(
