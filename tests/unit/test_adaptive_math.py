@@ -78,7 +78,9 @@ def test_evolutionary_candidates_are_real_bounded_and_reproducible() -> None:
     assert first.generations_completed > 0
     assert first.selected_candidate.candidate_id == second.selected_candidate.candidate_id
     assert first.selected_candidate.test_rmse == second.selected_candidate.test_rmse
-    assert all(candidate.test_used_for_selection is False for candidate in first.candidate_leaderboard)
+    assert all(
+        candidate.test_used_for_selection is False for candidate in first.candidate_leaderboard
+    )
 
 
 def test_report_and_structured_candidate_survive_json_round_trip() -> None:
