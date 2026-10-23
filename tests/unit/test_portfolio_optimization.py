@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 import hashlib
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -17,6 +18,7 @@ from portfolio.optimization import (
     PortfolioAssetInput,
     PortfolioOptimizationConfig,
     PortfolioOptimizationRequest,
+    OptimizationMethod,
     optimize_portfolio,
 )
 from signals.decision import DecisionOutput, DecisionProbabilities
@@ -136,8 +138,17 @@ def _request(
             sector=sector,
             eligible=is_eligible,
         )
-        for symbol, expected_return, signal, current_weight, minimum, maximum, sector, is_eligible, is_abstained
-        in zip(
+        for (
+            symbol,
+            expected_return,
+            signal,
+            current_weight,
+            minimum,
+            maximum,
+            sector,
+            is_eligible,
+            is_abstained,
+        ) in zip(
             SYMBOLS,
             expected_returns,
             signals,
@@ -166,7 +177,10 @@ def _request(
     )
 
 
-def _config(method: str = "mean_variance", **overrides) -> PortfolioOptimizationConfig:
+def _config(
+    method: OptimizationMethod = "mean_variance",
+    **overrides: Any,
+) -> PortfolioOptimizationConfig:
     return PortfolioOptimizationConfig(method=method, **overrides)
 
 
@@ -184,7 +198,7 @@ def _config(method: str = "mean_variance", **overrides) -> PortfolioOptimization
         "maximum_diversification",
     ),
 )
-def test_all_nine_methods_return_a_valid_fully_invested_allocation(method: str) -> None:
+def test_all_nine_methods_return_a_valid_fully_invested_allocation(method: OptimizationMethod) -> None:
     request = _request(
         view_matrix=((1.0, -1.0, 0.0), (0.0, 0.0, 1.0)),
         view_returns=(0.02, 0.04),
@@ -278,7 +292,10 @@ def test_bounds_that_cannot_sum_to_one_return_infeasible_without_fake_weights() 
 
 
 def test_positive_minimum_weight_for_sell_signal_is_infeasible() -> None:
-    request = _request(minima=(0.0, 0.2, 0.0), signals=(SignalType.BUY, SignalType.SELL, SignalType.BUY))
+    request = _request(
+        minima=(0.0, 0.2, 0.0),
+        signals=(SignalType.BUY, SignalType.SELL, SignalType.BUY),
+    )
 
     result = optimize_portfolio(request, _config("equal_weight"))
 
