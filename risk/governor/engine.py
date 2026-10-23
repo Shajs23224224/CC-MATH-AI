@@ -11,13 +11,13 @@ from typing import Any
 
 from core.contracts import RiskAction, RiskConstraint, RiskEvaluation, RiskMetric
 from risk.constraints import evaluate_constraints
-from risk.metrics.portfolio import liquidity_risk_metrics
 from risk.governor.contracts import (
     GovernorApprovedPosition,
     RiskGovernorConfig,
     RiskGovernorRequest,
     RiskGovernorResult,
 )
+from risk.metrics.portfolio import liquidity_risk_metrics
 
 
 def _fingerprint(payload: Any) -> str:
@@ -302,7 +302,8 @@ def _derived_metrics(
                 max(liquidation_days),
                 "trading_days",
                 request,
-                "Maximum estimated liquidation days using ADV and the configured participation cap.",
+                "Maximum estimated liquidation days using ADV and the configured "
+                "participation cap.",
             )
         )
 
