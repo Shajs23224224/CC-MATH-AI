@@ -55,6 +55,8 @@ Supported hard controls:
 - Maximum Herfindahl concentration index (HHI).
 - Fully invested weights summing to one.
 
+If any sector caps are configured, every active asset must have a sector label; missing sector metadata fails closed rather than bypassing a cap.
+
 Each accepted solution carries per-constraint measured values, limits, pass/fail state and explanations. The estimated transaction-cost fraction applies configured basis points to the absolute changes in risky-asset weights; reported one-way turnover is half that amount plus the implied cash deployment change. Cash deployment contributes to turnover but is not charged a commission. Return-based objectives subtract estimated trading costs; all methods report costs and can use the explicit turnover penalty and turnover limit. A cost estimate is only as good as its supplied basis-point assumption.
 
 Every result records the chosen method/config version, forecast and covariance snapshot IDs, horizon, F35 decision fingerprints, solver message/status/iteration count, covariance ridge, expected portfolio return, volatility, net Sharpe diagnostic, turnover, cost estimate, concentration and a canonical SHA-256 request/config fingerprint.
@@ -63,7 +65,7 @@ Every result records the chosen method/config version, forecast and covariance s
 
 F36 does not annualize returns or covariance implicitly. F35 expected returns, F23 covariance entries and configured risk-free rate must use compatible units and the exact same horizon. The covariance timestamp must be no later than portfolio `as_of`, and every decision timestamp must also be no later than `as_of`. The contract records timestamps/snapshots; upstream data systems remain responsible for proving the full sample contents and corporate-action handling.
 
-Black-Litterman view returns use those same horizon units. View confidence must be in `(0, 1]`; equilibrium weights must be nonnegative and sum to one. Redundant or ill-conditioned views are handled through a pseudoinverse, and posterior values must remain finite.
+Black-Litterman view returns are expressed as excess returns over the configured risk-free rate, all in those same horizon units; the optimizer adds the risk-free rate back to posterior excess returns before reporting total expected returns. View confidence must be in `(0, 1]`; equilibrium weights must be nonnegative and sum to one. Redundant or ill-conditioned views are handled through a pseudoinverse, and posterior values must remain finite.
 
 ## Failure behavior and boundaries
 
