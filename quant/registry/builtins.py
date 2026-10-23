@@ -4209,7 +4209,10 @@ _F38_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
         "Portfolio Risk Governor",
         "risk",
         "Apply the final hard veto or controlled lot-sized reduction to F37 target positions.",
-        "Fail-closed F21 constraints over position, leverage, sector/factor, dependence, loss, liquidity, tail, turnover and quality metrics",
+        (
+            "Fail-closed F21 constraints over position, leverage, sector/factor, dependence, "
+            "loss, liquidity, tail, turnover and quality metrics"
+        ),
         (_F38_REQUEST,),
         _F38_RESULT,
         implementation_ref="risk.evaluate_risk_governor",
