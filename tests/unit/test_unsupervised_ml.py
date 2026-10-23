@@ -2,7 +2,6 @@
 
 import math
 
-import numpy as np
 import pytest
 
 from core.contracts.unsupervised import UnsupervisedMLConfig
@@ -82,7 +81,8 @@ def test_reduction_fits_training_prefix_and_transforms_holdout(algorithm: str) -
     assert result.operation == "dimensionality_reduction"
     assert len(result.training_embedding or ()) == result.training_observations
     assert len(result.holdout_embedding or ()) == result.holdout_observations
-    assert len(result.training_embedding[0]) == 2  # type: ignore[index]
+    assert result.training_embedding is not None
+    assert len(result.training_embedding[0]) == 2
     assert result.scaler_fit_scope == "training_prefix_only"
     assert result.stability_scores == ()
 
