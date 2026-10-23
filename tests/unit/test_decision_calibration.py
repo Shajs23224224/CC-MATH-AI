@@ -97,9 +97,7 @@ def test_calibrator_rejects_too_few_samples() -> None:
 
 def test_calibrator_rejects_labels_not_yet_observable() -> None:
     data = list(samples())
-    data[0] = data[0].model_copy(
-        update={"label_available_at": AS_OF + timedelta(seconds=1)}
-    )
+    data[0] = data[0].model_copy(update={"label_available_at": AS_OF + timedelta(seconds=1)})
 
     with pytest.raises(ValueError, match="label is not yet observable"):
         fit(tuple(data))
@@ -115,8 +113,7 @@ def test_calibrator_rejects_mixed_horizons() -> None:
 
 def test_calibrator_requires_all_three_classes() -> None:
     data = tuple(
-        sample.model_copy(update={"realized_class": SignalType.BUY})
-        for sample in samples()
+        sample.model_copy(update={"realized_class": SignalType.BUY}) for sample in samples()
     )
 
     with pytest.raises(
