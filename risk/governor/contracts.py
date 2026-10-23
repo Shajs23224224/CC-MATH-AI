@@ -138,17 +138,19 @@ class RiskGovernorRequest(BaseModel):
     assets: tuple[GovernorAssetContext, ...] = Field(min_length=2, max_length=500)
     pairwise_correlations: tuple[PairwiseCorrelation, ...] = Field(default=(), max_length=124750)
     risk_metrics: tuple[RiskMetric, ...] = Field(default=(), max_length=1000)
+    market_data_as_of: datetime
+    risk_snapshot_as_of: datetime
     as_of: datetime
     data_snapshot_id: str = Field(min_length=1, max_length=200)
     risk_snapshot_id: str = Field(min_length=1, max_length=200)
     model_snapshot_id: str = Field(min_length=1, max_length=200)
 
-    @field_validator("as_of")
+    @field_validator("market_data_as_of", "risk_snapshot_as_of", "as_of")
     @classmethod
     def require_timezone(cls, value: datetime) -> datetime:
-        """Reject ambiguous decision timestamps."""
+        """Reject ambiguous timestamps across market, risk, and decision evidence."""
         if value.tzinfo is None or value.utcoffset() is None:
-            raise ValueError("as_of must be timezone-aware")
+            raise ValueError("F38 timestamps must be timezone-aware")
         return value
 
     @model_validator(mode="after")
@@ -162,6 +164,8 @@ class RiskGovernorRequest(BaseModel):
             raise ValueError("F38 asset symbols must be unique")
         if self.sizing_result.as_of > self.as_of:
             raise ValueError("F37 sizing timestamp cannot be later than governor as_of")
+        if self.market_data_as_of > self.as_of or self.risk_snapshot_as_of > self.as_of:
+            raise ValueError("F38 source timestamps cannot be later than governor as_of")
         if math.fsum(item.target_notional for item in self.sizing_result.allocations) > (
             self.sizing_result.equity + 1e-6
         ):
@@ -191,8 +195,20 @@ class RiskGovernorRequest(BaseModel):
                 raise ValueError(f"duplicate pairwise correlation: {pair.pair_key}")
             seen_pairs.add(pair.pair_key)
 
+        reserved_metric_names = {
+            "max_position_weight",
+            "gross_leverage",
+            "concentration_hhi",
+            "max_sector_weight",
+            "max_abs_factor_exposure",
+            "max_abs_correlation",
+            "estimated_liquidation_days",
+            "turnover_ratio",
+        }
         seen_metrics: set[str] = set()
         for metric in self.risk_metrics:
+            if metric.name in reserved_metric_names:
+                raise ValueError(f"risk metric {metric.name!r} is computed from F38 context")
             if metric.name in seen_metrics:
                 raise ValueError(f"duplicate risk evidence metric: {metric.name}")
             seen_metrics.add(metric.name)
