@@ -25,6 +25,9 @@ def _metadata(
     inputs: tuple[AlgorithmPort, ...] = (),
     outputs: tuple[AlgorithmPort, ...] | None = None,
     lifecycle: AlgorithmLifecycle = AlgorithmLifecycle.IMPLEMENTED,
+    implementation_ref: str | None = "tests.fixtures.registry_test_algorithm",
+    planned_implementation_ref: str | None = None,
+    test_status: AlgorithmTestStatus = AlgorithmTestStatus.PASSING,
 ) -> AlgorithmMetadata:
     return AlgorithmMetadata(
         algorithm_id=algorithm_id,
@@ -37,8 +40,10 @@ def _metadata(
         outputs=outputs
         or (AlgorithmPort(name="result", dtype="float", description="Numeric result"),),
         limitations=("Synthetic test fixture; not for production decisions.",),
+        implementation_ref=implementation_ref,
+        planned_implementation_ref=planned_implementation_ref,
         lifecycle=lifecycle,
-        test_status=AlgorithmTestStatus.PASSING,
+        test_status=test_status,
     )
 
 
@@ -54,6 +59,23 @@ def test_metadata_rejects_invalid_id_version_and_duplicate_ports() -> None:
                 AlgorithmPort(name="x", dtype="float", description="duplicate x"),
             )
         )
+
+
+def test_lifecycle_requires_verified_references_and_validation_evidence() -> None:
+    with pytest.raises(ValidationError, match="verified implementation_ref"):
+        _metadata(implementation_ref=None)
+
+    with pytest.raises(ValidationError, match="passing test evidence"):
+        _metadata(lifecycle=AlgorithmLifecycle.VALIDATED, test_status=AlgorithmTestStatus.NOT_RUN)
+
+    planned = _metadata(
+        "planned.algorithm",
+        lifecycle=AlgorithmLifecycle.EXPERIMENTAL,
+        implementation_ref=None,
+        planned_implementation_ref="quant.future_module.future_algorithm",
+    )
+    assert planned.implementation_ref is None
+    assert planned.planned_implementation_ref == "quant.future_module.future_algorithm"
 
 
 def test_register_get_exact_and_latest_version() -> None:
@@ -139,3 +161,11 @@ def test_builtin_catalog_is_discoverable_and_does_not_claim_validation() -> None
     assert len(identifiers) == len(set(identifiers))
     assert any(item.algorithm_id == "technical.rsi" for item in entries)
     assert all(item.test_status == AlgorithmTestStatus.NOT_RUN for item in entries)
+
+    implemented = [item for item in entries if item.lifecycle == AlgorithmLifecycle.IMPLEMENTED]
+    planned = [item for item in entries if item.planned_implementation_ref is not None]
+    assert implemented
+    assert all(item.implementation_ref is not None for item in implemented)
+    assert len(planned) >= 250
+    assert all(item.lifecycle == AlgorithmLifecycle.EXPERIMENTAL for item in planned)
+    assert all(item.implementation_ref is None for item in planned)
