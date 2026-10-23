@@ -31,6 +31,6 @@ Test status is independent: not_run, passing, or failing. CI passing for the reg
 
 ## Seed catalog and scope
 
-The initial manifest contains a curated set of metadata records for existing public quantitative APIs. The target of 300+ entries is not claimed complete by this foundation. Entries must be added from verified implementations and contracts; placeholders and invented implementation references are prohibited. The manifest avoids scattered imports and executes no arbitrary code.
+The manifest currently contains 304 typed metadata entries spanning the repository's quantitative APIs. The registry validates metadata shape and identifier uniqueness; it does not prove that every referenced implementation has independent behavioral evidence. Each entry keeps `test_status=not_run` until evidence is explicitly recorded. Implementation references are declarative strings: the registry never imports or executes them. Placeholders and invented references are prohibited, and future additions should be tied to source implementations and contracts.
 
 The catalog is descriptive metadata, not proof of correctness, causality, market alpha or future performance. Units, frequency, data availability and temporal validation remain caller responsibilities.
