@@ -99,7 +99,9 @@ class DecisionConfig(BaseModel):
     calibration_data_snapshot_id: str | None = Field(default=None, min_length=1, max_length=200)
     calibration_window_start: datetime | None = None
     calibration_window_end: datetime | None = None
-    calibration_validation_data_snapshot_id: str | None = Field(default=None, min_length=1, max_length=200)
+    calibration_validation_data_snapshot_id: str | None = Field(
+        default=None, min_length=1, max_length=200
+    )
     calibration_validation_window_start: datetime | None = None
     calibration_validation_window_end: datetime | None = None
     calibration_validation_log_loss: float | None = Field(default=None, ge=0.0)
@@ -179,7 +181,10 @@ class DecisionConfig(BaseModel):
                 raise ValueError("calibration fit window must end before validation begins")
             if self.calibration_validation_window_start > self.calibration_validation_window_end:
                 raise ValueError("validation window start must not follow its end")
-            if self.calibration_validation_log_loss > self.calibration_validation_baseline_log_loss + 1e-12:
+            if (
+                self.calibration_validation_log_loss
+                > self.calibration_validation_baseline_log_loss + 1e-12
+            ):
                 raise ValueError("validated_oos calibration must not worsen validation log loss")
         elif any(
             value is not None
