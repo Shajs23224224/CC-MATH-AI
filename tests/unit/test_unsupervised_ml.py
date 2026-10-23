@@ -57,8 +57,12 @@ def test_clustering_outputs_training_labels_and_stability(
             algorithm=algorithm,
             random_seed=30,
             stability_repeats=2,
-            parameters={"n_clusters": 2} if algorithm in {"kmeans", "agglomerative_clustering"} else (
-                {"n_components": 2} if algorithm == "gaussian_mixture" else {}
+            parameters=(
+                {"n_clusters": 2}
+                if algorithm in {"kmeans", "agglomerative_clustering"}
+                else {"n_components": 2}
+                if algorithm == "gaussian_mixture"
+                else {}
             ),
         )
     )
