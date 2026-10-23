@@ -149,7 +149,7 @@ def size_positions(
         estimated_loss = (
             quantity * stop_distance
             if stop_distance is not None and stop_distance > 0.0
-            else 0.0
+            else None
         )
         adv_participation = quantity / asset.average_daily_volume
         status = "SIZED" if quantity > 0.0 else "ZERO_SIZE"
