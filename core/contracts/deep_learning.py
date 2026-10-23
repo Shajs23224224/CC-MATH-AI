@@ -141,7 +141,9 @@ class DeepLearningResult(BaseModel):
             raise ValueError("metrics must be finite")
         if self.task == "reconstruction":
             if self.test_predictions or self.test_targets:
-                raise ValueError("reconstruction uses reconstruction metrics, not scalar target rows")
+                raise ValueError(
+                    "reconstruction uses reconstruction metrics, not scalar target rows"
+                )
             if "reconstruction_mse" not in self.metrics:
                 raise ValueError("reconstruction requires reconstruction_mse")
         else:
