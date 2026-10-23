@@ -3853,6 +3853,13 @@ _EXTRA_SPECS += (
         "record",
         ("forecasting", "validation", "walk-forward"),
     ),
+
+)
+
+_EXTRA_ALGORITHMS: tuple[AlgorithmMetadata, ...] = tuple(
+    _extra_entry(spec) for spec in _EXTRA_SPECS
+)
+_F36_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
     _entry(
         "portfolio.equal_weight",
         "Equal-weight portfolio optimization",
@@ -4047,11 +4054,9 @@ _EXTRA_SPECS += (
         limitations=("Diversification ratio is not a guarantee against correlated tail losses.",),
     ),
 )
-
-_EXTRA_ALGORITHMS: tuple[AlgorithmMetadata, ...] = tuple(
-    _extra_entry(spec) for spec in _EXTRA_SPECS
+BUILTIN_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
+    _SEED_ALGORITHMS + _EXTRA_ALGORITHMS + _F36_ALGORITHMS
 )
-BUILTIN_ALGORITHMS: tuple[AlgorithmMetadata, ...] = _SEED_ALGORITHMS + _EXTRA_ALGORITHMS
 
 
 def builtin_algorithms() -> tuple[AlgorithmMetadata, ...]:
