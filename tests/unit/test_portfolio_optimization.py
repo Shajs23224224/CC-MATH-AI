@@ -201,12 +201,15 @@ def _config(
 def test_all_nine_methods_return_a_valid_fully_invested_allocation(
     method: OptimizationMethod,
 ) -> None:
-    request = _request(
-        view_matrix=((1.0, -1.0, 0.0), (0.0, 0.0, 1.0)),
-        view_returns=(0.02, 0.04),
-        view_confidences=(0.8, 0.7),
-        equilibrium_weights=(1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0),
-    )
+    if method == "black_litterman":
+        request = _request(
+            view_matrix=((1.0, -1.0, 0.0), (0.0, 0.0, 1.0)),
+            view_returns=(0.02, 0.04),
+            view_confidences=(0.8, 0.7),
+            equilibrium_weights=(1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0),
+        )
+    else:
+        request = _request()
 
     result = optimize_portfolio(request, _config(method))
 
