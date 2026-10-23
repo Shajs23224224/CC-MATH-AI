@@ -82,6 +82,7 @@ def calibrated_config(**overrides) -> DecisionConfig:
     values = {
         "probability_calibration_status": "validated_oos",
         "calibration_id": "cal-synthetic-v1",
+        "calibration_fit_fingerprint": "a" * 64,
         "calibration_version": "1.0.0",
         "calibration_data_snapshot_id": "calibration-snapshot-v1",
         "calibration_window_start": datetime(2026, 8, 1, tzinfo=UTC),
@@ -105,7 +106,9 @@ def test_calibrated_bullish_evidence_produces_buy_and_preserves_audit() -> None:
     assert result.record.suggested_position_size == 0.0
     assert len(result.evidence) == 2
     assert result.agreement == pytest.approx(1.0)
-    assert result.probabilities.buy + result.probabilities.hold + result.probabilities.sell == pytest.approx(1.0)
+    assert (
+        result.probabilities.buy + result.probabilities.hold + result.probabilities.sell
+    ) == pytest.approx(1.0)
     assert result.record.signal_probability == pytest.approx(result.probabilities.buy)
     assert result.ensemble_fingerprint == request().ensemble.input_fingerprint
     assert len(result.decision_fingerprint) == 64
@@ -230,11 +233,24 @@ def test_calibration_window_cannot_leak_future_information() -> None:
     config = calibrated_config(
         calibration_window_start=datetime(2026, 10, 24, tzinfo=UTC),
         calibration_window_end=datetime(2026, 10, 25, tzinfo=UTC),
+        calibration_validation_window_start=datetime(2026, 10, 26, tzinfo=UTC),
+        calibration_validation_window_end=datetime(2026, 10, 27, tzinfo=UTC),
     )
     result = make_decision(request(), config)
 
     assert result.status == "ABSTAINED"
     assert result.abstention_reason == "calibration_window_after_decision_as_of"
+
+
+def test_calibration_validation_window_cannot_leak_future_information() -> None:
+    config = calibrated_config(
+        calibration_validation_window_start=datetime(2026, 10, 24, tzinfo=UTC),
+        calibration_validation_window_end=datetime(2026, 10, 25, tzinfo=UTC),
+    )
+    result = make_decision(request(), config)
+
+    assert result.status == "ABSTAINED"
+    assert result.abstention_reason == "calibration_validation_after_decision_as_of"
 
 
 def test_decision_fingerprint_is_reproducible() -> None:
@@ -249,7 +265,7 @@ def test_decision_fingerprint_is_reproducible() -> None:
 
 
 def test_calibrated_policy_requires_calibration_provenance() -> None:
-    with pytest.raises(ValidationError, match="requires ID, version, data snapshot and window"):
+    with pytest.raises(ValidationError, match="requires fit and validation provenance"):
         DecisionConfig(probability_calibration_status="validated_oos")
 
 

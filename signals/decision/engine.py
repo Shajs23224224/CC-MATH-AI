@@ -7,10 +7,8 @@ import json
 import math
 
 from core.contracts import DecisionRecord, SignalType
-from signals.ensemble import EnsembleResult
 
 from ._math import class_probabilities
-
 from .contracts import (
     DecisionConfig,
     DecisionEvidence,
@@ -36,9 +34,7 @@ def make_decision(
     forecast_uncertainty = min(
         1.0, request.forecast.uncertainty / policy.forecast_uncertainty_scale
     )
-    combined_uncertainty = 1.0 - (
-        (1.0 - ensemble.uncertainty) * (1.0 - forecast_uncertainty)
-    )
+    combined_uncertainty = 1.0 - ((1.0 - ensemble.uncertainty) * (1.0 - forecast_uncertainty))
     combined_uncertainty = min(1.0, max(0.0, combined_uncertainty))
 
     abstention_reason = _abstention_reason(
@@ -126,7 +122,10 @@ def make_decision(
             rationale=item.rationale,
             observed_at=item.observed_at,
         )
-        for item in sorted(ensemble.contributions, key=lambda item: (item.source_id, item.source_version))
+        for item in sorted(
+            ensemble.contributions,
+            key=lambda item: (item.source_id, item.source_version),
+        )
     )
 
     return DecisionOutput(
@@ -143,6 +142,16 @@ def make_decision(
         decision_config_version=policy.version,
         probability_calibration_status=policy.probability_calibration_status,
         calibration_id=policy.calibration_id,
+        calibration_fit_fingerprint=policy.calibration_fit_fingerprint,
+        calibration_version=policy.calibration_version,
+        calibration_data_snapshot_id=policy.calibration_data_snapshot_id,
+        calibration_window_start=policy.calibration_window_start,
+        calibration_window_end=policy.calibration_window_end,
+        calibration_validation_data_snapshot_id=policy.calibration_validation_data_snapshot_id,
+        calibration_validation_window_start=policy.calibration_validation_window_start,
+        calibration_validation_window_end=policy.calibration_validation_window_end,
+        calibration_validation_log_loss=policy.calibration_validation_log_loss,
+        calibration_validation_baseline_log_loss=policy.calibration_validation_baseline_log_loss,
         ensemble_fingerprint=ensemble.input_fingerprint,
         decision_fingerprint=decision_fingerprint,
     )
@@ -174,15 +183,13 @@ def _abstention_reason(
         return "probabilities_not_validated_out_of_sample"
     if policy.probability_calibration_status == "validated_oos":
         assert policy.calibration_window_end is not None
+        assert policy.calibration_validation_window_end is not None
         if policy.calibration_window_end > ensemble.as_of:
             return "calibration_window_after_decision_as_of"
-        assert policy.calibration_validation_window_end is not None
         if policy.calibration_validation_window_end > ensemble.as_of:
             return "calibration_validation_after_decision_as_of"
     failed_constraints = sorted(
-        item.constraint_id
-        for item in request.constraints
-        if item.blocking and not item.satisfied
+        item.constraint_id for item in request.constraints if item.blocking and not item.satisfied
     )
     if failed_constraints:
         return "blocking_constraints_failed:" + ",".join(failed_constraints)
