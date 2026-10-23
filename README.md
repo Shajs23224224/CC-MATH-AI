@@ -34,8 +34,7 @@ Completed:
 Implemented in `main`:
 - F35 — Meta-model / Decision Engine: deterministic BUY/HOLD/SELL decisions from F34 evidence and a horizon-matched forecast, with versioned thresholds, strict abstention, calibration provenance and replay fingerprints. It never sizes positions, places orders or bypasses risk controls. F35 workflow and general CI passed on Python 3.11/3.12. See [F35 technical design](docs/DECISION_ENGINE.md).
 
-In implementation on `feature/f36-portfolio-optimization`:
-- F36 — Portfolio Optimization: nine methods (equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity, inverse volatility, HRP, Black-Litterman, maximum diversification); long-only F35 decision integration; point-in-time F23 covariance; asset/sector caps, turnover and HHI controls; estimated costs, solver status, hard-constraint diagnostics and SHA-256 audit. See [F36 technical design](docs/PORTFOLIO_OPTIMIZATION.md). Pending dedicated CI, general CI/Security review and PR merge.
+- F36 — Portfolio Optimization (integrated in [PR #25](https://github.com/Shajs23224224/CC-MATH-AI/pull/25), merge commit `b7a2628`): nine methods—equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity, inverse volatility, HRP, Black-Litterman and maximum diversification—with long-only F35 integration, point-in-time F23 covariance, asset/sector/turnover/HHI constraints, transaction-cost diagnostics, solver status, safe infeasibility handling and SHA-256 audit. F36, F33, general CI, Security and active regressions passed on Python 3.11/3.12. Synthetic tests validate code behavior, not market alpha. See [F36 technical design](docs/PORTFOLIO_OPTIMIZATION.md).
 ## Architecture
 
 ```text
