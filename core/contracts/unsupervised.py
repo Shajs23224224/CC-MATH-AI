@@ -99,21 +99,38 @@ class UnsupervisedMLResult(BaseModel):
             raise ValueError("scaler statistics must align with feature_names")
         if self.train_end_index != self.holdout_start_index:
             raise ValueError("training and holdout boundaries must be contiguous")
-        if self.total_observations != self.training_observations + self.holdout_observations:
+        if (
+            self.total_observations
+            != self.training_observations + self.holdout_observations
+        ):
             raise ValueError("observation counts must sum to total_observations")
         if any(value <= 0.0 for value in self.scaler_scale):
             raise ValueError("scaler scales must be positive")
-        if any(not math.isfinite(value) for value in (*self.scaler_mean, *self.scaler_scale)):
+        if any(
+            not math.isfinite(value) for value in (*self.scaler_mean, *self.scaler_scale)
+        ):
             raise ValueError("scaler statistics must be finite")
         if self.operation == "clustering":
-            if self.training_labels is None or len(self.training_labels) != self.training_observations:
+            if (
+                self.training_labels is None
+                or len(self.training_labels) != self.training_observations
+            ):
                 raise ValueError("clustering results require one training label per training row")
-            if self.holdout_labels is not None and len(self.holdout_labels) != self.holdout_observations:
+            if (
+                self.holdout_labels is not None
+                and len(self.holdout_labels) != self.holdout_observations
+            ):
                 raise ValueError("holdout labels must align with holdout rows")
         elif self.operation == "dimensionality_reduction":
-            if self.training_embedding is None or len(self.training_embedding) != self.training_observations:
+            if (
+                self.training_embedding is None
+                or len(self.training_embedding) != self.training_observations
+            ):
                 raise ValueError("reduction results require one training embedding per training row")
-            if self.holdout_embedding is None or len(self.holdout_embedding) != self.holdout_observations:
+            if (
+                self.holdout_embedding is None
+                or len(self.holdout_embedding) != self.holdout_observations
+            ):
                 raise ValueError("reduction results require one holdout embedding per holdout row")
             dimensions = len(self.training_embedding[0])
             if dimensions < 1 or any(len(row) != dimensions for row in self.training_embedding):
@@ -122,15 +139,30 @@ class UnsupervisedMLResult(BaseModel):
                 raise ValueError("holdout embedding dimensions must match training embeddings")
         else:
             expected = self.training_observations
-            if self.training_anomaly_scores is None or len(self.training_anomaly_scores) != expected:
+            if (
+                self.training_anomaly_scores is None
+                or len(self.training_anomaly_scores) != expected
+            ):
                 raise ValueError("anomaly results require one score per training row")
-            if self.training_anomaly_flags is None or len(self.training_anomaly_flags) != expected:
+            if (
+                self.training_anomaly_flags is None
+                or len(self.training_anomaly_flags) != expected
+            ):
                 raise ValueError("anomaly results require one flag per training row")
-            if self.holdout_anomaly_scores is None or len(self.holdout_anomaly_scores) != self.holdout_observations:
+            if (
+                self.holdout_anomaly_scores is None
+                or len(self.holdout_anomaly_scores) != self.holdout_observations
+            ):
                 raise ValueError("anomaly results require one score per holdout row")
-            if self.holdout_anomaly_flags is None or len(self.holdout_anomaly_flags) != self.holdout_observations:
+            if (
+                self.holdout_anomaly_flags is None
+                or len(self.holdout_anomaly_flags) != self.holdout_observations
+            ):
                 raise ValueError("anomaly results require one flag per holdout row")
-            if any(flag not in {-1, 1} for flag in (*self.training_anomaly_flags, *self.holdout_anomaly_flags)):
+            if any(
+                flag not in {-1, 1}
+                for flag in (*self.training_anomaly_flags, *self.holdout_anomaly_flags)
+            ):
                 raise ValueError("anomaly flags must be 1 for inlier or -1 for outlier")
         if any(not -1.0 <= value <= 1.0 for value in self.stability_scores):
             raise ValueError("adjusted Rand stability scores must lie in [-1, 1]")
