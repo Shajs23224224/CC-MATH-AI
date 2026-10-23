@@ -147,9 +147,7 @@ def optimize_portfolio(
 
     for limit in policy.sector_limits:
         members = [
-            index
-            for index in active_indices
-            if request.assets[index].sector == limit.sector
+            index for index in active_indices if request.assets[index].sector == limit.sector
         ]
         minimum_sector_weight = math.fsum(lower[index] for index in members)
         if minimum_sector_weight > limit.maximum_weight + 1e-8:
@@ -289,10 +287,7 @@ def optimize_portfolio(
             return 0.5 * policy.risk_aversion * variance - net_return + turnover_regularizer
         if objective_method == "maximum_sharpe":
             net_excess_return = (
-                expected_return
-                - policy.risk_free_rate
-                - cost_fraction
-                - turnover_regularizer
+                expected_return - policy.risk_free_rate - cost_fraction - turnover_regularizer
             )
             return -net_excess_return / portfolio_volatility
         if objective_method == "risk_parity":
@@ -650,8 +645,9 @@ def _scipy_constraints(
         constraints.append(
             {
                 "type": "ineq",
-                "fun": lambda weights, indices=tuple(local_indices), maximum=cap: maximum
-                - float(np.sum(weights[list(indices)])),
+                "fun": lambda weights, indices=tuple(local_indices), maximum=cap: (
+                    maximum - float(np.sum(weights[list(indices)]))
+                ),
             }
         )
     return constraints
