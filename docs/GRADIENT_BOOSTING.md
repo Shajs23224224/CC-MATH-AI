@@ -1,3 +1,9 @@
+## Repository integration status
+
+F29 was merged by pull request [#17](https://github.com/Shajs23224224/CC-MATH-AI/pull/17) into `main`. The merge commit is `96fcdb512e0aa2c09de3175bd4e68c62cd73335a`. The dedicated workflow, project CI and Security checks were recorded as passing during phase closure; a missing current combined-status entry is not evidence of a failure or of a fresh run.
+
+The test suite uses synthetic inputs and verifies implementation behavior and data separation. It does not demonstrate market alpha, economic validity, robustness on live data or investment profitability.
+
 # F29 — Gradient Boosting
 
 ## Scope

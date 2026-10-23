@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F28 integradas en main; F28 Classical ML validada; F29 es la siguiente fase  
+**Estado:** F21–F29 integradas en main; F30 en implementación y revisión  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
