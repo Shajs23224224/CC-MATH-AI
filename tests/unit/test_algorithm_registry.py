@@ -184,6 +184,7 @@ def test_builtin_catalog_is_discoverable_and_does_not_claim_validation() -> None
     assert all(item.lifecycle == AlgorithmLifecycle.EXPERIMENTAL for item in planned)
     assert all(item.implementation_ref is None for item in planned)
 
+
 def test_f36_portfolio_optimizers_are_registered_without_claiming_validation() -> None:
     expected_ids = {
         "portfolio.equal_weight",
