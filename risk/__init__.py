@@ -20,6 +20,15 @@ from .tail import (
     parametric_var_cvar,
     stress_test_portfolio,
 )
+from .governor import (
+    GovernorApprovedPosition,
+    GovernorAssetContext,
+    PairwiseCorrelation,
+    RiskGovernorConfig,
+    RiskGovernorRequest,
+    RiskGovernorResult,
+    evaluate_risk_governor,
+)
 
 __all__ = [
     "beta",
@@ -39,4 +48,11 @@ __all__ = [
     "treynor_ratio",
     "stress_test_portfolio",
     "turnover_risk_metrics",
+    "GovernorApprovedPosition",
+    "GovernorAssetContext",
+    "PairwiseCorrelation",
+    "RiskGovernorConfig",
+    "RiskGovernorRequest",
+    "RiskGovernorResult",
+    "evaluate_risk_governor",
 ]
