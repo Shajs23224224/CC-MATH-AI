@@ -126,7 +126,9 @@ class UnsupervisedMLResult(BaseModel):
                 self.training_embedding is None
                 or len(self.training_embedding) != self.training_observations
             ):
-                raise ValueError("reduction results require one training embedding per training row")
+                raise ValueError(
+                    "reduction results require one training embedding per training row"
+                )
             if (
                 self.holdout_embedding is None
                 or len(self.holdout_embedding) != self.holdout_observations
