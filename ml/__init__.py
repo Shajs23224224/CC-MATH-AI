@@ -2,7 +2,7 @@
 
 from .adaptive import AdaptiveMathEngine, predict_adaptive_candidate
 from .classical import ClassicalMLModel, supported_algorithms
-from .deep_learning import DeepLearningModel, supported_deep_learning_algorithms
+from .deep_learning import DeepLearningModel, supported_deep_learning_algorithms\nfrom .features import FeatureEngineer, supported_feature_operations
 from .patterns import discover_patterns
 from .store import JSONLExperimentStore
 from .symbolic import discover_polynomial_relation, predict_polynomial_relation
@@ -11,7 +11,7 @@ from .unsupervised import UnsupervisedMLModel, supported_unsupervised_algorithms
 __all__ = [
     "AdaptiveMathEngine",
     "ClassicalMLModel",
-    "DeepLearningModel",
+    "DeepLearningModel",\n    "FeatureEngineer",
     "JSONLExperimentStore",
     "UnsupervisedMLModel",
     "discover_patterns",
@@ -19,6 +19,6 @@ __all__ = [
     "predict_adaptive_candidate",
     "predict_polynomial_relation",
     "supported_algorithms",
-    "supported_deep_learning_algorithms",
+    "supported_deep_learning_algorithms",\n    "supported_feature_operations",
     "supported_unsupervised_algorithms",
 ]

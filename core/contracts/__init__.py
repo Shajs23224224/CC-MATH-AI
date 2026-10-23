@@ -47,6 +47,11 @@ from .forecasting import (
     ReturnPathSimulation,
     WalkForwardForecastEvaluation,
 )
+from .feature_engineering import (
+    FeatureEngineeringConfig,
+    FeatureEngineeringReport,
+    FeatureTransformSpec,
+)
 from .fundamental_data import FundamentalDataBatch, FundamentalDataRequest
 from .fundamentals import FundamentalGrowthPoint, FundamentalSnapshot
 from .macro_data import MacroDataBatch, MacroDataRequest, MacroFrequency, MacroObservation
@@ -148,6 +153,9 @@ __all__ = [
     "Evidence",
     "ExecutionReport",
     "FeatureDefinition",
+    "FeatureEngineeringConfig",
+    "FeatureEngineeringReport",
+    "FeatureTransformSpec",
     "FeatureRecord",
     "FeatureSet",
     "Fill",

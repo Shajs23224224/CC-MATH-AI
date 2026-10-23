@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F30 integradas en main; F31 en implementación y revisión  
+**Estado:** F21–F31 integradas en main; F32 en implementación y revisión  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales

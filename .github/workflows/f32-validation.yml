@@ -1,0 +1,55 @@
+name: F32 Feature Engineering
+
+on:
+  push:
+    branches: ["feature/f32-feature-engineering"]
+    paths:
+      - "core/contracts/feature_engineering.py"
+      - "core/contracts/__init__.py"
+      - "ml/features/**"
+      - "ml/__init__.py"
+      - "tests/unit/test_feature_engineering.py"
+      - "docs/FEATURE_ENGINEERING.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f32-validation.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "core/contracts/feature_engineering.py"
+      - "core/contracts/__init__.py"
+      - "ml/features/**"
+      - "ml/__init__.py"
+      - "tests/unit/test_feature_engineering.py"
+      - "docs/FEATURE_ENGINEERING.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f32-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-f32:
+    name: Validate point-in-time feature engineering
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install project and development dependencies
+        run: python -m pip install --upgrade pip setuptools wheel && python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check core/contracts/feature_engineering.py ml/features tests/unit/test_feature_engineering.py
+      - name: Ruff format check
+        run: python -m ruff format --check core/contracts/feature_engineering.py ml/features tests/unit/test_feature_engineering.py
+      - name: Mypy
+        run: python -m mypy core/contracts/feature_engineering.py ml/features
+      - name: F32 behavioral tests
+        run: python -m pytest tests/unit/test_feature_engineering.py -q
+      - name: F31/F30 regression
+        run: python -m pytest tests/unit/test_deep_learning.py tests/unit/test_unsupervised_ml.py -q
+      - name: F29/F28 regression
+        run: python -m pytest tests/unit/test_gradient_boosting.py tests/unit/test_classical_ml.py tests/unit/test_adaptive_math.py tests/unit/test_pattern_discovery.py tests/unit/test_experiment_store.py tests/numerical/test_symbolic_discovery.py -q

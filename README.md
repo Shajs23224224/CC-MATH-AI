@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F31 — Deep Learning (implementation under review)**
+Current milestone: **F32 — Feature Engineering (implementation under review)**
 
 Completed:
 - F01 — System Specification
@@ -25,13 +25,13 @@ Completed:
 - F27 — Probabilistic Forecasting Engine: expanding-window forecast evaluation, predictive intervals, bootstrap calibration and causal per-origin regime metadata; merged in PR #12 and hardened in PR #13 with CI/Security passed.
 - F28 — Classical ML and bounded mathematical discovery (merged and extended): supervised adapters, chronological out-of-sample evaluation, training-prefix association screening, polynomial symbolic regression, expression-tree evolution, validation-based strategy selection and JSONL experiment records. See [adaptive mathematics architecture](docs/ADAPTIVE_MATH.md).
 - F29 — Gradient Boosting (integrated in PR #17, merge commit `96fcdb5`): regression/classification adapters, chronological internal validation for tree-count selection, bounded estimator budget, refit on the training prefix, reserved final test tail and auditable metadata. Synthetic behavioral tests validate implementation boundaries, not investment performance. See [F29 technical design](docs/GRADIENT_BOOSTING.md).
-- F30 — Unsupervised ML (integrated in PR #18, merge commit `25de38d`): clustering, dimensionality reduction and anomaly detection with training-prefix-only scaling, stability diagnostics and algorithm-honest holdout handling. See [F30 technical design](docs/UNSUPERVISED_ML.md).
+- F30 — Unsupervised ML (integrated in PR #18, merge commit `25de38d`): clustering, dimensionality reduction and anomaly detection with training-prefix-only scaling, stability diagnostics and algorithm-honest holdout handling. See [F30 technical design](docs/UNSUPERVISED_ML.md).\n- F31 — Deep Learning (integrated in [PR #19](https://github.com/Shajs23224224/CC-MATH-AI/pull/19), merge commit `e5403c6`): optional PyTorch temporal models with chronological train/validation/test splits, training-prefix preprocessing, validation-only early stopping and bounded resource use. Synthetic tests are engineering checks, not evidence of market alpha. See [F31 technical design](docs/DEEP_LEARNING.md).
 
 In implementation / review:
 - F31 — Deep Learning: optional PyTorch backend, deterministic model registry, chronological train/validation/test splits, training-prefix preprocessing, bounded parameter/epoch budgets and early stopping. Scope and acceptance criteria are described in [F31 technical design](docs/DEEP_LEARNING.md). The F31 pull request must pass final-head CI/Security before integration.
 
 Next planned:
-- F32 — Feature Engineering, after F31 passes its acceptance criteria.
+- F33 — Algorithm Registry, after F32 passes its acceptance criteria.
 
 ## Architecture
 
@@ -72,7 +72,7 @@ See:
 - [F28 Classical ML and symbolic discovery](docs/CLASSICAL_ML.md)
 - [F29 Gradient Boosting](docs/GRADIENT_BOOSTING.md)
 - [F30 Unsupervised ML](docs/UNSUPERVISED_ML.md)
-- [F31 Deep Learning](docs/DEEP_LEARNING.md)
+- [F31 Deep Learning](docs/DEEP_LEARNING.md)\n- [F32 Feature Engineering](docs/FEATURE_ENGINEERING.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
