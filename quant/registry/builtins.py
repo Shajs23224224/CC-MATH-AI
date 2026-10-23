@@ -4132,7 +4132,7 @@ _F37_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
         "portfolio.kelly",
         "Kelly position sizing",
         "portfolio",
-        "Estimate a long-only Kelly weight from horizon-matched expected excess return and variance.",
+        "Estimate a long-only Kelly weight from excess return and variance on one horizon.",
         "max(0, expected return - risk-free rate) / volatility squared",
         (_F37_REQUEST,),
         _F37_RESULT,
