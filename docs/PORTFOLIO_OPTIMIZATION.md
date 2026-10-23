@@ -55,6 +55,8 @@ Supported hard controls:
 - Maximum Herfindahl concentration index (HHI).
 - Fully invested weights summing to one.
 
+If sector caps are configured, every active asset must have a sector label. Missing metadata fails closed rather than bypassing a cap.
+
 If any sector caps are configured, every active asset must have a sector label; missing sector metadata fails closed rather than bypassing a cap.
 
 Each accepted solution carries per-constraint measured values, limits, pass/fail state and explanations. The estimated transaction-cost fraction applies configured basis points to the absolute changes in risky-asset weights; reported one-way turnover is half that amount plus the implied cash deployment change. Cash deployment contributes to turnover but is not charged a commission. Return-based objectives subtract estimated trading costs; all methods report costs and can use the explicit turnover penalty and turnover limit. A cost estimate is only as good as its supplied basis-point assumption.
