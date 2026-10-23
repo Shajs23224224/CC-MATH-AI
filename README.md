@@ -36,6 +36,7 @@ Implemented in `main`:
 
 - F36 — Portfolio Optimization (integrated in [PR #25](https://github.com/Shajs23224224/CC-MATH-AI/pull/25), merge commit `b7a2628`): nine methods—equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity, inverse volatility, HRP, Black-Litterman and maximum diversification—with long-only F35 integration, point-in-time F23 covariance, asset/sector/turnover/HHI constraints, transaction-cost diagnostics, solver status, safe infeasibility handling and SHA-256 audit. F36, F33, general CI, Security and active regressions passed on Python 3.11/3.12. Synthetic tests validate code behavior, not market alpha. See [F36 technical design](docs/PORTFOLIO_OPTIMIZATION.md).
 - F37 — Position Sizing (integrated in [PR #26](https://github.com/Shajs23224224/CC-MATH-AI/pull/26), merge commit `f65ee22`): fixed fractional, volatility-based, stop-risk-budget, Kelly, fractional Kelly and confidence weighting. F36 target weights remain hard caps; units round down by lot size, ADV participation is bounded, residual cash remains unallocated, and results carry risk/liquidity diagnostics plus SHA-256 replay fingerprints. The dedicated F37 workflow, general CI, Security and upstream regressions passed on Python 3.11/3.12. No orders are sent; synthetic tests establish software behavior, not investment performance. See [F37 technical design](docs/POSITION_SIZING.md).
+- F38 — Portfolio Risk Governor (implementation in [PR #27](https://github.com/Shajs23224224/CC-MATH-AI/pull/27), validation in progress): final ALLOW/REDUCE/BLOCK gate after F37. Uses F21 fail-closed constraints and F22/F23 evidence; checks position weight, leverage, concentration, sector/factor exposure, pairwise correlation, drawdown, daily loss, liquidity, CVaR, turnover, data/model quality and input freshness. REDUCE rounds quantities down to the configured lot; BLOCK returns zero approved exposure and cannot be overridden. See [F38 technical design](docs/RISK_GOVERNOR.md).
 ## Architecture
 
 ```text
@@ -84,6 +85,7 @@ See:
 - [F35 Meta-model / Decision Engine](docs/DECISION_ENGINE.md)
 - [F36 Portfolio Optimization](docs/PORTFOLIO_OPTIMIZATION.md)
 - [F37 Position Sizing](docs/POSITION_SIZING.md)
+- [F38 Portfolio Risk Governor](docs/RISK_GOVERNOR.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
