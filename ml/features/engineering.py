@@ -205,6 +205,8 @@ class FeatureEngineer:
         report = FeatureEngineeringReport(
             pipeline_id=pipeline_id,
             dataset_id=dataset_id,
+            numpy_version=np.__version__,
+            pandas_version=pd.__version__,
             input_fingerprint=input_fingerprint,
             output_fingerprint=output_fingerprint,
             input_rows=len(frame),
@@ -286,7 +288,9 @@ class FeatureEngineer:
             return first.div(second.where(second != 0.0))
 
         if operation == "cross_sectional_rank":
-            return first.groupby(timestamps, sort=False).rank(method="average", pct=True)
+            counts = first.groupby(timestamps, sort=False).transform("count")
+            ranks = first.groupby(timestamps, sort=False).rank(method="average", pct=True)
+            return ranks.where(counts >= 2)
         if operation == "cross_sectional_zscore":
             means = first.groupby(timestamps, sort=False).transform("mean")
             variance = (first - means).pow(2).groupby(timestamps, sort=False).transform("mean")
@@ -311,7 +315,9 @@ class FeatureEngineer:
         if spec.availability_column is None:
             return values
         try:
-            availability = pd.to_datetime(frame[spec.availability_column], errors="coerce")
+            availability = pd.to_datetime(
+                frame[spec.availability_column], errors="coerce", utc=True
+            )
             known = availability.notna() & (availability <= timestamps)
         except (TypeError, ValueError) as exc:
             raise MLInputError("could not compare availability times with row timestamps") from exc
