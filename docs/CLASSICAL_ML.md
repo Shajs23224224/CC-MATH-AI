@@ -65,4 +65,13 @@ Input/schema violations raise MLInputError or Pydantic validation errors; estima
 
 The F28 test suite uses synthetic data with known affine, classification and association behavior. It verifies chronological boundaries, repeatability under a fixed seed, probability normalization, budget rejection, symbolic holdout error, candidate reuse and JSONL round-trip/error handling. These synthetic tests are behavior checks, not investment benchmarks.
 
-Not implemented in F28: hyperparameter search, probability calibration, online learning, causal discovery, deep learning, unsupervised learning, arbitrary program synthesis, multi-objective evolutionary search, formal proof, model-artifact serialization or a graphical interface. Those require separate designs and validation in later phases.
+Not implemented in F28: hyperparameter search, probability calibration, online learning, causal discovery, deep learning, unsupervised learning, arbitrary program synthesis beyond the bounded expression grammar, general multi-objective Pareto evolution, formal proof, model-artifact serialization or a graphical interface. Those require separate designs and validation in later phases.
+
+
+## Adaptive mathematical intelligence extension
+
+The adaptive coordinator and its bounded evolutionary search are documented in [ADAPTIVE_MATH.md](ADAPTIVE_MATH.md). The public API is `AdaptiveMathEngine` plus `predict_adaptive_candidate`, with typed contracts in `core/contracts/adaptive_math.py`.
+
+This extension compares a linear baseline, bounded polynomial bases and generated expression trees. Candidate selection uses chronological validation RMSE plus a complexity penalty; one selected candidate is refit on train+validation and evaluated on the final test tail. Patterns are screened only on the training prefix. An expression that violates its domain or numerical execution limits is rejected; an invalid first choice can be skipped in favor of the next validation-ranked candidate without ranking by test performance.
+
+The evolutionary generator performs reproducible selection, mutation and subtree crossover within an allow-listed grammar. This is real bounded candidate generation, but not arbitrary program synthesis, a proof system, causal discovery or multi-objective Pareto optimization. All candidates remain experimental unless a separate validation process supports a stronger status.

@@ -100,13 +100,13 @@
 **Reglas:** retornos simples compuestos, semillas explícitas, entrenamiento anterior a cada origen, labels/transiciones de régimen causales y calibradas en train; documentar que IID bootstrap no conserva autocorrelación. No emite órdenes ni sustituye F21 Risk Engine.  
 **Cierre:** contratos reproducibles, pruebas numéricas y de leakage, calibración OOS, documentación y CI propia con regresiones F26 y F21–F25.
 
-## F28 — Classical ML and bounded mathematical discovery
-**Estado:** INTEGRADA en `main` mediante PR #14; F28 behavioral tests, CI general en Python 3.11/3.12 y Security aprobados.
-**Objetivo:** modelos ML clásicos, detección exploratoria de asociaciones, búsqueda simbólica acotada y memoria reproducible de experimentos.
-**Implementado:** contratos tipados para datasets/modelos/predicciones/evaluaciones/candidatos/experimentos; adaptadores allow-listed de regresión y clasificación con preprocessing fit sólo en train; evaluación cronológica holdout; metadatos y fingerprint del prefijo de entrenamiento; asociación Pearson/Spearman con diagnóstico de estabilidad; búsqueda de regresión polinómica de grado 1–4 con selección en validación y test final reservado; evaluación de candidatos sin `eval`/`exec`; persistencia JSONL validada.
-**Reglas:** respetar el orden temporal de entrada, no usar el test para seleccionar el grado, no interpretar correlación como causalidad, y mantener los descubrimientos simbólicos como `EXPERIMENTAL`.
-**Límites explícitos:** no incluye síntesis general de programas, búsqueda evolutiva multiobjetivo, calibración de probabilidades, clustering, deep learning, artefactos ejecutables ni prueba formal. La regresión polinómica descubre candidatos dentro de una gramática acotada; no demuestra la fórmula verdadera.
-**Cierre:** modelos reproducibles y OOS con contratos, pruebas de comportamiento, registro de experimentos y controles de seguridad.
+## F28 — Classical ML and adaptive mathematical discovery
+**Base integrada:** PR #14. La ampliación de inteligencia matemática añade coordinación adaptativa, generación evolutiva acotada de expresiones y evaluación independiente, sin duplicar los adaptadores ML o la memoria de experimentos existentes.
+**Objetivo:** elegir de forma reproducible entre estrategias matemáticas candidatas, descubrir regularidades verificables en datos y conservar evidencia auditable.
+**Implementado:** contratos tipados de árbol de expresiones, configuración, candidatos y reportes; comparador lineal/polinómico/evolutivo; generación mediante selección, mutación y cruce de subárboles; gramática autorizada con aritmética, división con rechazo de dominio inválido, sin/cos/tanh/abs; calibración de constantes sobre train; validación cronológica para selección y test reservado para evaluación final; asociaciones calculadas solo en el prefijo de entrenamiento; verificación numérica diferencial y persistencia JSONL opcional.
+**Reglas:** ningún candidato ejecuta código Python; restricciones de profundidad, nodos, términos, observaciones y evaluaciones; sin fuga temporal; correlación no implica causalidad; los candidatos siguen en estado `EXPERIMENTAL`; ausencia de contraejemplos no es demostración formal.
+**Límites explícitos:** regresión supervisada para el coordinador adaptativo; no implementa aún síntesis general de programas, búsqueda Pareto multiobjetivo, descubrimiento causal, búsqueda automática general de hiperparámetros, calibración probabilística, clustering, deep learning, prueba formal ni interfaz gráfica. La gramática evolutiva es deliberadamente finita.
+**Cierre:** verificar el workflow F28 específico, CI en Python 3.11/3.12, regresiones F21–F27, Security y pruebas sintéticas de comportamiento antes de promocionar cambios.
 
 ## F29 — Gradient Boosting
 **Objetivo:** boosting bajo el mismo contrato ML.  
@@ -239,6 +239,6 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F25: Black–Scholes, árboles binomiales/trinomiales, Monte Carlo, Greeks, volatilidad implícita y superficie de volatilidad integrados en main mediante PR #10; F25, CI general y Security aprobados.
 - F26: HMM/Markov switching, CUSUM, Bayesian online change points y regímenes de volatilidad integrados en `main` mediante PR #11 (`96a5646`); F26/general CI/Security y regresiones aprobados.
 - F27: forecasting probabilístico integrado y endurecido en `main` mediante PR #12 y PR #13 (`b07b3c4`); CI Python 3.11/3.12 y Security aprobados.
-- F28: núcleo de ML clásico y descubrimiento simbólico acotado en implementación; verificar estado real de CI antes de declararla completa.
+- F28: ML clásico, patrones exploratorios, regresión simbólica acotada y motor adaptativo con búsqueda evolutiva de árboles de expresión; el estado de integración se determina por PR, CI y Security, no por la presencia de documentación.
 - F29–F43: alcance técnico documentado; implementación reservada para sus respectivas fases.
-- **Fase activa: F28 — Classical ML y descubrimiento simbólico acotado.**
+- **Siguiente fase planificada tras validar la ampliación de F28: F29 — Gradient Boosting.**

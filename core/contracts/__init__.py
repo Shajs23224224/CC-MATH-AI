@@ -1,5 +1,11 @@
 """Stable domain contracts used across C-MATH-AI."""
 
+from .adaptive_math import (
+    AdaptiveCandidateEvidence,
+    AdaptiveMathConfig,
+    AdaptiveMathReport,
+    ExpressionNode,
+)
 from .backtest import BacktestResult
 from .cointegration import (
     CointegratingPairResult,
@@ -109,6 +115,10 @@ from .volatility import (
 )
 
 __all__ = [
+    "AdaptiveCandidateEvidence",
+    "AdaptiveMathConfig",
+    "AdaptiveMathReport",
+    "ExpressionNode",
     "AlgorithmMetadata",
     "AlgorithmResult",
     "Asset",
