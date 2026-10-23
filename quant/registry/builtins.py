@@ -4074,7 +4074,14 @@ _F37_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
         (_F37_REQUEST,),
         _F37_RESULT,
         implementation_ref="portfolio.size_positions",
-        parameters=(AlgorithmParameter(name="method", dtype="str", description="PositionSizingConfig method", default="fixed_fractional"),),
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PositionSizingConfig method",
+                default="fixed_fractional",
+            ),
+        ),
         units=("fraction of equity", "shares or units", "account currency"),
         tags=("position-sizing", "fixed-fractional", "F37"),
         limitations=("This method fixes notional exposure; it does not imply a fixed stop-out risk.",),
