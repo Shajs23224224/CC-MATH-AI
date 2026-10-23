@@ -95,9 +95,9 @@ def test_reduction_fits_training_prefix_and_transforms_holdout(algorithm: str) -
     "algorithm", ["isolation_forest", "local_outlier_factor", "elliptic_envelope"]
 )
 def test_anomaly_detectors_return_finite_scores_and_binary_flags(algorithm: str) -> None:
-    result = UnsupervisedMLModel(
-        UnsupervisedMLConfig(algorithm=algorithm, random_seed=30)
-    ).fit(sample_features(), ("x", "y", "z"))
+    result = UnsupervisedMLModel(UnsupervisedMLConfig(algorithm=algorithm, random_seed=30)).fit(
+        sample_features(), ("x", "y", "z")
+    )
     assert result.operation == "anomaly_detection"
     assert len(result.training_anomaly_scores or ()) == result.training_observations
     assert len(result.holdout_anomaly_scores or ()) == result.holdout_observations
