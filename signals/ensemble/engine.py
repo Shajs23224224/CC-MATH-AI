@@ -141,12 +141,9 @@ def combine_evidence(
             for item, _, weight in normalized_values
         )
         dispersion = math.fsum(
-            weight * abs(value - score) / 2.0
-            for _, value, weight in normalized_values
+            weight * abs(value - score) / 2.0 for _, value, weight in normalized_values
         )
-        uncertainty = min(
-            1.0, max(0.0, 1.0 - (1.0 - mean_source_uncertainty) * (1.0 - dispersion))
-        )
+        uncertainty = min(1.0, max(0.0, 1.0 - (1.0 - mean_source_uncertainty) * (1.0 - dispersion)))
         if independent_group_count < policy.min_independent_groups:
             abstained = True
             abstention_reason = (
