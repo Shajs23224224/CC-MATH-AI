@@ -301,7 +301,6 @@ _SEED_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
 )
 
 
-
 # Additional public implementations and allow-listed model families. These are
 # metadata records only: no implementation module is imported or executed here.
 _SERIES_VALUES = AlgorithmPort(
@@ -440,10 +439,19 @@ _OUTPUT_PORTS = {
         description="Model prediction output",
     ),
 }
+
+
 def _extra_entry(spec: tuple[object, ...]) -> AlgorithmMetadata:
     (
-        algorithm_id, name, category, summary, method, implementation_ref,
-        input_kind, output_kind, tags,
+        algorithm_id,
+        name,
+        category,
+        summary,
+        method,
+        implementation_ref,
+        input_kind,
+        output_kind,
+        tags,
     ) = spec[:9]
     parameter_spec = cast(
         tuple[str, str, str, str | int | float | bool | None] | None,
@@ -458,8 +466,13 @@ def _extra_entry(spec: tuple[object, ...]) -> AlgorithmMetadata:
             ),
         )
     return _entry(
-        str(algorithm_id), str(name), str(category), str(summary), str(method),
-        _INPUT_PORTS[str(input_kind)], _OUTPUT_PORTS[str(output_kind)],
+        str(algorithm_id),
+        str(name),
+        str(category),
+        str(summary),
+        str(method),
+        _INPUT_PORTS[str(input_kind)],
+        _OUTPUT_PORTS[str(output_kind)],
         implementation_ref=str(implementation_ref),
         parameters=parameters,
         tags=cast(tuple[str, ...], tags),
