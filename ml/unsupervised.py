@@ -25,6 +25,7 @@ from core.contracts.unsupervised import (
     UnsupervisedMLResult,
     UnsupervisedOperation,
 )
+
 from .errors import MLInputError, MLTrainingError
 
 EstimatorFactory = Callable[[int], Any]
