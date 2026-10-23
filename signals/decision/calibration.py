@@ -110,9 +110,7 @@ class ProbabilityCalibrationResult(BaseModel):
         if self.validation_window_end > self.fit_as_of:
             raise ValueError("validation window must end at or before fit_as_of")
         if (
-            self.training_sample_count
-            + self.validation_sample_count
-            + self.purged_sample_count
+            self.training_sample_count + self.validation_sample_count + self.purged_sample_count
             != self.sample_count
         ):
             raise ValueError("training, validation and purged counts must reconcile")
