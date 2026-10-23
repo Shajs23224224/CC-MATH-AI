@@ -166,9 +166,7 @@ class DecisionConfig(BaseModel):
                 self.calibration_validation_baseline_log_loss,
             )
             if any(value is None for value in required):
-                raise ValueError(
-                    "validated_oos calibration requires fit and validation provenance"
-                )
+                raise ValueError("validated_oos calibration requires fit and validation provenance")
             assert self.calibration_window_start is not None
             assert self.calibration_window_end is not None
             assert self.calibration_validation_window_start is not None
