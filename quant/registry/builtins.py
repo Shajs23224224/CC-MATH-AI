@@ -465,6 +465,7 @@ def _extra_entry(spec: tuple[object, ...]) -> AlgorithmMetadata:
         tags=cast(tuple[str, ...], tags),
     )
 
+
 _EXTRA_SPECS: tuple[tuple[object, ...], ...] = (
     # Return analytics and descriptive statistics.
     (
@@ -3596,7 +3597,6 @@ _EXTRA_SPECS += (
         "scalar",
         ("data", "quality", "staleness"),
     ),
-
     # Core descriptive statistics exposed by quant.math.statistics.
     (
         "math.arithmetic_mean",
