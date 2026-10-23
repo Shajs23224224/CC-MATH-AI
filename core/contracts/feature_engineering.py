@@ -122,6 +122,8 @@ class FeatureEngineeringReport(BaseModel):
     pipeline_id: str = Field(min_length=1)
     dataset_id: str = Field(min_length=1)
     schema_version: Literal["1.0"] = "1.0"
+    numpy_version: str = Field(min_length=1)
+    pandas_version: str = Field(min_length=1)
     input_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
     output_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
     input_rows: int = Field(ge=1)

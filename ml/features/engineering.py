@@ -5,11 +5,9 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Callable, Sequence
-from typing import Literal
 
 import numpy as np
 import pandas as pd
-import sklearn
 
 from core.contracts.feature_engineering import (
     FeatureEngineeringConfig,
@@ -96,12 +94,16 @@ class FeatureEngineer:
 
         result = frame.copy(deep=True)
         try:
-            timestamps = pd.to_datetime(result[timestamp_column], errors="raise")
+            timestamps = pd.to_datetime(result[timestamp_column], errors="raise", utc=True)
         except (ValueError, TypeError, OverflowError) as exc:
             raise MLInputError("timestamps must be valid date/time values") from exc
         if timestamps.isna().any():
             raise MLInputError("timestamps must not be missing")
-        if not timestamps.is_monotonic_increasing:
+        try:
+            ordered = timestamps.is_monotonic_increasing
+        except (TypeError, ValueError) as exc:
+            raise MLInputError("timestamps must use a consistent timezone") from exc
+        if not ordered:
             raise MLInputError("rows must already be ordered by non-decreasing timestamp")
         result[timestamp_column] = timestamps
 
@@ -137,6 +139,13 @@ class FeatureEngineer:
                 )
             if not definition.point_in_time:
                 point_in_time_safe = False
+            if (
+                spec.operation in {"cross_sectional_rank", "cross_sectional_zscore"}
+                and asset_column is None
+            ):
+                raise MLInputError(
+                    f"feature {definition.feature_id} requires asset_column for cross-sectional transforms"
+                )
             for source_column in definition.source_columns:
                 if source_column not in result.columns:
                     raise MLInputError(f"missing source column: {source_column}")
@@ -146,21 +155,12 @@ class FeatureEngineer:
                         f"missing availability column: {spec.availability_column}"
                     )
                 available_at = pd.to_datetime(
-                    result[spec.availability_column], errors="coerce"
+                    result[spec.availability_column], errors="coerce", utc=True
                 )
                 if available_at.isna().all():
                     raise MLInputError(
                         f"availability column {spec.availability_column} has no valid values"
                     )
-                if not result[timestamp_column].dtype == available_at.dtype:
-                    try:
-                        available_at = available_at.astype(
-                            result[timestamp_column].dtype
-                        )
-                    except (TypeError, ValueError) as exc:
-                        raise MLInputError(
-                            "timestamp and availability columns must use compatible timezones"
-                        ) from exc
 
             generated = self._calculate(result, spec, timestamps)
             generated = self._apply_availability_lag(generated, result, spec, asset_column)
@@ -175,7 +175,9 @@ class FeatureEngineer:
         output_fingerprint = _fingerprint(features)
         input_fingerprint = _fingerprint(frame)
         warmup_missing_rows = int(features.isna().any(axis=1).sum())
-        maximum_lookback = max(spec.required_lookback for spec in specs)
+        maximum_lookback = max(
+            max(spec.required_lookback, spec.availability_lag) for spec in specs
+        )
         pipeline_identity = {
             "dataset_id": dataset_id,
             "input_fingerprint": input_fingerprint,
@@ -319,13 +321,13 @@ class FeatureEngineer:
             return masked.groupby(frame[asset_column], sort=False).ffill()
         return masked.ffill()
 
-    @staticmethod
     def _transform_by_asset(
+        self,
         values: pd.Series,
         frame: pd.DataFrame,
         operation: Callable[[pd.Series], pd.Series],
     ) -> pd.Series:
-        asset_column = FeatureEngineer._active_asset_column(frame)
+        asset_column = self.config.asset_column
         if asset_column is None:
             return operation(values)
         return values.groupby(frame[asset_column], sort=False, group_keys=False).transform(
@@ -347,13 +349,6 @@ class FeatureEngineer:
             spec.availability_lag
         )
 
-    @staticmethod
-    def _active_asset_column(frame: pd.DataFrame) -> str | None:
-        return "asset_symbol" if "asset_symbol" in frame.columns and frame[
-            "asset_symbol"
-        ].notna().all() else None
-
-
 def _fingerprint(frame: pd.DataFrame) -> str:
     """Hash ordered rows, column names and dtypes without serializing model objects."""
     digest = hashlib.sha256()
@@ -362,6 +357,8 @@ def _fingerprint(frame: pd.DataFrame) -> str:
             {
                 "columns": [str(column) for column in frame.columns],
                 "dtypes": [str(dtype) for dtype in frame.dtypes],
+                "numpy_version": np.__version__,
+                "pandas_version": pd.__version__,
             },
             separators=(",", ":"),
         ).encode("utf-8")
