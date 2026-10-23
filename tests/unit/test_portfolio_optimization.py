@@ -308,6 +308,33 @@ def test_positive_minimum_weight_for_sell_signal_is_infeasible() -> None:
     assert "positive minimum weight" in result.solver_message
 
 
+def test_black_litterman_adds_risk_free_rate_to_posterior_total_return() -> None:
+    request = _request(
+        view_matrix=((1.0, -1.0, 0.0), (0.0, 0.0, 1.0)),
+        view_returns=(0.02, 0.04),
+        view_confidences=(0.8, 0.7),
+        equilibrium_weights=(1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0),
+    )
+    base = optimize_portfolio(request, _config("black_litterman", risk_free_rate=0.0))
+    risk_free = optimize_portfolio(request, _config("black_litterman", risk_free_rate=0.01))
+
+    assert base.status in {"OPTIMAL", "FEASIBLE"}
+    assert risk_free.status in {"OPTIMAL", "FEASIBLE"}
+    assert risk_free.expected_return == pytest.approx(base.expected_return + 0.01, abs=1e-5)
+
+
+def test_sector_caps_fail_closed_when_active_asset_sector_is_unknown() -> None:
+    request = _request(sectors=(None, "TECH", "HEALTH"))
+    result = optimize_portfolio(
+        request,
+        _config("mean_variance", sector_limits=({"sector": "TECH", "maximum_weight": 0.5},)),
+    )
+
+    assert result.status == "FAILED"
+    assert all(item.target_weight == 0.0 for item in result.allocations)
+    assert "Sector labels are required" in result.solver_message
+
+
 def test_black_litterman_requires_explicit_views() -> None:
     result = optimize_portfolio(_request(), _config("black_litterman"))
 
