@@ -295,7 +295,7 @@ def _fit_final_candidate(
         intercept = float(estimator.intercept_)
         expression = render_tree(candidate.tree, feature_names)
         representation = f"y ≈ ({scale:.8g} * {expression}) + {intercept:.8g}"
-        final_coefficients = (scale,)
+        final_coefficients: tuple[float, ...] = (scale,)
         final_intercept = intercept
     else:
         degree = candidate.degree if candidate.strategy == "polynomial" else 1
