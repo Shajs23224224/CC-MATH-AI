@@ -310,7 +310,7 @@ def _derived_metrics(
         )
 
     traded_notional = math.fsum(
-        abs(notionals[item.asset_symbol] - contexts[item.asset_symbol].current_notional)
+        abs(notionals[item.asset_symbol.upper()] - contexts[item.asset_symbol.upper()].current_notional)
         for item in allocations
     )
     metrics.append(
@@ -417,7 +417,7 @@ def evaluate_risk_governor(
 
     positions: list[GovernorApprovedPosition] = []
     for allocation in allocations:
-        context = contexts[allocation.asset_symbol]
+        context = contexts[allocation.asset_symbol.upper()]
         source_quantity = allocation.target_quantity
         if evaluation.action == RiskAction.BLOCK:
             approved_quantity = 0.0
