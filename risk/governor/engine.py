@@ -178,12 +178,14 @@ def _derived_metrics(
 ) -> tuple[RiskMetric, ...]:
     """Calculate exposures from F37 targets and risk context, never from future data."""
     allocations = request.sizing_result.allocations
-    contexts = {asset.asset_symbol: asset for asset in request.assets}
+    contexts = {asset.asset_symbol.upper(): asset for asset in request.assets}
     equity = request.sizing_result.equity
-    notionals = {item.asset_symbol: item.target_notional for item in allocations}
-    weights = {item.asset_symbol: item.target_weight for item in allocations}
+    notionals = {item.asset_symbol.upper(): item.target_notional for item in allocations}
+    weights = {item.asset_symbol.upper(): item.target_weight for item in allocations}
     active_symbols = tuple(
-        item.asset_symbol for item in allocations if item.target_quantity > 0.0
+        item.asset_symbol.upper()
+        for item in allocations
+        if item.target_quantity > 0.0
     )
     gross_notional = math.fsum(notionals.values())
 
@@ -287,7 +289,7 @@ def _derived_metrics(
     for allocation in allocations:
         if allocation.target_quantity <= 0.0:
             continue
-        context = contexts[allocation.asset_symbol]
+        context = contexts[allocation.asset_symbol.upper()]
         liquidity = liquidity_risk_metrics(
             allocation.asset_symbol,
             allocation.target_notional,
@@ -453,6 +455,8 @@ def evaluate_risk_governor(
             GovernorApprovedPosition(
                 asset_symbol=allocation.asset_symbol,
                 source_quantity=source_quantity,
+                source_notional=allocation.target_notional,
+                source_weight=allocation.target_weight,
                 approved_quantity=approved_quantity,
                 approved_notional=approved_notional,
                 approved_weight=approved_weight,
