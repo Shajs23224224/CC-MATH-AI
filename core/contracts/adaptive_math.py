@@ -42,10 +42,18 @@ class ExpressionNode(BaseModel):
             if not math.isfinite(self.constant):
                 raise ValueError("constant values must be finite")
         elif self.op in unary:
-            if len(self.children) != 1 or self.feature_index is not None or self.constant is not None:
+            if (
+                len(self.children) != 1
+                or self.feature_index is not None
+                or self.constant is not None
+            ):
                 raise ValueError("unary operators require exactly one child")
         elif self.op in binary:
-            if len(self.children) != 2 or self.feature_index is not None or self.constant is not None:
+            if (
+                len(self.children) != 2
+                or self.feature_index is not None
+                or self.constant is not None
+            ):
                 raise ValueError("binary operators require exactly two children")
         return self
 
