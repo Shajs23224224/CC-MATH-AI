@@ -47,6 +47,8 @@ def _decision(
     horizon: str = "1D",
 ) -> DecisionOutput:
     """Create a small, schema-valid F35 decision fixture."""
+    if abstained:
+        signal = SignalType.HOLD
     probability_map = {
         SignalType.BUY: DecisionProbabilities(buy=0.8, hold=0.1, sell=0.1),
         SignalType.HOLD: DecisionProbabilities(buy=0.1, hold=0.8, sell=0.1),
