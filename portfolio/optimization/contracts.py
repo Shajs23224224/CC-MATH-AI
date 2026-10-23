@@ -194,6 +194,8 @@ class PortfolioOptimizationRequest(BaseModel):
             raise ValueError("view_matrix entries must be finite")
         if any(not math.isfinite(value) for value in self.view_returns):
             raise ValueError("view_returns must be finite")
+        if any(not any(abs(value) > 1e-12 for value in row) for row in self.view_matrix):
+            raise ValueError("each Black-Litterman view must reference at least one asset")
         if any(
             not math.isfinite(value) or not 0.0 < value <= 1.0
             for value in self.view_confidences
