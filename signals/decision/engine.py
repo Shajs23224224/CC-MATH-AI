@@ -34,9 +34,7 @@ def make_decision(
     forecast_uncertainty = min(
         1.0, request.forecast.uncertainty / policy.forecast_uncertainty_scale
     )
-    combined_uncertainty = 1.0 - (
-        (1.0 - ensemble.uncertainty) * (1.0 - forecast_uncertainty)
-    )
+    combined_uncertainty = 1.0 - ((1.0 - ensemble.uncertainty) * (1.0 - forecast_uncertainty))
     combined_uncertainty = min(1.0, max(0.0, combined_uncertainty))
 
     abstention_reason = _abstention_reason(
@@ -191,9 +189,7 @@ def _abstention_reason(
         if policy.calibration_validation_window_end > ensemble.as_of:
             return "calibration_validation_after_decision_as_of"
     failed_constraints = sorted(
-        item.constraint_id
-        for item in request.constraints
-        if item.blocking and not item.satisfied
+        item.constraint_id for item in request.constraints if item.blocking and not item.satisfied
     )
     if failed_constraints:
         return "blocking_constraints_failed:" + ",".join(failed_constraints)
