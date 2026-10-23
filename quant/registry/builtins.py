@@ -23,6 +23,23 @@ _RETURNS = AlgorithmPort(
     name="returns", dtype="series[float]", description="Per-period asset returns", unit="ratio"
 )
 _SCALAR = AlgorithmPort(name="value", dtype="float", description="Computed numeric result")
+_F36_DECISIONS = AlgorithmPort(
+    name="decisions",
+    dtype="sequence[DecisionOutput]",
+    description="Point-in-time, horizon-matched F35 decisions for unique assets",
+)
+_F36_COVARIANCE = AlgorithmPort(
+    name="covariance",
+    dtype="DependenceMatrix",
+    description="F23 covariance matrix matching the decision symbols and horizon",
+    unit="squared period return",
+)
+_F36_RESULT = AlgorithmPort(
+    name="optimization_result",
+    dtype="PortfolioOptimizationResult",
+    description="TargetAllocation rows plus solver status and constraint diagnostics",
+    unit="fraction of portfolio equity",
+)
 
 
 def _entry(
@@ -3841,7 +3858,204 @@ _EXTRA_SPECS += (
 _EXTRA_ALGORITHMS: tuple[AlgorithmMetadata, ...] = tuple(
     _extra_entry(spec) for spec in _EXTRA_SPECS
 )
-BUILTIN_ALGORITHMS: tuple[AlgorithmMetadata, ...] = _SEED_ALGORITHMS + _EXTRA_ALGORITHMS
+_F36_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
+    _entry(
+        "portfolio.equal_weight",
+        "Equal-weight portfolio optimization",
+        "portfolio",
+        "Allocate equally across eligible assets subject to hard portfolio constraints.",
+        "minimize sum((w_i - 1/n)^2), subject to sum(w)=1 and configured bounds",
+        (_F36_DECISIONS, _F36_COVARIANCE),
+        _F36_RESULT,
+        implementation_ref="portfolio.optimize_portfolio",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="equal_weight",
+            ),
+        ),
+        units=("portfolio-weight ratio", "period return", "period covariance"),
+        tags=("portfolio-optimization", "allocation", "long-only", "F36"),
+        limitations=("Long-only; cash target and short selling are not modeled.",),
+    ),
+    _entry(
+        "portfolio.mean_variance",
+        "Mean-variance portfolio optimization",
+        "portfolio",
+        "Trade forecast return against covariance risk and estimated transaction costs.",
+        "minimize risk_aversion * w'Σw / 2 - net_expected_return",
+        (_F36_DECISIONS, _F36_COVARIANCE),
+        _F36_RESULT,
+        implementation_ref="portfolio.optimize_portfolio",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="mean_variance",
+            ),
+        ),
+        units=("portfolio-weight ratio", "period return", "period covariance"),
+        tags=("portfolio-optimization", "mean-variance", "F36"),
+        limitations=("Expected returns and covariance must share a horizon and units.",),
+    ),
+    _entry(
+        "portfolio.minimum_variance",
+        "Minimum-variance portfolio optimization",
+        "portfolio",
+        "Minimize portfolio variance under configured allocation constraints.",
+        "minimize w'Σw / 2",
+        (_F36_DECISIONS, _F36_COVARIANCE),
+        _F36_RESULT,
+        implementation_ref="portfolio.optimize_portfolio",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="minimum_variance",
+            ),
+        ),
+        units=("portfolio-weight ratio", "period return", "period covariance"),
+        tags=("portfolio-optimization", "variance", "F36"),
+        limitations=("Minimum historical/modelled variance is not minimum realized risk.",),
+    ),
+    _entry(
+        "portfolio.maximum_sharpe",
+        "Maximum-Sharpe portfolio optimization",
+        "portfolio",
+        "Maximize horizon-consistent net excess return per portfolio volatility.",
+        "maximize (w'μ - risk_free - estimated_cost) / sqrt(w'Σw)",
+        (_F36_DECISIONS, _F36_COVARIANCE),
+        _F36_RESULT,
+        implementation_ref="portfolio.optimize_portfolio",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="maximum_sharpe",
+            ),
+        ),
+        units=("portfolio-weight ratio", "period return", "period covariance"),
+        tags=("portfolio-optimization", "sharpe", "F36"),
+        limitations=("Risk-free rate, returns and covariance must use the same horizon.",),
+    ),
+    _entry(
+        "portfolio.risk_parity",
+        "Risk-parity portfolio optimization",
+        "portfolio",
+        "Allocate weights to approximate equal normalized variance contributions.",
+        "minimize sum((w_i(Σw)_i/(w'Σw) - 1/n)^2)",
+        (_F36_DECISIONS, _F36_COVARIANCE),
+        _F36_RESULT,
+        implementation_ref="portfolio.optimize_portfolio",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="risk_parity",
+            ),
+        ),
+        units=("portfolio-weight ratio", "period return", "period covariance"),
+        tags=("portfolio-optimization", "risk-parity", "F36"),
+        limitations=("Equal variance contribution is not equal tail or liquidity risk.",),
+    ),
+    _entry(
+        "portfolio.inverse_volatility",
+        "Inverse-volatility portfolio allocation",
+        "portfolio",
+        "Project inverse-volatility weights onto configured hard constraints.",
+        "w_i proportional to 1 / sqrt(Σ_ii)",
+        (_F36_DECISIONS, _F36_COVARIANCE),
+        _F36_RESULT,
+        implementation_ref="portfolio.optimize_portfolio",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="inverse_volatility",
+            ),
+        ),
+        units=("portfolio-weight ratio", "period volatility"),
+        tags=("portfolio-optimization", "inverse-volatility", "F36"),
+        limitations=(
+            "Inverse volatility does not model cross-asset correlations in its base target.",
+        ),
+    ),
+    _entry(
+        "portfolio.hrp",
+        "Hierarchical Risk Parity portfolio allocation",
+        "portfolio",
+        "Use covariance-derived correlation distance and recursive bisection.",
+        "single-linkage clustering and inverse-variance cluster bisection",
+        (_F36_DECISIONS, _F36_COVARIANCE),
+        _F36_RESULT,
+        implementation_ref="portfolio.optimize_portfolio",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="hrp",
+            ),
+        ),
+        units=("portfolio-weight ratio", "period covariance"),
+        tags=("portfolio-optimization", "HRP", "hierarchical-clustering", "F36"),
+        limitations=("Cluster structure depends on the chosen covariance window and metric.",),
+    ),
+    _entry(
+        "portfolio.black_litterman",
+        "Black-Litterman portfolio optimization",
+        "portfolio",
+        "Combine equilibrium prior returns with explicit confidence-weighted views.",
+        "posterior = prior + τΣP'(PτΣP' + Ω)^-1(q - P prior)",
+        (_F36_DECISIONS, _F36_COVARIANCE),
+        _F36_RESULT,
+        implementation_ref="portfolio.optimize_portfolio",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="black_litterman",
+            ),
+        ),
+        units=("portfolio-weight ratio", "period return", "period covariance"),
+        tags=("portfolio-optimization", "black-litterman", "F36"),
+        limitations=(
+            "Explicit views, confidence values and equilibrium weights require provenance.",
+        ),
+    ),
+    _entry(
+        "portfolio.maximum_diversification",
+        "Maximum-diversification portfolio optimization",
+        "portfolio",
+        "Maximize weighted asset volatility relative to portfolio volatility.",
+        "maximize sum(w_i σ_i) / sqrt(w'Σw)",
+        (_F36_DECISIONS, _F36_COVARIANCE),
+        _F36_RESULT,
+        implementation_ref="portfolio.optimize_portfolio",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="maximum_diversification",
+            ),
+        ),
+        units=("portfolio-weight ratio", "period volatility"),
+        tags=("portfolio-optimization", "diversification", "F36"),
+        limitations=("Diversification ratio is not a guarantee against correlated tail losses.",),
+    ),
+)
+BUILTIN_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
+    _SEED_ALGORITHMS + _EXTRA_ALGORITHMS + _F36_ALGORITHMS
+)
 
 
 def builtin_algorithms() -> tuple[AlgorithmMetadata, ...]:

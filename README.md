@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F35 — Meta-model / Decision Engine**
+Current milestone: **F36 — Portfolio Optimization**
 
 Completed:
 - F01 — System Specification
@@ -32,8 +32,10 @@ Completed:
 - F34 — Quant Ensemble (integrated in [PR #22](https://github.com/Shajs23224224/CC-MATH-AI/pull/22), merge commit `26e7888`): deterministic bounded score normalization, versioned source weighting, correlation-group influence caps, agreement, uncertainty, abstention, contribution attribution and SHA-256 replay fingerprint. Validation includes Python 3.11/3.12, F29–F33 regressions, general CI and Security on the PR head. It emits auditable research evidence, not trade decisions. See [F34 technical design](docs/QUANT_ENSEMBLE.md).
 
 Implemented in `main`:
-- F35 — Meta-model / Decision Engine: deterministic BUY/HOLD/SELL decision records from F34 evidence plus an explicitly sourced, horizon-matched forecast; versioned thresholds, class probabilities, calibration provenance, strict abstention, SHA-256 fingerprints and source-level audit. The default policy abstains unless probabilities carry validated out-of-sample calibration metadata. It never sizes positions, places orders or bypasses risk controls. Its F35 workflow and general CI passed on Python 3.11/3.12. See [F35 technical design](docs/DECISION_ENGINE.md).
+- F35 — Meta-model / Decision Engine: deterministic BUY/HOLD/SELL decisions from F34 evidence and a horizon-matched forecast, with versioned thresholds, strict abstention, calibration provenance and replay fingerprints. It never sizes positions, places orders or bypasses risk controls. F35 workflow and general CI passed on Python 3.11/3.12. See [F35 technical design](docs/DECISION_ENGINE.md).
 
+In implementation on `feature/f36-portfolio-optimization`:
+- F36 — Portfolio Optimization: nine methods (equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity, inverse volatility, HRP, Black-Litterman, maximum diversification); long-only F35 decision integration; point-in-time F23 covariance; asset/sector caps, turnover and HHI controls; estimated costs, solver status, hard-constraint diagnostics and SHA-256 audit. See [F36 technical design](docs/PORTFOLIO_OPTIMIZATION.md). Pending dedicated CI, general CI/Security review and PR merge.
 ## Architecture
 
 ```text
@@ -78,6 +80,7 @@ See:
 - [F33 Algorithm Registry](docs/ALGORITHM_REGISTRY.md)
 - [F34 Quant Ensemble](docs/QUANT_ENSEMBLE.md)
 - [F35 Meta-model / Decision Engine](docs/DECISION_ENGINE.md)
+- [F36 Portfolio Optimization](docs/PORTFOLIO_OPTIMIZATION.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 

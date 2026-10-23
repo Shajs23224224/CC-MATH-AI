@@ -183,3 +183,27 @@ def test_builtin_catalog_is_discoverable_and_does_not_claim_validation() -> None
     assert len(planned) >= 250
     assert all(item.lifecycle == AlgorithmLifecycle.EXPERIMENTAL for item in planned)
     assert all(item.implementation_ref is None for item in planned)
+
+
+def test_f36_portfolio_optimizers_are_registered_without_claiming_validation() -> None:
+    expected_ids = {
+        "portfolio.equal_weight",
+        "portfolio.mean_variance",
+        "portfolio.minimum_variance",
+        "portfolio.maximum_sharpe",
+        "portfolio.risk_parity",
+        "portfolio.inverse_volatility",
+        "portfolio.hrp",
+        "portfolio.black_litterman",
+        "portfolio.maximum_diversification",
+    }
+    portfolio_entries = discover_algorithms(category="portfolio")
+    entries_by_id = {item.algorithm_id: item for item in portfolio_entries}
+
+    assert expected_ids.issubset(entries_by_id)
+    for algorithm_id in expected_ids:
+        item = entries_by_id[algorithm_id]
+        assert item.implementation_ref == "portfolio.optimize_portfolio"
+        assert item.lifecycle == AlgorithmLifecycle.IMPLEMENTED
+        assert item.test_status == AlgorithmTestStatus.NOT_RUN
+        assert "portfolio-optimization" in item.tags
