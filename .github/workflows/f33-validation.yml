@@ -1,0 +1,52 @@
+name: F33 Algorithm Registry
+
+on:
+  push:
+    branches: ["feature/f33-algorithm-registry"]
+    paths:
+      - "quant/registry/**"
+      - "tests/unit/test_algorithm_registry.py"
+      - "docs/ALGORITHM_REGISTRY.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f33-validation.yml"
+  pull_request:
+    branches: ["main", "feature/f32-feature-engineering"]
+    paths:
+      - "quant/registry/**"
+      - "tests/unit/test_algorithm_registry.py"
+      - "docs/ALGORITHM_REGISTRY.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f33-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-f33:
+    name: Validate algorithm metadata registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install project and development dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check quant/registry tests/unit/test_algorithm_registry.py
+      - name: Ruff format check
+        run: python -m ruff format --check quant/registry tests/unit/test_algorithm_registry.py
+      - name: Mypy
+        run: python -m mypy quant/registry
+      - name: F33 behavior tests
+        run: python -m pytest tests/unit/test_algorithm_registry.py -q
+      - name: Regression tests for F32 and ML phases
+        run: |
+          python -m pytest tests/unit/test_feature_engineering.py -q
+          python -m pytest tests/unit/test_deep_learning.py tests/unit/test_unsupervised_ml.py -q
+          python -m pytest tests/unit/test_gradient_boosting.py tests/unit/test_classical_ml.py -q

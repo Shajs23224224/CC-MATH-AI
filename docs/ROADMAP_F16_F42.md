@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F31 integradas en main; F32 en implementación y revisión  
+**Estado:** F21–F31 integradas en main; F32 en revisión; F33 implementada en rama dependiente de F32  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -134,10 +134,11 @@
 **Cierre:** feature catalog reproducible para ML/ensemble.
 
 ## F33 — Algorithm Registry
-**Objetivo:** formalizar el catálogo de 300+ algoritmos.  
-**Registro:** id, nombre, categoría, versión, inputs/outputs, parámetros, fórmula/método, unidades, frecuencia, requisitos, limitaciones y estado de tests.  
-**Cambios:** quant/registry/, metadata schema, discovery y validación.  
-**Cierre:** algoritmos descubribles sin imports manuales dispersos.
+**Estado:** implementación inicial en revisión; depende de la aceptación de F32.  
+**Objetivo:** establecer la infraestructura para formalizar el catálogo objetivo de 300+ algoritmos; el catálogo inicial no se presenta como completo.  
+**Implementado:** contratos inmutables para metadatos, puertos y parámetros; IDs/versiones validados; registro versionado con inserción por lotes atómica; descubrimiento por categoría, lifecycle, puertos y tags; compatibilidad por nombre/tipo/unidad; estados separados de ciclo de vida y evidencia de tests; manifiesto inicial curado; workflow dedicado y pruebas de comportamiento.  
+**Seguridad:** el registro sólo maneja metadatos; no importa ni ejecuta código dinámico. No marca algoritmos como validados automáticamente.  
+**Cierre:** completar catálogo a partir de implementaciones verificadas, ejecutar CI/regresiones y validar la cadena F32→F33 antes de fusionar.
 
 ## F34 — Quant Ensemble
 **Objetivo:** combinar evidencia heterogénea conservando contribuciones.  

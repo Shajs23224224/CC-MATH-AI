@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F32 — Feature Engineering (implementation under review)**
+Current milestone: **F33 — Algorithm Registry (implementation under review; stacked on F32)**
 
 Completed:
 - F01 — System Specification
@@ -30,9 +30,10 @@ Completed:
 
 In implementation / review:
 - F32 — Feature Engineering: versioned feature definitions and deterministic, bounded trailing-window transforms for returns, volatility, volume, external factors, risk/regime variables and cross-sectional interactions. Point-in-time availability and lineage controls are documented in [F32 technical design](docs/FEATURE_ENGINEERING.md).
+- F33 — Algorithm Registry (under review): typed versioned metadata, duplicate-safe registration, deterministic discovery, lifecycle/test evidence and input/output compatibility checks. The initial manifest is curated; the target of 300+ verified catalog entries is not yet complete. See [F33 technical design](docs/ALGORITHM_REGISTRY.md).
 
 Next planned:
-- F33 — Algorithm Registry, after F32 passes its acceptance criteria.
+- F34 — Quant Ensemble, after F33 and its dependency chain pass acceptance criteria.
 
 ## Architecture
 
@@ -75,6 +76,7 @@ See:
 - [F30 Unsupervised ML](docs/UNSUPERVISED_ML.md)
 - [F31 Deep Learning](docs/DEEP_LEARNING.md)
 - [F32 Feature Engineering](docs/FEATURE_ENGINEERING.md)
+- [F33 Algorithm Registry](docs/ALGORITHM_REGISTRY.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
