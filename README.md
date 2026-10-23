@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F33 — Algorithm Registry (PR #21 under review; targets `main`)**
+Current milestone: **F34 — Quant Ensemble (implementation branch; awaiting CI and review)**
 
 Completed:
 - F01 — System Specification
@@ -26,14 +26,13 @@ Completed:
 - F28 — Classical ML and bounded mathematical discovery (merged and extended): supervised adapters, chronological out-of-sample evaluation, training-prefix association screening, polynomial symbolic regression, expression-tree evolution, validation-based strategy selection and JSONL experiment records. See [adaptive mathematics architecture](docs/ADAPTIVE_MATH.md).
 - F29 — Gradient Boosting (integrated in PR #17, merge commit `96fcdb5`): regression/classification adapters, chronological internal validation for tree-count selection, bounded estimator budget, refit on the training prefix, reserved final test tail and auditable metadata. Synthetic behavioral tests validate implementation boundaries, not investment performance. See [F29 technical design](docs/GRADIENT_BOOSTING.md).
 - F30 — Unsupervised ML (integrated in PR #18, merge commit `25de38d`): clustering, dimensionality reduction and anomaly detection with training-prefix-only scaling, stability diagnostics and algorithm-honest holdout handling. See [F30 technical design](docs/UNSUPERVISED_ML.md).
-- F31 — Deep Learning (integrated in [PR #19](https://github.com/Shajs23224224/CC-MATH-AI/pull/19), merge commit `e5403c6`): optional PyTorch temporal models with chronological train/validation/test splits, training-prefix preprocessing, validation-only early stopping and bounded resource use. Synthetic tests are engineering checks, not evidence of market alpha. See [F31 technical design](docs/DEEP_LEARNING.md).
+- F31 — Deep Learning (integrated in [PR #19](https://github.com/Shajs23224224/CC-MATH-AI/pull/19), merge commit `e5403c6`): optional PyTorch temporal models with chronological train/validation/test splits, training-prefix preprocessing, validation-only early stopping and bounded resource use. Synthetic tests are engineering checks, not evidence of market alpha. See [F31 technical design](docs/DEEP_LEARNING.md).\n- F32 — Feature Engineering (integrated in [PR #20](https://github.com/Shajs23224224/CC-MATH-AI/pull/20)): versioned, point-in-time-aware feature transforms with lineage and temporal validation. See [F32 technical design](docs/FEATURE_ENGINEERING.md).\n- F33 — Algorithm Registry (integrated in [PR #21](https://github.com/Shajs23224224/CC-MATH-AI/pull/21), merge commit `4f400ff`): versioned metadata, deterministic discovery and compatibility checks. The 304-entry manifest distinguishes verified implementation references from planned targets; planned entries remain experimental and algorithm evidence stays `not_run` until independently tested. See [F33 technical design](docs/ALGORITHM_REGISTRY.md).
 
 In implementation / review:
-- F32 — Feature Engineering: versioned feature definitions and deterministic, bounded trailing-window transforms for returns, volatility, volume, external factors, risk/regime variables and cross-sectional interactions. Point-in-time availability and lineage controls are documented in [F32 technical design](docs/FEATURE_ENGINEERING.md).
-- F33 — Algorithm Registry (under review in PR #21): typed versioned metadata, duplicate-safe registration, deterministic discovery, lifecycle/test evidence and input/output compatibility checks. The manifest now contains 304 metadata records with unique IDs; individual implementation evidence remains `not_run` until explicitly validated. See [F33 technical design](docs/ALGORITHM_REGISTRY.md).
+- F34 — Quant Ensemble: deterministic score normalization, versioned weighting, correlation-group influence caps, agreement/disagreement, uncertainty, attribution, abstention and replay fingerprint. See [F34 technical design](docs/QUANT_ENSEMBLE.md).
 
 Next planned:
-- F34 — Quant Ensemble, after F33 and its dependency chain pass acceptance criteria.
+- F35 — Meta-model / Decision Engine, after F34's contracts, tests, CI and Security acceptance gates pass.
 
 ## Architecture
 
