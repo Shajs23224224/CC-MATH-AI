@@ -269,7 +269,9 @@ def test_invalid_upstream_status_is_rejected() -> None:
     request = _request()
     failed = request.portfolio_optimization.model_copy(update={"status": "FAILED"})
     with pytest.raises(ValidationError, match="OPTIMAL or FEASIBLE"):
-        PositionSizingRequest.model_validate(\n            {**request.model_dump(mode="python"), "portfolio_optimization": failed}\n        )
+        PositionSizingRequest.model_validate(
+            {**request.model_dump(mode="python"), "portfolio_optimization": failed}
+        )
 
 
 def test_config_rejects_non_semantic_version() -> None:
