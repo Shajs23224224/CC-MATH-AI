@@ -134,6 +134,8 @@ def test_unknown_algorithm_raises_domain_error() -> None:
 
 def test_builtin_catalog_is_discoverable_and_does_not_claim_validation() -> None:
     entries = discover_algorithms()
-    assert len(entries) >= 10
+    identifiers = [item.algorithm_id for item in entries]
+    assert len(entries) >= 300
+    assert len(identifiers) == len(set(identifiers))
     assert any(item.algorithm_id == "technical.rsi" for item in entries)
     assert all(item.test_status == AlgorithmTestStatus.NOT_RUN for item in entries)
