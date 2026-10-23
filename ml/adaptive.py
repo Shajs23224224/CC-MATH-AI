@@ -103,9 +103,7 @@ def _regression_metrics(actual: FloatArray, predicted: FloatArray) -> tuple[floa
     return rmse, mae, r2
 
 
-def _fingerprint(
-    dataset_id: str, matrix: FloatArray, target: FloatArray, seed: int
-) -> str:
+def _fingerprint(dataset_id: str, matrix: FloatArray, target: FloatArray, seed: int) -> str:
     # Fingerprint only the development prefix, never the final test tail.
     payload = json.dumps(
         {
@@ -121,17 +119,11 @@ def _fingerprint(
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-def _candidate_id(
-    fingerprint: str, strategy: Strategy, representation: str
-) -> str:
-    return hashlib.sha256(
-        f"{fingerprint}|{strategy}|{representation}".encode()
-    ).hexdigest()[:24]
+def _candidate_id(fingerprint: str, strategy: Strategy, representation: str) -> str:
+    return hashlib.sha256(f"{fingerprint}|{strategy}|{representation}".encode()).hexdigest()[:24]
 
 
-def _format_equation(
-    intercept: float, terms: Sequence[str], coefficients: Sequence[float]
-) -> str:
+def _format_equation(intercept: float, terms: Sequence[str], coefficients: Sequence[float]) -> str:
     parts = [f"{intercept:.8g}"]
     for term, coefficient in zip(terms, coefficients, strict=True):
         if abs(coefficient) >= 1e-10:
@@ -163,9 +155,7 @@ def _evaluate_dense_candidate(
         validation_design = transformer.transform(matrix_validation)
         if not np.all(np.isfinite(train_design)) or not np.all(np.isfinite(validation_design)):
             raise MLTrainingError("polynomial expansion overflowed")
-        terms = tuple(
-            str(value) for value in transformer.get_feature_names_out(feature_names)
-        )
+        terms = tuple(str(value) for value in transformer.get_feature_names_out(feature_names))
         degree_for_candidate = degree
         representation_prefix = f"polynomial-degree-{degree}"
     estimator = LinearRegression()
@@ -218,9 +208,7 @@ def _evaluate_evolutionary_candidate(
         raise InvalidExpression("constant expression rejected as an uninformative genome")
     calibration = LinearRegression()
     calibration.fit(train_value.reshape(-1, 1), target_train)
-    fit_prediction = np.asarray(
-        calibration.predict(train_value.reshape(-1, 1)), dtype=np.float64
-    )
+    fit_prediction = np.asarray(calibration.predict(train_value.reshape(-1, 1)), dtype=np.float64)
     validation_prediction = np.asarray(
         calibration.predict(validation_value.reshape(-1, 1)), dtype=np.float64
     )
@@ -325,9 +313,7 @@ def _fit_final_candidate(
                 str(value) for value in transformer.get_feature_names_out(feature_names)
             )
         estimator = LinearRegression().fit(development_design, target_development)
-        development_prediction = np.asarray(
-            estimator.predict(development_design), dtype=np.float64
-        )
+        development_prediction = np.asarray(estimator.predict(development_design), dtype=np.float64)
         test_prediction = np.asarray(estimator.predict(test_design), dtype=np.float64)
         final_coefficients = tuple(
             float(value) for value in np.asarray(estimator.coef_).reshape(-1)
@@ -404,12 +390,7 @@ def predict_adaptive_candidate(
         predictions = matrix @ np.asarray(candidate.coefficients) + candidate.intercept
     else:
         assert candidate.degree is not None
-        term_count = (
-            math.comb(
-                len(candidate.feature_names) + candidate.degree, candidate.degree
-            )
-            - 1
-        )
+        term_count = math.comb(len(candidate.feature_names) + candidate.degree, candidate.degree) - 1
         if term_count > 512:
             raise MLInputError(
                 "stored polynomial candidate exceeds the hard 512-term execution limit"
@@ -480,8 +461,15 @@ class AdaptiveMathEngine:
         try:
             candidates.append(
                 _evaluate_dense_candidate(
-                    "linear", None, x_train, y_train, x_validation, y_validation,
-                    dataset.feature_names, fingerprint, self.config,
+                    "linear",
+                    None,
+                    x_train,
+                    y_train,
+                    x_validation,
+                    y_validation,
+                    dataset.feature_names,
+                    fingerprint,
+                    self.config,
                 )
             )
             candidate_count += 1
@@ -499,9 +487,15 @@ class AdaptiveMathEngine:
             try:
                 candidates.append(
                     _evaluate_dense_candidate(
-                        "polynomial", degree, x_train, y_train,
-                        x_validation, y_validation, dataset.feature_names,
-                        fingerprint, self.config,
+                        "polynomial",
+                        degree,
+                        x_train,
+                        y_train,
+                        x_validation,
+                        y_validation,
+                        dataset.feature_names,
+                        fingerprint,
+                        self.config,
                     )
                 )
             except (ValueError, FloatingPointError, np.linalg.LinAlgError, MLTrainingError):
@@ -525,8 +519,14 @@ class AdaptiveMathEngine:
                 candidate_count += 1
                 try:
                     scored = _evaluate_evolutionary_candidate(
-                        tree, x_train, y_train, x_validation, y_validation,
-                        dataset.feature_names, fingerprint, self.config,
+                        tree,
+                        x_train,
+                        y_train,
+                        x_validation,
+                        y_validation,
+                        dataset.feature_names,
+                        fingerprint,
+                        self.config,
                     )
                     evolutionary_candidates.append(scored)
                     scored_population.append((tree, scored))
@@ -552,8 +552,12 @@ class AdaptiveMathEngine:
                 if choice < self.config.crossover_rate and len(parents) > 1:
                     second_parent = parents[int(rng.integers(0, len(parents)))]
                     child = crossover_trees(
-                        first_parent, second_parent, rng, width,
-                        self.config.max_depth, self.config.max_nodes,
+                        first_parent,
+                        second_parent,
+                        rng,
+                        width,
+                        self.config.max_depth,
+                        self.config.max_nodes,
                     )
                 elif choice < self.config.crossover_rate + self.config.mutation_rate:
                     child = mutate_tree(
@@ -574,7 +578,10 @@ class AdaptiveMathEngine:
             raise MLTrainingError("adaptive search could not produce any valid candidate")
         candidates.sort(
             key=lambda item: (
-                item.selection_score, item.complexity, item.strategy, item.candidate_id
+                item.selection_score,
+                item.complexity,
+                item.strategy,
+                item.candidate_id,
             )
         )
         winner: _ScoredCandidate | None = None
@@ -604,9 +611,7 @@ class AdaptiveMathEngine:
             selected = final_candidate
             break
         if winner is None or selected is None:
-            raise MLTrainingError(
-                "every candidate failed final domain or numerical safety checks"
-            )
+            raise MLTrainingError("every candidate failed final domain or numerical safety checks")
 
         # Pattern discovery only sees the training prefix; it cannot inspect validation/test tails.
         training_dataset_id = f"{dataset.dataset_id[:180]}-train-prefix"
