@@ -5,7 +5,6 @@ from .calibration import (
     ProbabilityCalibrationResult,
     fit_probability_calibration,
 )
-
 from .contracts import (
     DecisionConfig,
     DecisionConstraint,
