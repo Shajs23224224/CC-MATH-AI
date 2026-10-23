@@ -156,6 +156,18 @@ def test_unknown_algorithm_raises_domain_error() -> None:
         AlgorithmRegistry().get("not.registered")
 
 
+def test_builtin_implemented_references_resolve_to_public_callables() -> None:
+    entries = discover_algorithms()
+    implemented = [item for item in entries if item.lifecycle == AlgorithmLifecycle.IMPLEMENTED]
+
+    assert implemented
+    for item in implemented:
+        assert item.implementation_ref is not None
+        module_name, symbol_name = item.implementation_ref.rsplit(".", maxsplit=1)
+        module = import_module(module_name)
+        assert callable(getattr(module, symbol_name, None)), item.algorithm_id
+
+
 def test_builtin_catalog_is_discoverable_and_does_not_claim_validation() -> None:
     entries = discover_algorithms()
     identifiers = [item.algorithm_id for item in entries]
