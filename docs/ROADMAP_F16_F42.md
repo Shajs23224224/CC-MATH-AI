@@ -109,7 +109,7 @@
 **Cierre:** verificar el workflow F28 específico, CI en Python 3.11/3.12, regresiones F21–F27, Security y pruebas sintéticas de comportamiento antes de promocionar cambios.
 
 ## F29 — Gradient Boosting
-**Estado:** Implementación propuesta en revisión; usa la dependencia scikit-learn existente.  
+**Estado:** Integrada mediante PR #17; workflow F29, CI general (Python 3.11/3.12) y Security aprobados.  
 **Objetivo:** integrar boosting supervisado en el contrato y registro explícito de F28.  
 **Implementado en esta fase:** GradientBoostingRegressor y GradientBoostingClassifier; selección temporal del número de árboles con validación interna cronológica; refit sobre el prefijo completo de entrenamiento; métricas OOS en el test final reservado; metadatos del árbol seleccionado, presupuesto, validación, semilla y fingerprint.  
 **Reglas:** no añade XGBoost/LightGBM/CatBoost sin revisión separada de dependencias y licencias; early stopping no observa el test final; presupuesto máximo de árboles acotado; feature importance no implica causalidad; sin stacking/blending hasta disponer de validación out-of-fold explícita.  
