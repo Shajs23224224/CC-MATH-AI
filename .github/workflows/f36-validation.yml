@@ -29,6 +29,8 @@ on:
       - "tests/unit/test_decision_engine.py"
       - "tests/unit/test_quant_ensemble.py"
       - "tests/unit/test_algorithm_registry.py"
+      - "quant/registry/**"
+      - "docs/ALGORITHM_REGISTRY.md"
       - "tests/numerical/test_dependence_references.py"
       - "tests/numerical/test_risk_engine.py"
       - "docs/PORTFOLIO_OPTIMIZATION.md"
