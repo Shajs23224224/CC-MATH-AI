@@ -67,7 +67,6 @@ _FACTORIES: dict[UnsupervisedAlgorithm, EstimatorFactory] = {
 }
 
 
-
 def supported_unsupervised_algorithms() -> dict[str, tuple[str, ...]]:
     """Return the explicit allow-list grouped by operation."""
     grouped: dict[str, list[str]] = {
