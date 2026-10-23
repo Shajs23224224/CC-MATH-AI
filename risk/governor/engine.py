@@ -33,6 +33,11 @@ def _fingerprint(payload: Any) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def _pair_key(pair: tuple[str, str]) -> tuple[str, str]:
+    """Return a static two-symbol key without widening its tuple type."""
+    return pair if pair[0] < pair[1] else (pair[1], pair[0])
+
+
 def _parse_timestamp(value: str) -> datetime | None:
     """Parse ISO timestamps without silently assuming a timezone."""
     try:
@@ -262,13 +267,11 @@ def _derived_metrics(
 
     pair_map = {pair.pair_key: pair.correlation for pair in request.pairwise_correlations}
     active_pairs = tuple(combinations(active_symbols, 2))
-    missing_pairs = [
-        tuple(sorted(pair)) for pair in active_pairs if tuple(sorted(pair)) not in pair_map
-    ]
+    missing_pairs = [pair for pair in active_pairs if _pair_key(pair) not in pair_map]
     if not active_pairs:
         max_abs_correlation = 0.0
     elif not missing_pairs:
-        max_abs_correlation = max(abs(pair_map[tuple(sorted(pair))]) for pair in active_pairs)
+        max_abs_correlation = max(abs(pair_map[_pair_key(pair)]) for pair in active_pairs)
     else:
         max_abs_correlation = None
     if max_abs_correlation is not None:
