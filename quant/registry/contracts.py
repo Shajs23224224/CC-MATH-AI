@@ -121,6 +121,11 @@ class AlgorithmMetadata(BaseModel):
         if self.lifecycle == AlgorithmLifecycle.VALIDATED:
             if self.test_status != AlgorithmTestStatus.PASSING:
                 raise ValueError("validated algorithms require passing test evidence")
-        if self.planned_implementation_ref is not None and self.lifecycle != AlgorithmLifecycle.EXPERIMENTAL:
-            raise ValueError("planned implementation references are only allowed for experimental entries")
+        if (
+            self.planned_implementation_ref is not None
+            and self.lifecycle != AlgorithmLifecycle.EXPERIMENTAL
+        ):
+            raise ValueError(
+                "planned implementation references are only allowed for experimental entries"
+            )
         return self
