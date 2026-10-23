@@ -3953,7 +3953,9 @@ _EXTRA_SPECS += (
         ),),
         units=("portfolio-weight ratio", "period volatility"),
         tags=("portfolio-optimization", "inverse-volatility", "F36"),
-        limitations=("Inverse volatility does not model cross-asset correlations in its base target.",),
+        limitations=(
+            "Inverse volatility does not model cross-asset correlations in its base target.",
+        ),
     ),
     _entry(
         "portfolio.hrp",
@@ -3987,7 +3989,9 @@ _EXTRA_SPECS += (
         ),),
         units=("portfolio-weight ratio", "period return", "period covariance"),
         tags=("portfolio-optimization", "black-litterman", "F36"),
-        limitations=("Explicit views, confidence values and equilibrium weights require provenance.",),
+        limitations=(
+            "Explicit views, confidence values and equilibrium weights require provenance.",
+        ),
     ),
     _entry(
         "portfolio.maximum_diversification",
