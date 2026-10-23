@@ -3862,10 +3862,14 @@ _EXTRA_SPECS += (
         (_F36_DECISIONS, _F36_COVARIANCE),
         _F36_RESULT,
         implementation_ref="portfolio.optimize_portfolio",
-        parameters=(AlgorithmParameter(
-            name="method", dtype="str", description="PortfolioOptimizationConfig method",
-            default="equal_weight"
-        ),),
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="equal_weight",
+            ),
+        ),
         units=("portfolio-weight ratio", "period return", "period covariance"),
         tags=("portfolio-optimization", "allocation", "long-only", "F36"),
         limitations=("Long-only; cash target and short selling are not modeled.",),
@@ -3879,10 +3883,14 @@ _EXTRA_SPECS += (
         (_F36_DECISIONS, _F36_COVARIANCE),
         _F36_RESULT,
         implementation_ref="portfolio.optimize_portfolio",
-        parameters=(AlgorithmParameter(
-            name="method", dtype="str", description="PortfolioOptimizationConfig method",
-            default="mean_variance"
-        ),),
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="mean_variance",
+            ),
+        ),
         units=("portfolio-weight ratio", "period return", "period covariance"),
         tags=("portfolio-optimization", "mean-variance", "F36"),
         limitations=("Expected returns and covariance must share a horizon and units.",),
@@ -3896,10 +3904,14 @@ _EXTRA_SPECS += (
         (_F36_DECISIONS, _F36_COVARIANCE),
         _F36_RESULT,
         implementation_ref="portfolio.optimize_portfolio",
-        parameters=(AlgorithmParameter(
-            name="method", dtype="str", description="PortfolioOptimizationConfig method",
-            default="minimum_variance"
-        ),),
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="minimum_variance",
+            ),
+        ),
         units=("portfolio-weight ratio", "period return", "period covariance"),
         tags=("portfolio-optimization", "variance", "F36"),
         limitations=("Minimum historical/modelled variance is not minimum realized risk.",),
@@ -3913,10 +3925,14 @@ _EXTRA_SPECS += (
         (_F36_DECISIONS, _F36_COVARIANCE),
         _F36_RESULT,
         implementation_ref="portfolio.optimize_portfolio",
-        parameters=(AlgorithmParameter(
-            name="method", dtype="str", description="PortfolioOptimizationConfig method",
-            default="maximum_sharpe"
-        ),),
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="maximum_sharpe",
+            ),
+        ),
         units=("portfolio-weight ratio", "period return", "period covariance"),
         tags=("portfolio-optimization", "sharpe", "F36"),
         limitations=("Risk-free rate, returns and covariance must use the same horizon.",),
@@ -3930,10 +3946,14 @@ _EXTRA_SPECS += (
         (_F36_DECISIONS, _F36_COVARIANCE),
         _F36_RESULT,
         implementation_ref="portfolio.optimize_portfolio",
-        parameters=(AlgorithmParameter(
-            name="method", dtype="str", description="PortfolioOptimizationConfig method",
-            default="risk_parity"
-        ),),
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="risk_parity",
+            ),
+        ),
         units=("portfolio-weight ratio", "period return", "period covariance"),
         tags=("portfolio-optimization", "risk-parity", "F36"),
         limitations=("Equal variance contribution is not equal tail or liquidity risk.",),
@@ -3947,10 +3967,14 @@ _EXTRA_SPECS += (
         (_F36_DECISIONS, _F36_COVARIANCE),
         _F36_RESULT,
         implementation_ref="portfolio.optimize_portfolio",
-        parameters=(AlgorithmParameter(
-            name="method", dtype="str", description="PortfolioOptimizationConfig method",
-            default="inverse_volatility"
-        ),),
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="inverse_volatility",
+            ),
+        ),
         units=("portfolio-weight ratio", "period volatility"),
         tags=("portfolio-optimization", "inverse-volatility", "F36"),
         limitations=(
@@ -3966,10 +3990,14 @@ _EXTRA_SPECS += (
         (_F36_DECISIONS, _F36_COVARIANCE),
         _F36_RESULT,
         implementation_ref="portfolio.optimize_portfolio",
-        parameters=(AlgorithmParameter(
-            name="method", dtype="str", description="PortfolioOptimizationConfig method",
-            default="hrp"
-        ),),
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="hrp",
+            ),
+        ),
         units=("portfolio-weight ratio", "period covariance"),
         tags=("portfolio-optimization", "HRP", "hierarchical-clustering", "F36"),
         limitations=("Cluster structure depends on the chosen covariance window and metric.",),
@@ -3983,10 +4011,14 @@ _EXTRA_SPECS += (
         (_F36_DECISIONS, _F36_COVARIANCE),
         _F36_RESULT,
         implementation_ref="portfolio.optimize_portfolio",
-        parameters=(AlgorithmParameter(
-            name="method", dtype="str", description="PortfolioOptimizationConfig method",
-            default="black_litterman"
-        ),),
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="black_litterman",
+            ),
+        ),
         units=("portfolio-weight ratio", "period return", "period covariance"),
         tags=("portfolio-optimization", "black-litterman", "F36"),
         limitations=(
@@ -4002,10 +4034,14 @@ _EXTRA_SPECS += (
         (_F36_DECISIONS, _F36_COVARIANCE),
         _F36_RESULT,
         implementation_ref="portfolio.optimize_portfolio",
-        parameters=(AlgorithmParameter(
-            name="method", dtype="str", description="PortfolioOptimizationConfig method",
-            default="maximum_diversification"
-        ),),
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PortfolioOptimizationConfig method",
+                default="maximum_diversification",
+            ),
+        ),
         units=("portfolio-weight ratio", "period volatility"),
         tags=("portfolio-optimization", "diversification", "F36"),
         limitations=("Diversification ratio is not a guarantee against correlated tail losses.",),
