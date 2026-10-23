@@ -161,6 +161,7 @@ class AdaptiveMathReport(BaseModel):
     test_samples: int = Field(ge=1)
     candidates_evaluated: int = Field(ge=1)
     candidates_rejected: int = Field(ge=0)
+    final_safety_rejections: int = Field(default=0, ge=0)
     generations_completed: int = Field(ge=0)
     random_seed: int = Field(ge=0)
     strategy_scores: dict[str, float]
