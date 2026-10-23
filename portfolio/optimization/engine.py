@@ -205,6 +205,17 @@ def optimize_portfolio(
     )
 
     feasibility_weights = np.asarray(feasibility.x, dtype=np.float64)
+    if not np.all(np.isfinite(feasibility_weights)):
+        return _failure(
+            request,
+            policy,
+            fingerprint,
+            exclusions,
+            ridge,
+            "Feasibility solver returned non-finite weights.",
+            status="FAILED",
+            iterations=int(getattr(feasibility, "nit", 0)),
+        )
     feasibility_diagnostics = _diagnostics(
         full_weights=_expand_weights(feasibility_weights, active_indices, len(request.assets)),
         request=request,
@@ -288,6 +299,17 @@ def optimize_portfolio(
         },
     )
     active_solution = np.asarray(result.x, dtype=np.float64)
+    if not np.all(np.isfinite(active_solution)):
+        return _failure(
+            request,
+            policy,
+            fingerprint,
+            exclusions,
+            ridge,
+            "Optimizer returned non-finite weights.",
+            status="FAILED",
+            iterations=int(getattr(result, "nit", 0)),
+        )
     full_weights = _expand_weights(active_solution, active_indices, len(request.assets))
     diagnostics = _diagnostics(
         full_weights=full_weights,
