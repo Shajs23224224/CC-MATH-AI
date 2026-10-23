@@ -13,6 +13,7 @@ from core.contracts import RiskAction, RiskConstraint, RiskEvaluation, RiskMetri
 from risk.constraints import evaluate_constraints
 from risk.governor.contracts import (
     GovernorApprovedPosition,
+    GovernorPositionStatus,
     RiskGovernorConfig,
     RiskGovernorRequest,
     RiskGovernorResult,
@@ -384,7 +385,7 @@ def evaluate_risk_governor(
     """
     policy = config or RiskGovernorConfig()
     allocations = request.sizing_result.allocations
-    contexts = {asset.asset_symbol: asset for asset in request.assets}
+    contexts = {asset.asset_symbol.upper(): asset for asset in request.assets}
     freshness_failures = _freshness_failures(request, policy)
 
     if request.sizing_result.status == "ZERO_SIZE":
@@ -422,7 +423,7 @@ def evaluate_risk_governor(
         if evaluation.action == RiskAction.BLOCK:
             approved_quantity = 0.0
             approved_notional = 0.0
-            status = "BLOCKED"
+            status: GovernorPositionStatus = "BLOCKED"
             rationale = "F38 BLOCK: no downstream module may override this veto."
         else:
             factor = evaluation.reduction_factor
