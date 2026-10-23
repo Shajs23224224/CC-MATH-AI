@@ -255,6 +255,10 @@ class ClassicalMLModel:
             if "n_jobs" in estimator.get_params(deep=False):
                 estimator.set_params(n_jobs=1)
             if self.config.algorithm in _BOOSTING_ALGORITHMS:
+                if not isinstance(
+                    estimator, (GradientBoostingClassifier, GradientBoostingRegressor)
+                ):
+                    raise MLInputError("gradient boosting registry returned an incompatible estimator")
                 requested_max_estimators = estimator.get_params(deep=False).get("n_estimators")
                 if (
                     isinstance(requested_max_estimators, bool)
