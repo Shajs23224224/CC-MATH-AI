@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F36 integradas en `main`; F37 es la siguiente fase.
+**Estado:** F21–F36 integradas en `main`; F37 está en implementación y validación mediante PR #26.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -169,10 +169,12 @@
 **Cierre:** completado. F36 pasó en Python 3.11/3.12 (Ruff, formato, mypy, pruebas de nueve métodos y restricciones); F33, CI general, Security y los workflows regresivos activados pasaron. Las pruebas sintéticas no acreditan rentabilidad ni idoneidad financiera.
 
 ## F37 — Position Sizing
-**Objetivo:** determinar tamaño dentro de límites.  
-**Alcance:** fixed fractional, volatility-based, risk-based, Kelly, fractional Kelly y confidence weighting.  
-**Reglas:** inputs válidos, límites, liquidez y riesgo; tamaño cero permitido.  
-**Cierre:** SizingResult auditable y subordinado a portfolio/risk.
+**Estado:** implementación en [PR #26](https://github.com/Shajs23224224/CC-MATH-AI/pull/26); validación CI en curso.
+**Objetivo:** convertir pesos aprobados por F36 en cantidades objetivo de forma determinista y auditable.
+**Métodos:** fixed fractional, volatility-based, risk-based mediante presupuesto de pérdida a stop, Kelly, fractional Kelly y confidence weighting.
+**Reglas:** el peso F36 es un techo inalterable; control por peso máximo, lote y participación en volumen medio diario; tamaños cero permitidos; residual en efectivo sin renormalización; timestamps/horizonte/símbolos alineados; fingerprints SHA-256.
+**Límites:** no emite órdenes, no garantiza ejecuciones ni rentabilidad; no sustituye Risk Governor/F38. La liquidez es una estimación suministrada y las pruebas sintéticas sólo validan ingeniería.
+**Cierre:** exige workflow F37, CI general, Security y regresiones upstream aprobados en Python 3.11/3.12.
 
 ## F38 — Portfolio Risk Governor
 **Objetivo:** veto/reducción final antes de ejecución.  
@@ -258,5 +260,8 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F32: integrada en `main` mediante [PR #20](https://github.com/Shajs23224224/CC-MATH-AI/pull/20); ver [diseño técnico](FEATURE_ENGINEERING.md).
 - F33: integrada en `main` mediante [PR #21](https://github.com/Shajs23224224/CC-MATH-AI/pull/21); las referencias verificadas y los objetivos de implementación planificados están diferenciados.
 - F34: integrada en `main` mediante [PR #22](https://github.com/Shajs23224224/CC-MATH-AI/pull/22), merge commit `26e7888`; workflow F34, workflow F33, CI general y Security pasaron en el head de la PR antes de fusionar.
-- F35–F43: alcance documentado; avanzar por dependencias contractuales y gates de validación.
-- **Siguiente fase planificada: F35 — Meta-model / Decision Engine.**
+- F35: implementada en main mediante PR #24.
+- F36: integrada en main mediante PR #25.
+- F37: implementación y validación en progreso mediante PR #26.
+- F38–F43: alcance documentado; avanzar por dependencias contractuales y gates de validación.
+- **Siguiente fase tras completar F37: F38 — Portfolio Risk Governor.**

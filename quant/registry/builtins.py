@@ -40,6 +40,16 @@ _F36_RESULT = AlgorithmPort(
     description="TargetAllocation rows plus solver status and constraint diagnostics",
     unit="fraction of portfolio equity",
 )
+_F37_REQUEST = AlgorithmPort(
+    name="request",
+    dtype="PositionSizingRequest",
+    description="F36 target plus market, risk, and liquidity inputs",
+)
+_F37_RESULT = AlgorithmPort(
+    name="sizing_result",
+    dtype="SizingResult",
+    description="Auditable target weights, quantities, risk, liquidity, and fingerprint",
+)
 
 
 def _entry(
@@ -4053,8 +4063,138 @@ _F36_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
         limitations=("Diversification ratio is not a guarantee against correlated tail losses.",),
     ),
 )
+
+_F37_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
+    _entry(
+        "portfolio.fixed_fractional",
+        "Fixed-fractional position sizing",
+        "portfolio",
+        "Size long-only notional exposure using a fixed equity fraction and upstream target caps.",
+        "min(F36 target weight, fixed equity fraction, maximum position weight)",
+        (_F37_REQUEST,),
+        _F37_RESULT,
+        implementation_ref="portfolio.size_positions",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PositionSizingConfig method",
+                default="fixed_fractional",
+            ),
+        ),
+        units=("fraction of equity", "shares or units", "account currency"),
+        tags=("position-sizing", "fixed-fractional", "F37"),
+        limitations=("Notional-exposure sizing; stop risk is not fixed.",),
+    ),
+    _entry(
+        "portfolio.volatility_based",
+        "Volatility-based position sizing",
+        "portfolio",
+        "Scale the allowed weight to a fixed horizon volatility budget.",
+        "min(F36 target weight, volatility budget / asset volatility)",
+        (_F37_REQUEST,),
+        _F37_RESULT,
+        implementation_ref="portfolio.size_positions",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PositionSizingConfig method",
+                default="volatility_based",
+            ),
+        ),
+        units=("fraction of equity", "horizon return volatility"),
+        tags=("position-sizing", "volatility", "F37"),
+        limitations=("Horizon volatility estimates may understate future risk.",),
+    ),
+    _entry(
+        "portfolio.risk_based",
+        "Stop-risk-budget position sizing",
+        "portfolio",
+        "Allocate a pro-rata equity risk budget and size units by entry-to-stop loss per unit.",
+        "risk budget / (entry price - stop price), subject to F36 weight and liquidity caps",
+        (_F37_REQUEST,),
+        _F37_RESULT,
+        implementation_ref="portfolio.size_positions",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PositionSizingConfig method",
+                default="risk_based",
+            ),
+        ),
+        units=("account currency at risk", "shares or units"),
+        tags=("position-sizing", "risk-budget", "stop-loss", "F37"),
+        limitations=("Requires a stop price; actual fills may differ.",),
+    ),
+    _entry(
+        "portfolio.kelly",
+        "Kelly position sizing",
+        "portfolio",
+        "Estimate a long-only Kelly weight from excess return and variance on one horizon.",
+        "max(0, expected return - risk-free rate) / volatility squared",
+        (_F37_REQUEST,),
+        _F37_RESULT,
+        implementation_ref="portfolio.size_positions",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PositionSizingConfig method",
+                default="kelly",
+            ),
+        ),
+        units=("fraction of equity", "horizon return", "horizon return variance"),
+        tags=("position-sizing", "kelly", "F37"),
+        limitations=("Kelly sizing is sensitive to expected-return estimation error.",),
+    ),
+    _entry(
+        "portfolio.fractional_kelly",
+        "Fractional-Kelly position sizing",
+        "portfolio",
+        "Scale the non-negative Kelly estimate by a configured fraction before enforcing caps.",
+        "fractional Kelly multiplier * max(0, excess return / variance)",
+        (_F37_REQUEST,),
+        _F37_RESULT,
+        implementation_ref="portfolio.size_positions",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PositionSizingConfig method",
+                default="fractional_kelly",
+            ),
+        ),
+        units=("fraction of equity", "dimensionless multiplier"),
+        tags=("position-sizing", "fractional-kelly", "F37"),
+        limitations=("Fractional Kelly does not eliminate model risk.",),
+    ),
+    _entry(
+        "portfolio.confidence_weighting",
+        "Confidence-weighted position sizing",
+        "portfolio",
+        "Scale each approved F36 allocation by an explicit confidence score bounded to [0, 1].",
+        "F36 target weight * supplied confidence",
+        (_F37_REQUEST,),
+        _F37_RESULT,
+        implementation_ref="portfolio.size_positions",
+        parameters=(
+            AlgorithmParameter(
+                name="method",
+                dtype="str",
+                description="PositionSizingConfig method",
+                default="confidence_weighting",
+            ),
+        ),
+        units=("fraction of equity", "confidence ratio"),
+        tags=("position-sizing", "confidence", "F37"),
+        limitations=("Confidence is not necessarily a calibrated probability.",),
+    ),
+)
+
 BUILTIN_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
-    _SEED_ALGORITHMS + _EXTRA_ALGORITHMS + _F36_ALGORITHMS
+    _SEED_ALGORITHMS + _EXTRA_ALGORITHMS + _F36_ALGORITHMS + _F37_ALGORITHMS
 )
 
 

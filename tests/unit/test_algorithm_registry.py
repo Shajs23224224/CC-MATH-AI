@@ -207,3 +207,23 @@ def test_f36_portfolio_optimizers_are_registered_without_claiming_validation() -
         assert item.lifecycle == AlgorithmLifecycle.IMPLEMENTED
         assert item.test_status == AlgorithmTestStatus.NOT_RUN
         assert "portfolio-optimization" in item.tags
+
+
+def test_f37_position_sizing_methods_are_registered_without_claiming_validation() -> None:
+    expected_ids = {
+        "portfolio.fixed_fractional",
+        "portfolio.volatility_based",
+        "portfolio.risk_based",
+        "portfolio.kelly",
+        "portfolio.fractional_kelly",
+        "portfolio.confidence_weighting",
+    }
+    entries_by_id = {item.algorithm_id: item for item in discover_algorithms(category="portfolio")}
+
+    assert expected_ids.issubset(entries_by_id)
+    for algorithm_id in expected_ids:
+        item = entries_by_id[algorithm_id]
+        assert item.implementation_ref == "portfolio.size_positions"
+        assert item.lifecycle == AlgorithmLifecycle.IMPLEMENTED
+        assert item.test_status == AlgorithmTestStatus.NOT_RUN
+        assert "F37" in item.tags
