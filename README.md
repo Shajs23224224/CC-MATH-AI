@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F34 — Quant Ensemble (implementation branch; awaiting CI and review)**
+Current milestone: **F35 — Meta-model / Decision Engine**
 
 Completed:
 - F01 — System Specification
@@ -29,12 +29,10 @@ Completed:
 - F31 — Deep Learning (integrated in [PR #19](https://github.com/Shajs23224224/CC-MATH-AI/pull/19), merge commit `e5403c6`): optional PyTorch temporal models with chronological train/validation/test splits, training-prefix preprocessing, validation-only early stopping and bounded resource use. Synthetic tests are engineering checks, not evidence of market alpha. See [F31 technical design](docs/DEEP_LEARNING.md).
 - F32 — Feature Engineering (integrated in [PR #20](https://github.com/Shajs23224224/CC-MATH-AI/pull/20)): versioned, point-in-time-aware feature transforms with lineage and temporal validation. See [F32 technical design](docs/FEATURE_ENGINEERING.md).
 - F33 — Algorithm Registry (integrated in [PR #21](https://github.com/Shajs23224224/CC-MATH-AI/pull/21), merge commit `4f400ff`): versioned metadata, deterministic discovery and compatibility checks. The 304-entry manifest distinguishes verified implementation references from planned targets; planned entries remain experimental and algorithm evidence stays `not_run` until independently tested. See [F33 technical design](docs/ALGORITHM_REGISTRY.md).
-
-In implementation / review:
-- F34 — Quant Ensemble: deterministic score normalization, versioned weighting, correlation-group influence caps, agreement/disagreement, uncertainty, attribution, abstention and replay fingerprint. See [F34 technical design](docs/QUANT_ENSEMBLE.md).
+- F34 — Quant Ensemble (integrated in [PR #22](https://github.com/Shajs23224224/CC-MATH-AI/pull/22), merge commit `26e7888`): deterministic bounded score normalization, versioned source weighting, correlation-group influence caps, agreement, uncertainty, abstention, contribution attribution and SHA-256 replay fingerprint. Validation includes Python 3.11/3.12, F29–F33 regressions, general CI and Security on the PR head. It emits auditable research evidence, not trade decisions. See [F34 technical design](docs/QUANT_ENSEMBLE.md).
 
 Next planned:
-- F35 — Meta-model / Decision Engine, after F34's contracts, tests, CI and Security acceptance gates pass.
+- F35 — Meta-model / Decision Engine: consume F34's versioned score, agreement, uncertainty and attributed evidence to produce a reproducible DecisionRecord. F35 is the next phase and is not implemented by F34.
 
 ## Architecture
 
