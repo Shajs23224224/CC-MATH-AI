@@ -12,7 +12,10 @@ from core.contracts.ml import MLDataset
 from ml import DeepLearningModel, supported_deep_learning_algorithms
 from ml.errors import MLInputError, MLPredictionError
 
-pytestmark = pytest.mark.skipif(find_spec("torch") is None, reason="install the optional deep-learning extra")
+pytestmark = pytest.mark.skipif(
+    find_spec("torch") is None,
+    reason="install the optional deep-learning extra",
+)
 
 
 def regression_dataset(n: int = 160) -> MLDataset:
