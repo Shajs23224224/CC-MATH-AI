@@ -152,9 +152,7 @@ class FeatureEngineer:
                     raise MLInputError(f"missing source column: {source_column}")
             if spec.availability_column is not None:
                 if spec.availability_column not in result.columns:
-                    raise MLInputError(
-                        f"missing availability column: {spec.availability_column}"
-                    )
+                    raise MLInputError(f"missing availability column: {spec.availability_column}")
                 available_at = pd.to_datetime(
                     result[spec.availability_column], errors="coerce", utc=True
                 )
@@ -167,18 +165,14 @@ class FeatureEngineer:
             generated = self._apply_availability_lag(generated, result, spec, asset_column)
             array = generated.to_numpy(dtype=np.float64, na_value=np.nan)
             if np.isinf(array).any():
-                raise MLTrainingError(
-                    f"feature {definition.feature_id} produced infinite values"
-                )
+                raise MLTrainingError(f"feature {definition.feature_id} produced infinite values")
             result[definition.feature_id] = array
 
         features = result[output_names]
         output_fingerprint = _fingerprint(features)
         input_fingerprint = _fingerprint(frame)
         warmup_missing_rows = int(features.isna().any(axis=1).sum())
-        maximum_lookback = max(
-            max(spec.required_lookback, spec.availability_lag) for spec in specs
-        )
+        maximum_lookback = max(max(spec.required_lookback, spec.availability_lag) for spec in specs)
         pipeline_identity = {
             "dataset_id": dataset_id,
             "input_fingerprint": input_fingerprint,
@@ -242,6 +236,7 @@ class FeatureEngineer:
         first = sources[0]
 
         if operation in {"identity", "lag", "pct_change", "log_return"}:
+
             def univariate(values: pd.Series) -> pd.Series:
                 if operation == "identity":
                     return values.copy()
@@ -258,6 +253,7 @@ class FeatureEngineer:
             return self._transform_by_asset(first, frame, univariate)
 
         if operation in _WINDOW_OPERATIONS:
+
             def rolling(values: pd.Series) -> pd.Series:
                 if operation == "ewm_mean":
                     return values.ewm(

@@ -70,9 +70,7 @@ class FeatureTransformSpec(BaseModel):
         source_count = len(self.definition.source_columns)
         expected_count = 2 if self.operation in _TWO_SOURCE_OPERATIONS else 1
         if source_count != expected_count:
-            raise ValueError(
-                f"{self.operation} requires exactly {expected_count} source column(s)"
-            )
+            raise ValueError(f"{self.operation} requires exactly {expected_count} source column(s)")
         if len(set(self.definition.source_columns)) != source_count:
             raise ValueError("source_columns must be unique")
         if any(not name.strip() for name in self.definition.source_columns):

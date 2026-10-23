@@ -120,9 +120,7 @@ def test_zero_denominator_ratio_returns_missing_not_infinity() -> None:
 def test_cross_sectional_features_require_panel_and_are_timestamp_scoped() -> None:
     frame = pd.DataFrame(
         {
-            "timestamp": pd.to_datetime(
-                ["2025-01-01", "2025-01-01", "2025-01-02", "2025-01-02"]
-            ),
+            "timestamp": pd.to_datetime(["2025-01-01", "2025-01-01", "2025-01-02", "2025-01-02"]),
             "asset_symbol": ["A", "B", "A", "B"],
             "close": [10.0, 20.0, 30.0, 10.0],
         }
@@ -152,9 +150,9 @@ def test_per_asset_rolling_never_crosses_asset_boundaries() -> None:
         }
     )
     spec = _spec("mean_2", "rolling_mean", ("close",), lookback=2, window=2)
-    result, _ = FeatureEngineer(
-        FeatureEngineeringConfig(asset_column="asset_symbol")
-    ).transform(frame, (spec,), dataset_id="panel")
+    result, _ = FeatureEngineer(FeatureEngineeringConfig(asset_column="asset_symbol")).transform(
+        frame, (spec,), dataset_id="panel"
+    )
     assert np.isnan(result.loc[0, "mean_2"])
     assert np.isnan(result.loc[1, "mean_2"])
     assert result.loc[2, "mean_2"] == pytest.approx(15.0)
