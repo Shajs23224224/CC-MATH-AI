@@ -209,7 +209,7 @@ def optimize_portfolio(
         original_weights=original_weights,
     )
     initial = _bounded_simplex_start(active_lower, active_upper)
-    feasibility = minimize(
+    feasibility = minimize(  # type: ignore[call-overload]
         fun=lambda weights: float(np.sum(np.square(weights - initial))),
         x0=initial,
         method="SLSQP",
@@ -301,7 +301,7 @@ def optimize_portfolio(
             return -ratio + turnover_regularizer
         raise ValueError(f"unsupported objective method: {objective_method}")
 
-    result = minimize(
+    result = minimize(  # type: ignore[call-overload]
         fun=objective,
         x0=feasibility_weights,
         method="SLSQP",
@@ -395,7 +395,7 @@ def optimize_portfolio(
     net_excess = portfolio_return - cost_fraction - policy.risk_free_rate
     sharpe = net_excess / volatility if volatility > 1e-12 else None
     concentration = float(full_weights @ full_weights)
-    status = "OPTIMAL" if bool(result.success) else "FEASIBLE"
+    status: Literal["OPTIMAL", "FEASIBLE"] = "OPTIMAL" if bool(result.success) else "FEASIBLE"
     message = str(result.message)[:2000] or (
         "Converged." if result.success else "Feasible solution found."
     )
