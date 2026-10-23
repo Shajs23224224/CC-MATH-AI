@@ -311,7 +311,10 @@ def _derived_metrics(
         )
 
     traded_notional = math.fsum(
-        abs(notionals[item.asset_symbol.upper()] - contexts[item.asset_symbol.upper()].current_notional)
+        abs(
+            notionals[item.asset_symbol.upper()]
+            - contexts[item.asset_symbol.upper()].current_notional
+        )
         for item in allocations
     )
     metrics.append(
