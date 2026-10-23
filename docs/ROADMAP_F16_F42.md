@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F33 integradas en `main`; F34 en implementación en la rama `feature/f34-quant-ensemble`.
+**Estado:** F21–F34 integradas en `main`; F35 es la siguiente fase.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -142,11 +142,11 @@
 **Cierre de F33:** infraestructura del registro y metadatos cerrados; validar individualmente las implementaciones a medida que existan queda como trabajo de calidad de cada algoritmo, no como una afirmación implícita del catálogo.
 
 ## F34 — Quant Ensemble
-**Estado:** implementación inicial en `feature/f34-quant-ensemble`; aceptación pendiente de CI, regresiones y Security.
+**Estado:** integrada en `main` mediante [PR #22](https://github.com/Shajs23224224/CC-MATH-AI/pull/22), merge commit `26e7888`. En el commit de la PR `41aead9` pasaron el workflow F34 (Python 3.11/3.12), el workflow F33, CI general y Security.
 **Objetivo:** combinar evidencia heterogénea con un resultado reproducible sin perder contribuciones ni exclusiones.
-**Implementado en la rama:** contratos inmutables de evidencia, solicitud, configuración, contribución y resultado; normalización acotada por `bounded`, `tanh` o `zscore`; pesos predeterminados y por fuente versionados; ajuste por confianza y fiabilidad; límite de peso total por grupo de correlación; cálculo de score, acuerdo, incertidumbre, abstención, atribución por fuente y fingerprint SHA-256 de entradas/configuración.
-**Reglas:** timestamps con zona horaria; rechazar evidencia posterior a `as_of`; un único horizonte y fuente por solicitud; excluir y auditar fuentes no elegibles o de peso efectivo cero; la cantidad mínima de grupos independientes es una condición de abstención. El cap por grupo es una heurística de ingeniería, no un estimador estadístico de correlación.  
-**Límites:** no aprende pesos, no calibra probabilidades, no produce BUY/HOLD/SELL, no optimiza cartera, no ordena operaciones ni puede anular Risk Governor. F35 consume la evidencia agregada.  
+**Implementado:** contratos inmutables de evidencia, solicitud, configuración, contribución y resultado; normalización acotada por `bounded`, `tanh` o `zscore`; pesos predeterminados y por fuente versionados; ajuste por confianza y fiabilidad; límite de peso total por grupo de correlación; score, acuerdo, incertidumbre, abstención, atribución por fuente y fingerprint SHA-256 de entradas/configuración.
+**Reglas:** timestamps con zona horaria; rechazar evidencia posterior a `as_of`; un único horizonte y fuente por solicitud; excluir y auditar fuentes no elegibles o de peso efectivo cero; la cantidad mínima de grupos independientes es una condición de abstención. El cap por grupo es una heurística de ingeniería, no un estimador estadístico de correlación.
+**Límites:** no aprende pesos, no calibra probabilidades, no produce BUY/HOLD/SELL, no optimiza cartera, no ordena operaciones ni puede anular Risk Governor. F35 consume la evidencia agregada.
 **Cierre:** contratos tipados, pruebas numéricas/temporales, trazabilidad de contribuciones, regresiones F29–F33, CI Python 3.11/3.12, Security y documentación aprobados.
 
 ## F35 — Meta-model / Decision Engine
@@ -250,6 +250,6 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F31: integrada en `main` mediante [PR #19](https://github.com/Shajs23224224/CC-MATH-AI/pull/19); ver [diseño técnico](DEEP_LEARNING.md).
 - F32: integrada en `main` mediante [PR #20](https://github.com/Shajs23224224/CC-MATH-AI/pull/20); ver [diseño técnico](FEATURE_ENGINEERING.md).
 - F33: integrada en `main` mediante [PR #21](https://github.com/Shajs23224224/CC-MATH-AI/pull/21); las referencias verificadas y los objetivos de implementación planificados están diferenciados.
-- F34: en implementación en `feature/f34-quant-ensemble`; requiere CI final y revisión antes de integrarse.
+- F34: integrada en `main` mediante [PR #22](https://github.com/Shajs23224224/CC-MATH-AI/pull/22), merge commit `26e7888`; workflow F34, workflow F33, CI general y Security pasaron en el head de la PR antes de fusionar.
 - F35–F43: alcance documentado; avanzar por dependencias contractuales y gates de validación.
-- **Siguiente fase tras aceptar F34: F35 — Meta-model / Decision Engine.**
+- **Siguiente fase planificada: F35 — Meta-model / Decision Engine.**
