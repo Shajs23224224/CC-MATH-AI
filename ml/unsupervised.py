@@ -14,9 +14,9 @@ from sklearn.cluster import AgglomerativeClustering, DBSCAN, KMeans
 from sklearn.covariance import EllipticEnvelope
 from sklearn.decomposition import FastICA, KernelPCA, PCA
 from sklearn.ensemble import IsolationForest
+from sklearn.metrics import adjusted_rand_score
 from sklearn.mixture import GaussianMixture
 from sklearn.neighbors import LocalOutlierFactor
-from sklearn.metrics import adjusted_rand_score
 from sklearn.preprocessing import StandardScaler
 
 from core.contracts.unsupervised import (
