@@ -220,7 +220,7 @@ class FeatureEngineer:
             point_in_time_safe=point_in_time_safe,
             limitations=(
                 "Source rows must be aligned to information available at each timestamp.",
-                "Cross-sectional ranks depend on a point-in-time eligible universe from the caller.",
+                "Cross-sectional ranks require a point-in-time eligible universe from the caller.",
                 "Warm-up and unavailable values remain NaN for explicit downstream handling.",
                 "Features are inputs, not causal explanations, signals or guarantees.",
             ),

@@ -38,6 +38,11 @@ from .enums import (
     SignalType,
 )
 from .execution import ExecutionReport, Fill, Order
+from .feature_engineering import (
+    FeatureEngineeringConfig,
+    FeatureEngineeringReport,
+    FeatureTransformSpec,
+)
 from .forecasting import (
     ForecastCalibrationResult,
     ForecastingMethod,
@@ -46,11 +51,6 @@ from .forecasting import (
     ProbabilisticForecast,
     ReturnPathSimulation,
     WalkForwardForecastEvaluation,
-)
-from .feature_engineering import (
-    FeatureEngineeringConfig,
-    FeatureEngineeringReport,
-    FeatureTransformSpec,
 )
 from .fundamental_data import FundamentalDataBatch, FundamentalDataRequest
 from .fundamentals import FundamentalGrowthPoint, FundamentalSnapshot

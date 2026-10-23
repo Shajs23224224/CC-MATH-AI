@@ -49,7 +49,7 @@ _WINDOW_OPERATIONS = {
     "rolling_zscore",
     "ewm_mean",
 }
-_PERIOD_OPERATIONS = {"lag", "pct_change", "log_return}
+_PERIOD_OPERATIONS = {"lag", "pct_change", "log_return"}
 
 
 class FeatureTransformSpec(BaseModel):
