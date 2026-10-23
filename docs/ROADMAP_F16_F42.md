@@ -109,10 +109,11 @@
 **Cierre:** verificar el workflow F28 específico, CI en Python 3.11/3.12, regresiones F21–F27, Security y pruebas sintéticas de comportamiento antes de promocionar cambios.
 
 ## F29 — Gradient Boosting
-**Objetivo:** boosting bajo el mismo contrato ML.  
-**Alcance:** Gradient Boosting y adapters XGBoost/LightGBM/CatBoost si se aprueban dependencias/licencias; stacking/blending sólo con validación adecuada.  
-**Reglas:** early stopping temporal, hiperparámetros versionados, feature importance no equivale a causalidad.  
-**Cierre:** boosting reproducible e integrado.
+**Estado:** Implementación propuesta en revisión; usa la dependencia scikit-learn existente.  
+**Objetivo:** integrar boosting supervisado en el contrato y registro explícito de F28.  
+**Implementado en esta fase:** GradientBoostingRegressor y GradientBoostingClassifier; selección temporal del número de árboles con validación interna cronológica; refit sobre el prefijo completo de entrenamiento; métricas OOS en el test final reservado; metadatos del árbol seleccionado, presupuesto, validación, semilla y fingerprint.  
+**Reglas:** no añade XGBoost/LightGBM/CatBoost sin revisión separada de dependencias y licencias; early stopping no observa el test final; presupuesto máximo de árboles acotado; feature importance no implica causalidad; sin stacking/blending hasta disponer de validación out-of-fold explícita.  
+**Cierre:** workflow F29, lint, format, mypy, pruebas de comportamiento y regresiones F21–F28, CI general y Security aprobados.
 
 ## F30 — Unsupervised ML
 **Objetivo:** clusters, factores y anomalías.  
