@@ -1,6 +1,15 @@
 """Public Risk Engine API."""
 
 from .constraints import evaluate_constraints, evaluate_portfolio_risk
+from .governor import (
+    GovernorApprovedPosition,
+    GovernorAssetContext,
+    PairwiseCorrelation,
+    RiskGovernorConfig,
+    RiskGovernorRequest,
+    RiskGovernorResult,
+    evaluate_risk_governor,
+)
 from .metrics import (
     beta,
     calmar_ratio,
@@ -19,15 +28,6 @@ from .tail import (
     monte_carlo_var_cvar,
     parametric_var_cvar,
     stress_test_portfolio,
-)
-from .governor import (
-    GovernorApprovedPosition,
-    GovernorAssetContext,
-    PairwiseCorrelation,
-    RiskGovernorConfig,
-    RiskGovernorRequest,
-    RiskGovernorResult,
-    evaluate_risk_governor,
 )
 
 __all__ = [
