@@ -248,7 +248,11 @@ class FeatureEngineer:
                     raise MLInputError(
                         f"log_return feature {definition.feature_id} requires positive values"
                     )
-                return np.log(values / values.shift(spec.periods))
+                return pd.Series(
+                    np.log(values / values.shift(spec.periods)),
+                    index=values.index,
+                    dtype="float64",
+                )
 
             return self._transform_by_asset(first, frame, univariate)
 
