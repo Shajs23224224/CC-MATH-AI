@@ -10,15 +10,14 @@ from typing import Any
 
 import numpy as np
 import sklearn
-from sklearn.base import clone
 from sklearn.cluster import AgglomerativeClustering, DBSCAN, KMeans
 from sklearn.covariance import EllipticEnvelope
 from sklearn.decomposition import FastICA, KernelPCA, PCA
 from sklearn.ensemble import IsolationForest
 from sklearn.mixture import GaussianMixture
 from sklearn.neighbors import LocalOutlierFactor
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import adjusted_rand_score
+from sklearn.preprocessing import StandardScaler
 
 from core.contracts.unsupervised import (
     UnsupervisedAlgorithm,
@@ -70,13 +69,6 @@ _FACTORIES: dict[UnsupervisedAlgorithm, EstimatorFactory] = {
     ),
 }
 
-_CLUSTERING_ALGORITHMS: set[UnsupervisedAlgorithm] = {
-    "kmeans",
-    "agglomerative_clustering",
-    "dbscan",
-    "gaussian_mixture",
-}
-_STABILITY_ALGORITHMS = _CLUSTERING_ALGORITHMS
 
 
 def supported_unsupervised_algorithms() -> dict[str, tuple[str, ...]]:
