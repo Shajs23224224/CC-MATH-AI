@@ -159,9 +159,9 @@ def _request(
             if correlations is not None
             else (PairwiseCorrelation(asset_a="AAA", asset_b="BBB", correlation=0.40),)
         ),
-        risk_metrics=metrics if metrics is not None else _risk_metrics(
-            evidence_age_seconds=evidence_age_seconds
-        ),
+        risk_metrics=metrics
+        if metrics is not None
+        else _risk_metrics(evidence_age_seconds=evidence_age_seconds),
         market_data_as_of=AS_OF - timedelta(seconds=snapshot_age_seconds),
         risk_snapshot_as_of=AS_OF - timedelta(seconds=snapshot_age_seconds),
         as_of=AS_OF,
@@ -262,9 +262,7 @@ def test_incomplete_factor_loadings_fail_closed() -> None:
 
 def test_drawdown_or_daily_loss_hard_breach_blocks() -> None:
     metrics = tuple(
-        item.model_copy(update={"value": 0.25})
-        if item.name == "max_drawdown"
-        else item
+        item.model_copy(update={"value": 0.25}) if item.name == "max_drawdown" else item
         for item in _risk_metrics()
     )
     result = evaluate_risk_governor(_request(metrics=metrics))
@@ -296,9 +294,7 @@ def test_stale_f37_sizing_result_blocks() -> None:
 
 def test_wrong_quality_metric_unit_blocks() -> None:
     metrics = tuple(
-        item.model_copy(update={"unit": "ratio"})
-        if item.name == "data_quality_score"
-        else item
+        item.model_copy(update={"unit": "ratio"}) if item.name == "data_quality_score" else item
         for item in _risk_metrics()
     )
     result = evaluate_risk_governor(_request(metrics=metrics))
