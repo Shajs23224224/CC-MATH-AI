@@ -12,6 +12,7 @@ from portfolio.sizing.contracts import (
     PositionSizingRequest,
     SizedPosition,
     SizingResult,
+    SizingStatus,
 )
 
 
@@ -172,7 +173,7 @@ def size_positions(
 
     allocations = tuple(SizedPosition.model_validate(row) for row in raw)
     positive = sum(item.target_quantity > 0.0 for item in allocations)
-    result_status = (
+    result_status: SizingStatus = (
         "ZERO_SIZE" if positive == 0 else "SIZED" if positive == len(allocations) else "PARTIAL"
     )
     audit_input = {
