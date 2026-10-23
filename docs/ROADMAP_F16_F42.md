@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F31 integradas en main; F32 en revisión; F33 implementada en rama dependiente de F32  
+**Estado:** F21–F32 integradas en `main`; F33 en revisión en PR #21, dirigida a `main`.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -135,10 +135,10 @@
 
 ## F33 — Algorithm Registry
 **Estado:** implementación inicial en revisión; depende de la aceptación de F32.  
-**Objetivo:** establecer la infraestructura para formalizar el catálogo objetivo de 300+ algoritmos; el catálogo inicial no se presenta como completo.  
+**Objetivo:** establecer la infraestructura del registro versionado y un catálogo de al menos 300 entradas con metadatos tipados. La rama actual contiene 304 registros únicos; esto valida el catálogo de metadatos, no la corrección funcional de cada algoritmo.  
 **Implementado:** contratos inmutables para metadatos, puertos y parámetros; IDs/versiones validados; registro versionado con inserción por lotes atómica; descubrimiento por categoría, lifecycle, puertos y tags; compatibilidad por nombre/tipo/unidad; estados separados de ciclo de vida y evidencia de tests; manifiesto inicial curado; workflow dedicado y pruebas de comportamiento.  
 **Seguridad:** el registro sólo maneja metadatos; no importa ni ejecuta código dinámico. No marca algoritmos como validados automáticamente.  
-**Cierre:** completar catálogo a partir de implementaciones verificadas, ejecutar CI/regresiones y validar la cadena F32→F33 antes de fusionar.
+**Cierre:** mantener 300+ registros únicos con contratos válidos, CI/regresiones verdes, referencias de implementación trazables y evidencia de prueba explícita antes de marcar algoritmos como validados. La integración de F32 está completa; F33 se fusionará tras aprobar la matriz de CI y las regresiones.
 
 ## F34 — Quant Ensemble
 **Objetivo:** combinar evidencia heterogénea conservando contribuciones.  
