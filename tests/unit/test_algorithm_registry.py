@@ -228,10 +228,9 @@ def test_f37_position_sizing_methods_are_registered_without_claiming_validation(
         assert item.test_status == AlgorithmTestStatus.NOT_RUN
         assert "F37" in item.tags
 
+
 def test_f38_portfolio_risk_governor_is_registered_without_claiming_validation() -> None:
-    entries_by_id = {
-        item.algorithm_id: item for item in discover_algorithms(category="risk")
-    }
+    entries_by_id = {item.algorithm_id: item for item in discover_algorithms(category="risk")}
 
     item = entries_by_id["risk.portfolio_governor"]
     assert item.implementation_ref == "risk.evaluate_risk_governor"
