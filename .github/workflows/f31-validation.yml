@@ -1,0 +1,59 @@
+name: F31 Deep Learning
+
+on:
+  push:
+    branches: ["feature/f31-deep-learning"]
+    paths:
+      - "core/contracts/deep_learning.py"
+      - "ml/deep_learning.py"
+      - "ml/__init__.py"
+      - "tests/unit/test_deep_learning.py"
+      - "docs/DEEP_LEARNING.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - "pyproject.toml"
+      - ".github/workflows/f31-validation.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "core/contracts/deep_learning.py"
+      - "ml/deep_learning.py"
+      - "ml/__init__.py"
+      - "tests/unit/test_deep_learning.py"
+      - "docs/DEEP_LEARNING.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - "pyproject.toml"
+      - ".github/workflows/f31-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-f31:
+    name: Validate bounded temporal deep learning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install project, development and optional deep-learning dependencies
+        run: python -m pip install --upgrade pip setuptools wheel && python -m pip install -e ".[dev,deep-learning]"
+      - name: Ruff lint
+        run: python -m ruff check core/contracts/deep_learning.py ml/deep_learning.py ml/__init__.py tests/unit/test_deep_learning.py
+      - name: Ruff format check
+        run: python -m ruff format --check core/contracts/deep_learning.py ml/deep_learning.py ml/__init__.py tests/unit/test_deep_learning.py
+      - name: Mypy
+        run: python -m mypy core/contracts/deep_learning.py ml
+      - name: F31 behavioral tests
+        run: python -m pytest tests/unit/test_deep_learning.py -q
+      - name: F30 unsupervised regression
+        run: python -m pytest tests/unit/test_unsupervised_ml.py -q
+      - name: F29 gradient boosting regression
+        run: python -m pytest tests/unit/test_gradient_boosting.py tests/unit/test_classical_ml.py -q
+      - name: F28 adaptive math regressions
+        run: python -m pytest tests/unit/test_adaptive_math.py tests/unit/test_pattern_discovery.py tests/unit/test_experiment_store.py tests/numerical/test_symbolic_discovery.py -q
+      - name: F27 causal walk-forward regression
+        run: python -m pytest tests/numerical/test_probabilistic_forecasting.py -q

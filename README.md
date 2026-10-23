@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F30 — Unsupervised ML (integrated in PR #18)**
+Current milestone: **F31 — Deep Learning (implementation under review)**
 
 Completed:
 - F01 — System Specification
@@ -27,8 +27,11 @@ Completed:
 - F29 — Gradient Boosting (integrated in PR #17, merge commit `96fcdb5`): regression/classification adapters, chronological internal validation for tree-count selection, bounded estimator budget, refit on the training prefix, reserved final test tail and auditable metadata. Synthetic behavioral tests validate implementation boundaries, not investment performance. See [F29 technical design](docs/GRADIENT_BOOSTING.md).
 - F30 — Unsupervised ML (integrated in PR #18, merge commit `25de38d`): clustering, dimensionality reduction and anomaly detection with training-prefix-only scaling, stability diagnostics and algorithm-honest holdout handling. See [F30 technical design](docs/UNSUPERVISED_ML.md).
 
+In implementation / review:
+- F31 — Deep Learning: optional PyTorch backend, deterministic model registry, chronological train/validation/test splits, training-prefix preprocessing, bounded parameter/epoch budgets and early stopping. Scope and acceptance criteria are described in [F31 technical design](docs/DEEP_LEARNING.md). The F31 pull request must pass final-head CI/Security before integration.
+
 Next planned:
-- F31 — Deep Learning: optional PyTorch backend, temporal neural architectures and validation-only early stopping.
+- F32 — Feature Engineering, after F31 passes its acceptance criteria.
 
 ## Architecture
 
@@ -69,6 +72,7 @@ See:
 - [F28 Classical ML and symbolic discovery](docs/CLASSICAL_ML.md)
 - [F29 Gradient Boosting](docs/GRADIENT_BOOSTING.md)
 - [F30 Unsupervised ML](docs/UNSUPERVISED_ML.md)
+- [F31 Deep Learning](docs/DEEP_LEARNING.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
