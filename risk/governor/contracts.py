@@ -126,7 +126,9 @@ class PairwiseCorrelation(BaseModel):
     @property
     def pair_key(self) -> tuple[str, str]:
         """Return an order-independent correlation pair key."""
-        return tuple(sorted((self.asset_a, self.asset_b)))
+        if self.asset_a < self.asset_b:
+            return self.asset_a, self.asset_b
+        return self.asset_b, self.asset_a
 
 
 class RiskGovernorRequest(BaseModel):
@@ -178,13 +180,15 @@ class RiskGovernorRequest(BaseModel):
                 allocation.target_weight, expected_weight, rel_tol=0.0, abs_tol=1e-6
             ):
                 raise ValueError(
-                    f"F37 target weight for {allocation.asset_symbol} does not match notional/equity"
+                    f"F37 target weight for {allocation.asset_symbol} "
+                    "does not match notional/equity"
                 )
             if allocation.target_quantity > 0.0:
                 lots = allocation.target_quantity / context.lot_size
                 if not math.isclose(lots, round(lots), rel_tol=0.0, abs_tol=1e-8):
                     raise ValueError(
-                        f"F37 quantity for {allocation.asset_symbol} is not a multiple of F38 lot_size"
+                        f"F37 quantity for {allocation.asset_symbol} "
+                        "is not a multiple of F38 lot_size"
                     )
 
         seen_pairs: set[tuple[str, str]] = set()
