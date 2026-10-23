@@ -1,0 +1,71 @@
+name: F35 Meta-model Decision Engine
+
+on:
+  push:
+    branches: ["feature/f35-meta-decision-engine"]
+    paths:
+      - "signals/decision/**"
+      - "tests/unit/test_decision_engine.py"
+      - "tests/unit/test_decision_calibration.py"
+      - "tests/unit/test_quant_ensemble.py"
+      - "tests/unit/test_algorithm_registry.py"
+      - "docs/DECISION_ENGINE.md"
+      - "docs/QUANT_ENSEMBLE.md"
+      - "docs/ALGORITHM_REGISTRY.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f35-validation.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "signals/decision/**"
+      - "tests/unit/test_decision_engine.py"
+      - "tests/unit/test_decision_calibration.py"
+      - "tests/unit/test_quant_ensemble.py"
+      - "tests/unit/test_algorithm_registry.py"
+      - "docs/DECISION_ENGINE.md"
+      - "docs/QUANT_ENSEMBLE.md"
+      - "docs/ALGORITHM_REGISTRY.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f35-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-f35:
+    name: Validate decisioning, calibration and upstream regressions
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "${{ matrix.python-version }}"
+          cache: pip
+      - name: Install project and development dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check core/contracts/decisions.py signals/decision tests/unit/test_decision_engine.py tests/unit/test_decision_calibration.py
+      - name: Ruff format check
+        run: python -m ruff format --check core/contracts/decisions.py signals/decision tests/unit/test_decision_engine.py tests/unit/test_decision_calibration.py
+      - name: Mypy
+        run: python -m mypy core/contracts/decisions.py signals/decision
+      - name: F35 decision and calibration tests
+        run: python -m pytest tests/unit/test_decision_engine.py tests/unit/test_decision_calibration.py tests/unit/test_contracts.py -q
+      - name: F34/F33 regression
+        run: python -m pytest tests/unit/test_quant_ensemble.py tests/unit/test_algorithm_registry.py -q
+      - name: F32/F31/F30 regression
+        run: |
+          python -m pytest tests/unit/test_feature_engineering.py -q
+          python -m pytest tests/unit/test_deep_learning.py tests/unit/test_unsupervised_ml.py -q
+      - name: F29/F28 regression
+        run: |
+          python -m pytest tests/unit/test_gradient_boosting.py tests/unit/test_classical_ml.py -q
+          python -m pytest tests/unit/test_adaptive_math.py tests/unit/test_pattern_discovery.py tests/unit/test_experiment_store.py tests/numerical/test_symbolic_discovery.py -q
