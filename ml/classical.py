@@ -10,12 +10,18 @@ from typing import Any
 
 import numpy as np
 import sklearn
-from sklearn.base import BaseEstimator
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.base import BaseEstimator, clone
+from sklearn.ensemble import (
+    GradientBoostingClassifier,
+    GradientBoostingRegressor,
+    RandomForestClassifier,
+    RandomForestRegressor,
+)
 from sklearn.linear_model import ElasticNet, Lasso, LinearRegression, LogisticRegression, Ridge
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
+    log_loss,
     mean_absolute_error,
     mean_squared_error,
     precision_score,
@@ -50,6 +56,9 @@ _REGRESSORS: dict[str, EstimatorFactory] = {
     "random_forest_regressor": lambda seed: RandomForestRegressor(
         n_estimators=100, random_state=seed, n_jobs=1
     ),
+    "gradient_boosting_regressor": lambda seed: GradientBoostingRegressor(
+        n_estimators=200, learning_rate=0.05, max_depth=2, random_state=seed
+    ),
 }
 _CLASSIFIERS: dict[str, EstimatorFactory] = {
     "logistic_regression": lambda seed: LogisticRegression(max_iter=2_000, random_state=seed),
@@ -59,7 +68,19 @@ _CLASSIFIERS: dict[str, EstimatorFactory] = {
     "random_forest_classifier": lambda seed: RandomForestClassifier(
         n_estimators=100, random_state=seed, n_jobs=1
     ),
+    "gradient_boosting_classifier": lambda seed: GradientBoostingClassifier(
+        n_estimators=200, learning_rate=0.05, max_depth=2, random_state=seed
+    ),
 }
+_BOOSTING_ALGORITHMS = {
+    "gradient_boosting_classifier",
+    "gradient_boosting_regressor",
+}
+_MAX_BOOSTING_ESTIMATORS = 1_000
+_BOOSTING_PATIENCE = 10
+_BOOSTING_MIN_ESTIMATORS = 10
+_BOOSTING_VALIDATION_FRACTION = 0.15
+
 _SCALED_MODELS = {
     "ridge",
     "lasso",
@@ -104,6 +125,91 @@ def _fingerprint(features: np.ndarray, target: Sequence[float | str]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def _select_gradient_boosting_iterations(
+    estimator: GradientBoostingRegressor | GradientBoostingClassifier,
+    x_train: np.ndarray,
+    y_train: np.ndarray,
+    task: str,
+) -> tuple[int, int]:
+    """Select a tree count on a chronological validation suffix of the training prefix."""
+    max_estimators = estimator.get_params(deep=False).get("n_estimators")
+    if (
+        isinstance(max_estimators, bool)
+        or not isinstance(max_estimators, int)
+        or not 1 <= max_estimators <= _MAX_BOOSTING_ESTIMATORS
+    ):
+        raise MLInputError(
+            f"gradient boosting n_estimators must be between 1 and {_MAX_BOOSTING_ESTIMATORS}"
+        )
+
+    validation_size = max(2, int(math.ceil(len(x_train) * _BOOSTING_VALIDATION_FRACTION)))
+    fit_end = len(x_train) - validation_size
+    if fit_end < 8:
+        raise MLInputError(
+            "gradient boosting temporal early stopping requires at least eight inner-training "
+            "samples and two validation samples"
+        )
+    x_fit, x_valid = x_train[:fit_end], x_train[fit_end:]
+    y_fit, y_valid = y_train[:fit_end], y_train[fit_end:]
+    if task == "classification" and len(np.unique(y_fit)) < 2:
+        raise MLInputError(
+            "gradient boosting inner training prefix must contain at least two target classes"
+        )
+
+    candidate = clone(estimator)
+    candidate.set_params(warm_start=True, n_estimators=1)
+    best_iteration = 1
+    best_score = math.inf
+    stale_iterations = 0
+    minimum_iterations = min(_BOOSTING_MIN_ESTIMATORS, max_estimators)
+
+    if isinstance(candidate, GradientBoostingRegressor):
+        for iteration in range(1, max_estimators + 1):
+            candidate.set_params(n_estimators=iteration)
+            candidate.fit(x_fit, y_fit)
+            predictions = np.asarray(candidate.predict(x_valid), dtype=np.float64)
+            if not np.all(np.isfinite(predictions)):
+                raise MLTrainingError("gradient boosting produced non-finite validation predictions")
+            score = float(mean_squared_error(y_valid.astype(np.float64), predictions))
+            if score < best_score - 1e-12:
+                best_score = score
+                best_iteration = iteration
+                stale_iterations = 0
+            elif iteration >= minimum_iterations:
+                stale_iterations += 1
+            if iteration >= minimum_iterations and stale_iterations >= _BOOSTING_PATIENCE:
+                break
+    elif isinstance(candidate, GradientBoostingClassifier):
+        for iteration in range(1, max_estimators + 1):
+            candidate.set_params(n_estimators=iteration)
+            candidate.fit(x_fit, y_fit)
+            probabilities = np.asarray(candidate.predict_proba(x_valid), dtype=np.float64)
+            if (
+                probabilities.ndim != 2
+                or not np.all(np.isfinite(probabilities))
+                or np.any(probabilities < 0.0)
+                or np.any(probabilities > 1.0)
+            ):
+                raise MLTrainingError(
+                    "gradient boosting produced invalid validation probabilities"
+                )
+            score = float(log_loss(y_valid, probabilities, labels=candidate.classes_))
+            if score < best_score - 1e-12:
+                best_score = score
+                best_iteration = iteration
+                stale_iterations = 0
+            elif iteration >= minimum_iterations:
+                stale_iterations += 1
+            if iteration >= minimum_iterations and stale_iterations >= _BOOSTING_PATIENCE:
+                break
+    else:
+        raise MLInputError("unsupported estimator for gradient boosting early stopping")
+
+    if not math.isfinite(best_score):
+        raise MLTrainingError("gradient boosting could not select a finite validation score")
+    return best_iteration, validation_size
+
+
 class ClassicalMLModel:
     """Fit one allow-listed estimator and preserve auditable lineage and OOS metrics."""
 
@@ -140,12 +246,36 @@ class ClassicalMLModel:
         unsupported = set(supplied) - set(estimator.get_params(deep=False))
         if unsupported:
             raise MLInputError(f"unsupported model parameters: {', '.join(sorted(unsupported))}")
+
+        boosting_details: dict[str, int | bool] = {}
         try:
             estimator.set_params(**supplied)
             if "random_state" in estimator.get_params(deep=False):
                 estimator.set_params(random_state=self.config.random_seed)
             if "n_jobs" in estimator.get_params(deep=False):
                 estimator.set_params(n_jobs=1)
+            if self.config.algorithm in _BOOSTING_ALGORITHMS:
+                requested_max_estimators = estimator.get_params(deep=False).get("n_estimators")
+                if (
+                    isinstance(requested_max_estimators, bool)
+                    or not isinstance(requested_max_estimators, int)
+                    or not 1 <= requested_max_estimators <= _MAX_BOOSTING_ESTIMATORS
+                ):
+                    raise MLInputError(
+                        "gradient boosting n_estimators must be an integer between "
+                        f"1 and {_MAX_BOOSTING_ESTIMATORS}"
+                    )
+                selected_estimators, validation_samples = _select_gradient_boosting_iterations(
+                    estimator, x_train, y_train, self.config.task
+                )
+                estimator.set_params(n_estimators=selected_estimators, warm_start=False)
+                boosting_details = {
+                    "temporal_early_stopping": True,
+                    "requested_max_estimators": requested_max_estimators,
+                    "selected_n_estimators": selected_estimators,
+                    "early_stopping_validation_samples": validation_samples,
+                    "early_stopping_patience": _BOOSTING_PATIENCE,
+                }
             if self.config.algorithm.startswith("knn_"):
                 parameter_name = "n_neighbors"
                 max_neighbors = int(estimator.get_params(deep=False)[parameter_name])
@@ -158,6 +288,8 @@ class ClassicalMLModel:
             pipeline = Pipeline(steps)
             pipeline.fit(x_train, y_train)
             predictions = np.asarray(pipeline.predict(x_test))
+        except MLInputError:
+            raise
         except (ValueError, TypeError, FloatingPointError) as exc:
             raise MLTrainingError(f"model training failed for {self.config.algorithm}") from exc
 
@@ -202,6 +334,14 @@ class ClassicalMLModel:
             separators=(",", ":"),
             allow_nan=False,
         )
+        resolved_parameters: dict[str, int | float | str | bool | None] = {
+            key: value
+            for key, value in estimator.get_params(deep=False).items()
+            if isinstance(value, (str, int, float, bool)) or value is None
+        }
+        resolved_parameters["random_seed"] = self.config.random_seed
+        resolved_parameters.update(boosting_details)
+
         self._pipeline = pipeline
         self.metadata = MLModelMetadata(
             model_id=(
@@ -215,14 +355,7 @@ class ClassicalMLModel:
             random_seed=self.config.random_seed,
             library_version=sklearn.__version__,
             data_fingerprint=training_fingerprint,
-            parameters={
-                **{
-                    key: value
-                    for key, value in estimator.get_params(deep=False).items()
-                    if isinstance(value, (str, int, float, bool)) or value is None
-                },
-                "random_seed": self.config.random_seed,
-            },
+            parameters=resolved_parameters,
         )
         self.evaluation = MLEvaluation(
             algorithm=self.config.algorithm,
