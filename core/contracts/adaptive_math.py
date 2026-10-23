@@ -81,6 +81,10 @@ class AdaptiveMathConfig(BaseModel):
             raise ValueError(
                 "max_evaluations must allow the initial population and baseline candidates"
             )
+        if self.max_evaluations * self.max_nodes * self.max_observations > 50_000_000:
+            raise ValueError(
+                "combined candidate, node and observation budget exceeds 50 million work units"
+            )
         return self
 
 
