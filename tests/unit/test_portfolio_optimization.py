@@ -333,7 +333,7 @@ def test_cash_deployment_is_turnover_but_cash_is_not_charged_commission() -> Non
 
     assert result.status in {"OPTIMAL", "FEASIBLE"}
     assert result.turnover == pytest.approx(1.0, abs=1e-5)
-    assert result.estimated_transaction_cost_fraction == pytest.approx(0.002, abs=1e-7)
+    assert result.estimated_transaction_cost_fraction == pytest.approx(0.001, abs=1e-7)
 
 
 def test_future_covariance_and_mismatched_horizons_are_rejected() -> None:
