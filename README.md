@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F30 — Unsupervised ML (implementation under review)**
+Current milestone: **F30 — Unsupervised ML (integrated in PR #18)**
 
 Completed:
 - F01 — System Specification
@@ -25,12 +25,10 @@ Completed:
 - F27 — Probabilistic Forecasting Engine: expanding-window forecast evaluation, predictive intervals, bootstrap calibration and causal per-origin regime metadata; merged in PR #12 and hardened in PR #13 with CI/Security passed.
 - F28 — Classical ML and bounded mathematical discovery (merged and extended): supervised adapters, chronological out-of-sample evaluation, training-prefix association screening, polynomial symbolic regression, expression-tree evolution, validation-based strategy selection and JSONL experiment records. See [adaptive mathematics architecture](docs/ADAPTIVE_MATH.md).
 - F29 — Gradient Boosting (integrated in PR #17, merge commit `96fcdb5`): regression/classification adapters, chronological internal validation for tree-count selection, bounded estimator budget, refit on the training prefix, reserved final test tail and auditable metadata. Synthetic behavioral tests validate implementation boundaries, not investment performance. See [F29 technical design](docs/GRADIENT_BOOSTING.md).
-
-In implementation / review:
-- F30 — Unsupervised ML: clustering, dimensionality reduction and anomaly detection with training-prefix-only scaling and cluster stability diagnostics; proposed in [PR #18](https://github.com/Shajs23224224/CC-MATH-AI/pull/18). The PR must have a green final-head CI/Security result and complete review before integration. See [F30 technical design](docs/UNSUPERVISED_ML.md).
+- F30 — Unsupervised ML (integrated in PR #18, merge commit `25de38d`): clustering, dimensionality reduction and anomaly detection with training-prefix-only scaling, stability diagnostics and algorithm-honest holdout handling. See [F30 technical design](docs/UNSUPERVISED_ML.md).
 
 Next planned:
-- F31 — Deep Learning, after F30 closes its review and validation criteria.
+- F31 — Deep Learning: optional PyTorch backend, temporal neural architectures and validation-only early stopping.
 
 ## Architecture
 
