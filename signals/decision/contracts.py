@@ -94,6 +94,7 @@ class DecisionConfig(BaseModel):
     forecast_uncertainty_scale: float = Field(default=1.0, gt=0.0, le=1_000_000.0)
     probability_calibration_status: Literal["uncalibrated", "validated_oos"] = "uncalibrated"
     calibration_id: str | None = Field(default=None, min_length=1, max_length=160)
+    calibration_fit_fingerprint: str | None = None
     calibration_version: str | None = Field(default=None, min_length=1, max_length=80)
     calibration_data_snapshot_id: str | None = Field(default=None, min_length=1, max_length=200)
     calibration_window_start: datetime | None = None
@@ -112,6 +113,14 @@ class DecisionConfig(BaseModel):
         """Use semantic versions for replayable policy references."""
         if not _VERSION_PATTERN.fullmatch(value):
             raise ValueError("version must use semantic versioning, e.g. 1.0.0")
+        return value
+
+    @field_validator("calibration_fit_fingerprint")
+    @classmethod
+    def validate_calibration_fingerprint(cls, value: str | None) -> str | None:
+        """Require a SHA-256 reference to the fitted calibrator artifact."""
+        if value is not None and not _SHA256_PATTERN.fullmatch(value):
+            raise ValueError("calibration_fit_fingerprint must be a lowercase SHA-256")
         return value
 
     @field_validator("calibration_version")
@@ -143,6 +152,7 @@ class DecisionConfig(BaseModel):
         if self.probability_calibration_status == "validated_oos":
             required = (
                 self.calibration_id,
+                self.calibration_fit_fingerprint,
                 self.calibration_version,
                 self.calibration_data_snapshot_id,
                 self.calibration_window_start,
@@ -175,6 +185,7 @@ class DecisionConfig(BaseModel):
             value is not None
             for value in (
                 self.calibration_id,
+                self.calibration_fit_fingerprint,
                 self.calibration_version,
                 self.calibration_data_snapshot_id,
                 self.calibration_window_start,
@@ -250,8 +261,31 @@ class DecisionOutput(BaseModel):
     decision_config_version: str = Field(min_length=1, max_length=80)
     probability_calibration_status: Literal["uncalibrated", "validated_oos"]
     calibration_id: str | None = Field(default=None, max_length=160)
+    calibration_fit_fingerprint: str | None = None
+    calibration_version: str | None = None
+    calibration_data_snapshot_id: str | None = None
+    calibration_window_start: datetime | None = None
+    calibration_window_end: datetime | None = None
+    calibration_validation_data_snapshot_id: str | None = None
+    calibration_validation_window_start: datetime | None = None
+    calibration_validation_window_end: datetime | None = None
+    calibration_validation_log_loss: float | None = None
+    calibration_validation_baseline_log_loss: float | None = None
     ensemble_fingerprint: str
     decision_fingerprint: str
+
+    @field_validator(
+        "calibration_window_start",
+        "calibration_window_end",
+        "calibration_validation_window_start",
+        "calibration_validation_window_end",
+    )
+    @classmethod
+    def validate_calibration_timestamps(cls, value: datetime | None) -> datetime | None:
+        """Require timezone-aware audit timestamps when calibration metadata is present."""
+        if value is not None and (value.tzinfo is None or value.utcoffset() is None):
+            raise ValueError("calibration timestamps must be timezone-aware")
+        return value
 
     @field_validator("ensemble_fingerprint", "decision_fingerprint")
     @classmethod
@@ -264,6 +298,33 @@ class DecisionOutput(BaseModel):
     @model_validator(mode="after")
     def validate_output_consistency(self) -> DecisionOutput:
         """Keep signal, abstention state and probabilities consistent."""
+        calibration_fields = (
+            self.calibration_id,
+            self.calibration_fit_fingerprint,
+            self.calibration_version,
+            self.calibration_data_snapshot_id,
+            self.calibration_window_start,
+            self.calibration_window_end,
+            self.calibration_validation_data_snapshot_id,
+            self.calibration_validation_window_start,
+            self.calibration_validation_window_end,
+            self.calibration_validation_log_loss,
+            self.calibration_validation_baseline_log_loss,
+        )
+        if self.probability_calibration_status == "validated_oos":
+            if any(value is None for value in calibration_fields):
+                raise ValueError("validated_oos output requires complete calibration provenance")
+            assert self.calibration_window_end is not None
+            assert self.calibration_validation_window_start is not None
+            assert self.calibration_validation_window_end is not None
+            assert self.calibration_validation_log_loss is not None
+            assert self.calibration_validation_baseline_log_loss is not None
+            if self.calibration_window_end > self.calibration_validation_window_start:
+                raise ValueError("calibration fit window must end before validation begins")
+            if self.calibration_validation_log_loss > self.calibration_validation_baseline_log_loss + 1e-12:
+                raise ValueError("validated_oos output cannot report worse validation log loss")
+        elif any(value is not None for value in calibration_fields):
+            raise ValueError("uncalibrated output must not carry calibration artifact metadata")
         if self.abstained != (self.status == "ABSTAINED"):
             raise ValueError("status must agree with abstained")
         if self.abstained and not self.abstention_reason:
