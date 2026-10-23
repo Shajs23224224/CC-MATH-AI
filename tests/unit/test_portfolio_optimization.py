@@ -42,6 +42,7 @@ def _decision(
     signal: SignalType = SignalType.BUY,
     timestamp: datetime = AS_OF - timedelta(minutes=10),
     abstained: bool = False,
+    horizon: str = "1D",
 ) -> DecisionOutput:
     """Create a small, schema-valid F35 decision fixture."""
     probability_map = {
@@ -61,7 +62,7 @@ def _decision(
         expected_return=expected_return,
         expected_risk=0.1,
         risk_adjusted_score=expected_return / 0.1,
-        recommended_horizon="1D",
+        recommended_horizon=horizon,
         suggested_position_size=0.0,
         regime="SYNTHETIC",
         data_snapshot_id="synthetic-f35-snapshot",
@@ -127,6 +128,7 @@ def _request(
                 expected_return,
                 signal=signal,
                 abstained=is_abstained,
+                horizon=horizon,
             ),
             current_weight=current_weight,
             minimum_weight=minimum,
@@ -243,7 +245,7 @@ def test_hold_can_retain_but_not_increase_an_existing_position() -> None:
 
 
 def test_sector_cap_and_maximum_turnover_are_enforced() -> None:
-    request = _request(current_weights=(0.4, 0.35, 0.25))
+    request = _request(current_weights=(0.25, 0.20, 0.55))
     config = _config(
         "mean_variance",
         sector_limits=({"sector": "TECH", "maximum_weight": 0.45},),
