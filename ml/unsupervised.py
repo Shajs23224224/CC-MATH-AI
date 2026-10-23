@@ -249,7 +249,9 @@ class UnsupervisedMLModel:
                 if hasattr(estimator, "predict"):
                     predicted = np.asarray(estimator.predict(holdout), dtype=np.int64)
                     if predicted.ndim != 1 or len(predicted) != len(holdout):
-                        raise MLTrainingError("clustering estimator returned misaligned holdout labels")
+                        raise MLTrainingError(
+                            "clustering estimator returned misaligned holdout labels"
+                        )
                     holdout_labels = tuple(int(value) for value in predicted.tolist())
                 stability_scores = self._stability(estimator, train, fitted_labels)
                 if stability_scores:
@@ -274,7 +276,9 @@ class UnsupervisedMLModel:
                 )
             else:
                 if self.config.algorithm == "local_outlier_factor":
-                    negative_factors = np.asarray(estimator.negative_outlier_factor_, dtype=np.float64)
+                    negative_factors = np.asarray(
+                        estimator.negative_outlier_factor_, dtype=np.float64
+                    )
                     training_scores_array = -negative_factors
                     offset = float(estimator.offset_)
                     training_flags_array = np.where(negative_factors < offset, -1, 1)
@@ -325,16 +329,20 @@ class UnsupervisedMLModel:
         parameters["scaler_fit_scope"] = "training_prefix_only"
 
         limitations = [
-            "Clusters, components and anomaly flags are exploratory outputs, not causal findings or trading signals.",
-            "Only the training prefix fits the scaler and estimator; row order must be supplied correctly by the caller.",
+            "Clusters, components and anomaly flags are exploratory outputs, not causal findings "
+            "or trading signals.",
+            "Only the training prefix fits the scaler and estimator; row order must be supplied "
+            "correctly by the caller.",
         ]
         if operation == "clustering" and holdout_labels is None:
             limitations.append(
-                "This algorithm has no inductive prediction API; holdout cluster labels are intentionally omitted."
+                "This algorithm has no inductive prediction API; holdout cluster labels are "
+                "intentionally omitted."
             )
         if operation == "clustering":
             limitations.append(
-                "Adjusted Rand stability is a resampling diagnostic, not a guarantee of semantic cluster validity."
+                "Adjusted Rand stability is a resampling diagnostic, not a guarantee of semantic "
+                "cluster validity."
             )
         elif operation == "dimensionality_reduction":
             limitations.append(
@@ -342,11 +350,15 @@ class UnsupervisedMLModel:
             )
         else:
             limitations.append(
-                "Anomaly scores are relative to the fitted training distribution; larger scores indicate more unusual rows."
+                "Anomaly scores are relative to the fitted training distribution; larger scores "
+                "indicate more unusual rows."
             )
 
         result = UnsupervisedMLResult(
-            model_id=f"{self.config.algorithm}:{hashlib.sha256(identity.encode()).hexdigest()[:16]}",
+            model_id=(
+                f"{self.config.algorithm}:"
+                f"{hashlib.sha256(identity.encode()).hexdigest()[:16]}"
+            ),
             algorithm=self.config.algorithm,
             operation=operation,
             feature_names=names,
