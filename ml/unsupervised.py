@@ -10,9 +10,9 @@ from typing import Any
 
 import numpy as np
 import sklearn
-from sklearn.cluster import AgglomerativeClustering, DBSCAN, KMeans
+from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 from sklearn.covariance import EllipticEnvelope
-from sklearn.decomposition import FastICA, KernelPCA, PCA
+from sklearn.decomposition import PCA, FastICA, KernelPCA
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import adjusted_rand_score
 from sklearn.mixture import GaussianMixture
