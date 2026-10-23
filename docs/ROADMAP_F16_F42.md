@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F35 integradas en `main`; F36 implementada en `feature/f36-portfolio-optimization`, pendiente de CI/revisión/merge.
+**Estado:** F21–F36 integradas en `main`; F37 es la siguiente fase.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -159,14 +159,14 @@
 **Cierre:** completado. Workflow F35 pasó en Python 3.11/3.12 (Ruff, formato, mypy, pruebas unitarias y regresiones); CI general y Security pasaron, junto con los workflows de regresión que se activaron para F22–F34.
 
 ## F36 — Portfolio Optimization
-**Estado:** implementada en `feature/f36-portfolio-optimization`; aceptación final pendiente de workflow F36, CI general, Security y PR.
+**Estado:** completada e integrada en `main` mediante PR #25 (merge commit `b7a2628`); workflow F36, F33, CI general, Security y regresiones activadas aprobados.
 **Objetivo:** convertir outputs tipados de F35 en pesos objetivo long-only y fully-invested mediante una matriz F23 de covarianza con timestamp/horizonte y procedencia explícitos.
 **Métodos:** equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity/ERC, inverse volatility, HRP, Black-Litterman con vistas/confianzas explícitas y maximum diversification.
 **Restricciones:** bounds por activo, exclusión de abstentions/SELL, HOLD sólo preserva o reduce posiciones existentes, límites sectoriales, turnover máximo, concentración HHI y suma de pesos a 1. Evalúa costes estimados, reporta estado SLSQP, iteraciones, diagnóstico medido por restricción, ridge de covarianza y huellas SHA-256.
 **Reglas temporales:** no aceptar timestamps futuros, horizontes incompatibles, covariance matrix de correlación en lugar de covariance, entradas no finitas ni dimensiones desalineadas. No anualiza retornos/covarianza implícitamente.
 **Fallo seguro:** constraints/bounds contradictorios generan estado INFEASIBLE cuando se detecta; solver incapaz de encontrar una candidata válida produce FAILED; ambos devuelven pesos cero para evitar consumo accidental. Solo OPTIMAL/FEASIBLE con todas las restricciones aprobadas son TargetAllocation utilizables.
 **Límites:** solo long-only y sin objetivo explícito de cash; costes estimados, no cotizaciones de ejecución; F36 no sustituye Risk Governor, F37 sizing, backtest/walk-forward ni paper trading. Métodos y pruebas sintéticas validan ingeniería, no rentabilidad.
-**Cierre:** workflow F36 Python 3.11/3.12, Ruff/format, mypy, pruebas de nueve métodos/constraints/leakage y regresiones F33–F35, F23/F21, CI general y Security aprobados.
+**Cierre:** completado. F36 pasó en Python 3.11/3.12 (Ruff, formato, mypy, pruebas de nueve métodos y restricciones); F33, CI general, Security y los workflows regresivos activados pasaron. Las pruebas sintéticas no acreditan rentabilidad ni idoneidad financiera.
 
 ## F37 — Position Sizing
 **Objetivo:** determinar tamaño dentro de límites.  
