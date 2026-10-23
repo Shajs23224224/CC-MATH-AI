@@ -9,7 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from core.contracts import DependenceMatrix, SignalType, TargetAllocation
+from core.contracts import DependenceMatrix, TargetAllocation
 from signals.decision import DecisionOutput
 
 _VERSION_PATTERN = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$")
