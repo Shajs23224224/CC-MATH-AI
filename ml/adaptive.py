@@ -400,7 +400,7 @@ def predict_adaptive_candidate(
             raise MLInputError("evolutionary candidate has no structured expression tree")
         tree = from_contract(candidate.expression_tree)
         try:
-            values = evaluate_tree(tree, matrix)
+            values = evaluate_tree(tree, matrix, max_depth=10, max_nodes=127)
         except InvalidExpression as exc:
             raise MLInputError(str(exc)) from exc
         predictions = candidate.coefficients[0] * values + candidate.intercept
@@ -565,17 +565,36 @@ class AdaptiveMathEngine:
         candidates.sort(
             key=lambda item: (item.selection_score, item.complexity, item.strategy, item.candidate_id)
         )
-        winner = candidates[0]
-        selected = _fit_final_candidate(
-            winner,
-            x_development,
-            y_development,
-            x_test,
-            y_test,
-            dataset.feature_names,
-            dataset.dataset_id,
-            self.config,
-        )
+        winner: _ScoredCandidate | None = None
+        selected: AdaptiveCandidateEvidence | None = None
+        final_safety_rejections = 0
+        checked_candidate_ids: set[str] = set()
+        for candidate in candidates:
+            if candidate.candidate_id in checked_candidate_ids:
+                continue
+            checked_candidate_ids.add(candidate.candidate_id)
+            try:
+                final_candidate = _fit_final_candidate(
+                    candidate,
+                    x_development,
+                    y_development,
+                    x_test,
+                    y_test,
+                    dataset.feature_names,
+                    dataset.dataset_id,
+                    self.config,
+                )
+            except (InvalidExpression, MLTrainingError, ValueError, FloatingPointError):
+                # Safety/domain validity is a hard constraint, not a test-performance score.
+                final_safety_rejections += 1
+                continue
+            winner = candidate
+            selected = final_candidate
+            break
+        if winner is None or selected is None:
+            raise MLTrainingError(
+                "every candidate failed final domain or numerical safety checks"
+            )
 
         # Pattern discovery only sees the training prefix; it cannot inspect validation/test tails.
         training_dataset_id = f"{dataset.dataset_id[:180]}-train-prefix"
@@ -638,13 +657,14 @@ class AdaptiveMathEngine:
             test_samples=test_size,
             candidates_evaluated=candidate_count,
             candidates_rejected=rejected_count,
+            final_safety_rejections=final_safety_rejections,
             generations_completed=generations_completed,
             random_seed=self.config.random_seed,
             strategy_scores=strategy_scores,
             selected_reason=(
-                f"Selected {winner.strategy} because it had the lowest chronological validation "
-                "score (RMSE plus the configured complexity penalty). The test tail was used "
-                "only for final reporting."
+                f"Selected {winner.strategy} as the lowest-validation-score candidate that passed "
+                "final domain/numerical safety checks. Validation score is RMSE plus the configured "
+                "complexity penalty; test metrics do not rank candidates."
             ),
             verification_checks=verification_checks,
             limitations=_LIMITATIONS,
@@ -672,6 +692,7 @@ class AdaptiveMathEngine:
                     "test_mae": selected.test_mae if selected.test_mae is not None else 0.0,
                     "candidates_evaluated": candidate_count,
                     "candidates_rejected": rejected_count,
+                    "final_safety_rejections": final_safety_rejections,
                     "generations_completed": generations_completed,
                     "test_used_for_selection": False,
                 },
