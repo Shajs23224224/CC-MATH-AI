@@ -29,15 +29,17 @@ print(evaluation.metrics)
 print(model.predict(((61.0,), (62.0,))).predictions)
 ~~~
 
-The model catalogue is explicit and task-scoped:
+The F28 classical catalogue is explicit and task-scoped:
 - Regression: linear regression, Ridge, Lasso, Elastic Net, SVR, KNN regressor, decision tree regressor and random forest regressor.
 - Classification: logistic regression, SVC, KNN classifier, decision tree classifier and random forest classifier.
+
+F29 extends the same ClassicalMLModel registry with temporal gradient boosting for regression and classification; see [F29 Gradient Boosting](GRADIENT_BOOSTING.md).
 
 Preprocessing is encapsulated in a scikit-learn pipeline and is fitted only on the training prefix. The holdout is the last test_fraction of rows; row order is preserved. Regression reports MAE, RMSE and R². Classification reports accuracy, macro precision, macro recall and macro F1. Supported classifiers expose class probabilities when their estimator supports predict_proba.
 
 MLModelMetadata stores the estimator name, controlled seed, scikit-learn version, training sample count, feature names, resolved scalar parameters and a SHA-256 fingerprint of the training prefix. It does not serialize an executable model object. Parameter names must exist on the allow-listed estimator; random_state is controlled by random_seed, and parallelism is kept at one worker for deterministic CPU-first behavior.
 
-This is model fitting and holdout evaluation, not automated hyperparameter selection. The test tail is not used for model selection. For temporal or market data, the input row order must already represent the permitted observation order; a split cannot repair misordered or point-in-time-invalid source data.
+This base API does not perform broad automated hyperparameter search. F29 adds temporal selection of a boosting tree count using an internal validation suffix. The final test tail is not used for model selection. For temporal or market data, the input row order must already represent the permitted observation order; a split cannot repair misordered or point-in-time-invalid source data.
 
 ## Pattern discovery
 
@@ -65,7 +67,7 @@ Input/schema violations raise MLInputError or Pydantic validation errors; estima
 
 The F28 test suite uses synthetic data with known affine, classification and association behavior. It verifies chronological boundaries, repeatability under a fixed seed, probability normalization, budget rejection, symbolic holdout error, candidate reuse and JSONL round-trip/error handling. These synthetic tests are behavior checks, not investment benchmarks.
 
-Not implemented in F28: hyperparameter search, probability calibration, online learning, causal discovery, deep learning, unsupervised learning, arbitrary program synthesis beyond the bounded expression grammar, general multi-objective Pareto evolution, formal proof, model-artifact serialization or a graphical interface. Those require separate designs and validation in later phases.
+Not implemented in F28: broad hyperparameter search, probability calibration, online learning, causal discovery, deep learning, unsupervised learning, arbitrary program synthesis beyond the bounded expression grammar, general multi-objective Pareto evolution, formal proof, model-artifact serialization or a graphical interface. F29's temporal tree-count selection is not a general hyperparameter optimizer.
 
 
 ## Adaptive mathematical intelligence extension
