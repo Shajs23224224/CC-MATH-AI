@@ -634,13 +634,17 @@ class AdaptiveMathEngine:
         for candidate in sorted(
             candidates,
             key=lambda item: (
-                item.selection_score, item.complexity, item.strategy, item.candidate_id
+                item.selection_score,
+                item.complexity,
+                item.strategy,
+                item.candidate_id,
             ),
         ):
             best_by_id.setdefault(candidate.candidate_id, candidate)
         top_scored = list(best_by_id.values())[:8]
         top_contracts = [
-            selected if candidate.candidate_id == selected.candidate_id
+            selected
+            if candidate.candidate_id == selected.candidate_id
             else _candidate_contract(
                 candidate, dataset.dataset_id, dataset.feature_names, fit_samples=train_end
             )
