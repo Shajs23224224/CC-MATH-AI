@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F34 integradas en `main`; F35 es la siguiente fase.
+**Estado:** F21–F34 integradas en `main`; F35 implementada en `feature/f35-meta-decision-engine`, pendiente de validar CI/revisión y merge.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -150,10 +150,13 @@
 **Cierre:** contratos tipados, pruebas numéricas/temporales, trazabilidad de contribuciones, regresiones F29–F33, CI Python 3.11/3.12, Security y documentación aprobados.
 
 ## F35 — Meta-model / Decision Engine
-**Objetivo:** producir el DecisionRecord.  
-**Output:** BUY/HOLD/SELL, probabilidades, expected return/risk, horizon, confidence, agreement, evidence y constraints.  
-**Reglas:** calibración, thresholds versionados, abstención/reject, Risk Governor posterior, LLM sólo como orquestación/interpretación.  
-**Cierre:** decisión reproducible sin autoridad de ejecución.
+**Estado:** implementada en `feature/f35-meta-decision-engine`; aceptación final pendiente de CI Python 3.11/3.12 y revisión de PR.
+**Objetivo:** convertir evidencia F34 y un Forecast de fuente/version explícitas al mismo horizonte en un DecisionRecord reproducible.
+**Implementado:** contratos tipados e inmutables para probabilidades BUY/HOLD/SELL, solicitud, restricciones, contribuciones de evidencia y salida; umbrales/configuración semánticamente versionados; softmax estable y metadatos de calibración; gates de acuerdo, incertidumbre, forecast-direction alignment y constraints bloqueantes; abstención segura con placeholder HOLD no accionable; fingerprint SHA-256 canónico; position size fijo en cero para mantener sizing downstream.
+**Calibración:** grid search determinista para temperatura y bias HOLD con log-loss multicategoría, ventana cronológica de ajuste y validación posterior separada; purga de observaciones de train cuyos labels aún no estaban disponibles al inicio de validación; fingerprint/dataset/window/loss provenance; exige cobertura de clases y al menos 30 muestras por defecto. No se marca calibración válida si empeora el baseline de validación.
+**Reglas:** no aceptar forecast posterior a `as_of`, horizontes mezclados ni timestamps sin zona horaria; por defecto las probabilidades no calibradas fuerzan abstención; ningún output autoriza trades, crea tamaño de posición ni anula Risk Governor. LLM sólo para orquestación/interpretación.
+**Límites:** el motor no prueba la veracidad de labels/snapshots externos, ni garantiza calibración económica, rentabilidad o rendimiento en vivo; las pruebas sintéticas son validación de ingeniería. F36/F37/F38 mantienen cartera, tamaño y control de riesgo posteriores.
+**Cierre:** workflow F35 (Python 3.11/3.12), Ruff/format, mypy, pruebas de contrato/abstención/calibración y regresiones F33/F34, F28–F32; cierre final tras comprobar resultados CI y revisión de PR.
 
 ## F36 — Portfolio Optimization
 **Objetivo:** convertir señales elegibles en asignaciones.  
