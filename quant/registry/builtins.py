@@ -43,12 +43,12 @@ _F36_RESULT = AlgorithmPort(
 _F37_REQUEST = AlgorithmPort(
     name="request",
     dtype="PositionSizingRequest",
-    description="F36-approved allocation plus equity, horizon-aligned market prices, risk and liquidity data",
+    description="F36 target plus market, risk, and liquidity inputs",
 )
 _F37_RESULT = AlgorithmPort(
     name="sizing_result",
     dtype="SizingResult",
-    description="Target quantities and weights, risk budget, liquidity diagnostics and replay fingerprint",
+    description="Auditable target weights, quantities, risk, liquidity, and fingerprint",
 )
 
 
