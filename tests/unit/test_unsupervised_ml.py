@@ -79,9 +79,9 @@ def test_clustering_outputs_training_labels_and_stability(
 
 @pytest.mark.parametrize("algorithm", ["pca", "kernel_pca", "fast_ica"])
 def test_reduction_fits_training_prefix_and_transforms_holdout(algorithm: str) -> None:
-    result = UnsupervisedMLModel(
-        UnsupervisedMLConfig(algorithm=algorithm, random_seed=30)
-    ).fit(sample_features(), ("x", "y", "z"))
+    result = UnsupervisedMLModel(UnsupervisedMLConfig(algorithm=algorithm, random_seed=30)).fit(
+        sample_features(), ("x", "y", "z")
+    )
     assert result.operation == "dimensionality_reduction"
     assert len(result.training_embedding or ()) == result.training_observations
     assert len(result.holdout_embedding or ()) == result.holdout_observations
