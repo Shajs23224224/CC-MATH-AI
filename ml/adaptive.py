@@ -410,6 +410,9 @@ def predict_adaptive_candidate(
         predictions = matrix @ np.asarray(candidate.coefficients) + candidate.intercept
     else:
         assert candidate.degree is not None
+        term_count = math.comb(len(candidate.feature_names) + candidate.degree, candidate.degree) - 1
+        if term_count > 512:
+            raise MLInputError("stored polynomial candidate exceeds the hard 512-term execution limit")
         transformed = PolynomialFeatures(degree=candidate.degree, include_bias=False).fit_transform(
             matrix
         )
