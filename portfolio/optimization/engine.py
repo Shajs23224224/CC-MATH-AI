@@ -387,7 +387,10 @@ def optimize_portfolio(
             fingerprint,
             exclusions,
             ridge,
-            "Optimizer diagnostics contain non-finite return, risk, cost, turnover or objective values.",
+            (
+                "Optimizer diagnostics contain non-finite return, risk, cost, turnover "
+                "or objective values."
+            ),
             status="FAILED",
             iterations=int(getattr(result, "nit", 0)),
             constraints=diagnostics,
