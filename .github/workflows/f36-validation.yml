@@ -11,6 +11,8 @@ on:
       - "tests/unit/test_decision_engine.py"
       - "tests/unit/test_quant_ensemble.py"
       - "tests/unit/test_algorithm_registry.py"
+      - "quant/registry/**"
+      - "docs/ALGORITHM_REGISTRY.md"
       - "tests/numerical/test_dependence_references.py"
       - "tests/numerical/test_risk_engine.py"
       - "docs/PORTFOLIO_OPTIMIZATION.md"
@@ -56,11 +58,15 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -e ".[dev]"
       - name: Ruff lint
-        run: python -m ruff check portfolio/optimization tests/unit/test_portfolio_optimization.py signals/decision
+        run: |
+          python -m ruff check portfolio/optimization quant/registry/builtins.py
+          python -m ruff check tests/unit/test_portfolio_optimization.py tests/unit/test_algorithm_registry.py signals/decision
       - name: Ruff format check
-        run: python -m ruff format --check portfolio/optimization tests/unit/test_portfolio_optimization.py
+        run: |
+          python -m ruff format --check portfolio/optimization quant/registry/builtins.py
+          python -m ruff format --check tests/unit/test_portfolio_optimization.py tests/unit/test_algorithm_registry.py
       - name: Mypy
-        run: python -m mypy portfolio/optimization
+        run: python -m mypy portfolio/optimization quant/registry
       - name: F36 behavioral tests
         run: python -m pytest tests/unit/test_portfolio_optimization.py -q
       - name: F35/F34/F33 regression
