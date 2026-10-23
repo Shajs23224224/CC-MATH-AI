@@ -88,6 +88,19 @@ def optimize_portfolio(
             status="INFEASIBLE",
         )
 
+    if policy.sector_limits and any(
+        request.assets[index].sector is None for index in active_indices
+    ):
+        return _failure(
+            request,
+            policy,
+            fingerprint,
+            exclusions,
+            ridge,
+            "Sector labels are required for every active asset when sector limits are configured.",
+            status="FAILED",
+        )
+
     lower = np.zeros(len(request.assets), dtype=np.float64)
     upper = np.zeros(len(request.assets), dtype=np.float64)
     for index, asset in enumerate(request.assets):
@@ -164,11 +177,18 @@ def optimize_portfolio(
             )
 
     if policy.method == "black_litterman":
-        effective_returns = _black_litterman_returns(
-            covariance,
-            request,
-            policy,
-        )
+        try:
+            effective_returns = _black_litterman_returns(covariance, request, policy)
+        except (ValueError, np.linalg.LinAlgError, FloatingPointError) as exc:
+            return _failure(
+                request,
+                policy,
+                fingerprint,
+                exclusions,
+                ridge,
+                f"Black-Litterman posterior could not be computed: {exc}",
+                status="FAILED",
+            )
     else:
         effective_returns = expected_returns_original.copy()
 
@@ -356,7 +376,23 @@ def optimize_portfolio(
         full_weights, original_weights, policy.transaction_cost_bps
     )
     portfolio_return = float(effective_returns @ full_weights)
-    variance = max(float(full_weights @ covariance @ full_weights), 0.0)
+    raw_variance = float(full_weights @ covariance @ full_weights)
+    if not all(
+        math.isfinite(value)
+        for value in (portfolio_return, raw_variance, turnover, cost_fraction, float(result.fun))
+    ):
+        return _failure(
+            request,
+            policy,
+            fingerprint,
+            exclusions,
+            ridge,
+            "Optimizer diagnostics contain non-finite return, risk, cost, turnover or objective values.",
+            status="FAILED",
+            iterations=int(getattr(result, "nit", 0)),
+            constraints=diagnostics,
+        )
+    variance = max(raw_variance, 0.0)
     volatility = math.sqrt(variance)
     net_excess = portfolio_return - cost_fraction - policy.risk_free_rate
     sharpe = net_excess / volatility if volatility > 1e-12 else None
@@ -517,7 +553,10 @@ def _black_litterman_returns(
     )
     if not np.all(np.isfinite(posterior)):
         raise ValueError("Black-Litterman posterior produced non-finite expected returns")
-    return posterior
+    total_expected_returns = posterior + config.risk_free_rate
+    if not np.all(np.isfinite(total_expected_returns)):
+        raise ValueError("Black-Litterman total expected returns are non-finite")
+    return total_expected_returns
 
 
 def _bounded_simplex_start(lower: np.ndarray, upper: np.ndarray) -> np.ndarray:
