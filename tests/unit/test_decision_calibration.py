@@ -119,7 +119,9 @@ def test_calibrator_requires_all_three_classes() -> None:
         for sample in samples()
     )
 
-    with pytest.raises(ValueError, match="training slice requires at least two samples for each class"):
+    with pytest.raises(
+        ValueError, match="training slice requires at least two samples for each class"
+    ):
         fit(data)
 
 
