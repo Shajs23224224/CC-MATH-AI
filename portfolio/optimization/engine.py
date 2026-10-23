@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 from collections import defaultdict
+from typing import Any, Literal
 
 import numpy as np
 from scipy.cluster.hierarchy import leaves_list, linkage
@@ -13,7 +14,6 @@ from scipy.optimize import minimize
 from scipy.spatial.distance import squareform
 
 from core.contracts import SignalType, TargetAllocation
-from signals.decision import DecisionOutput
 
 from .contracts import (
     AssetExclusion,
@@ -174,7 +174,6 @@ def optimize_portfolio(
 
     active_covariance = covariance[np.ix_(active_indices, active_indices)]
     active_returns = effective_returns[active_indices]
-    active_current = original_weights[active_indices]
     active_lower = lower[active_indices]
     active_upper = upper[active_indices]
 
@@ -189,8 +188,6 @@ def optimize_portfolio(
         request=request,
         policy=policy,
         active_indices=active_indices,
-        lower=lower,
-        upper=upper,
         original_weights=original_weights,
     )
     initial = _bounded_simplex_start(active_lower, active_upper)
@@ -343,7 +340,9 @@ def optimize_portfolio(
     sharpe = net_excess / volatility if volatility > 1e-12 else None
     concentration = float(full_weights @ full_weights)
     status = "OPTIMAL" if bool(result.success) else "FEASIBLE"
-    message = str(result.message)[:2000] or ("Converged." if result.success else "Feasible solution found.")
+    message = str(result.message)[:2000] or (
+        "Converged." if result.success else "Feasible solution found."
+    )
     return PortfolioOptimizationResult(
         status=status,
         method=policy.method,
@@ -540,9 +539,9 @@ def _trading_costs(
     absolute traded notional, while the reported turnover is half that notional.
     """
     current_cash = max(0.0, 1.0 - float(np.sum(current_weights)))
-    traded_notional = float(np.sum(np.abs(target_weights - current_weights))) + current_cash
-    turnover = 0.5 * traded_notional
-    cost_fraction = (cost_bps / 10_000.0) * traded_notional
+    asset_traded_notional = float(np.sum(np.abs(target_weights - current_weights)))
+    turnover = 0.5 * (asset_traded_notional + current_cash)
+    cost_fraction = (cost_bps / 10_000.0) * asset_traded_notional
     return turnover, cost_fraction
 
 
@@ -550,12 +549,10 @@ def _scipy_constraints(
     request: PortfolioOptimizationRequest,
     policy: PortfolioOptimizationConfig,
     active_indices: list[int],
-    lower: np.ndarray,
-    upper: np.ndarray,
     original_weights: np.ndarray,
-) -> list[dict[str, object]]:
+) -> list[dict[str, Any]]:
     """Translate simplex, turnover, concentration and sector limits to SLSQP."""
-    constraints: list[dict[str, object]] = [
+    constraints: list[dict[str, Any]] = [
         {"type": "eq", "fun": lambda weights: float(np.sum(weights) - 1.0)}
     ]
     if policy.max_turnover is not None:
@@ -715,13 +712,13 @@ def _failure(
     ridge: float,
     message: str,
     *,
-    status: str,
+    status: Literal["INFEASIBLE", "FAILED"],
     iterations: int = 0,
     constraints: tuple[ConstraintDiagnostic, ...] = (),
 ) -> PortfolioOptimizationResult:
     """Return a non-actionable, traceable result whenever optimization cannot be accepted."""
     return PortfolioOptimizationResult(
-        status=status,  # type: ignore[arg-type]
+        status=status,
         method=config.method,
         config_id=config.config_id,
         config_version=config.version,
