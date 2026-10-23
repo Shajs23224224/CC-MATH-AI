@@ -334,8 +334,26 @@ class RiskGovernorResult(BaseModel):
                 raise ValueError("BLOCK requires zero reduction factor and zero approved exposure")
             if any(position.status != "BLOCKED" for position in self.positions):
                 raise ValueError("BLOCK must mark every position as BLOCKED")
-        if self.action == RiskAction.REDUCE and not 0.0 < self.reduction_factor < 1.0:
-            raise ValueError("REDUCE requires reduction_factor strictly between 0 and 1")
+        if self.action == RiskAction.ALLOW:
+            if any(
+                not math.isclose(
+                    position.approved_quantity,
+                    position.source_quantity,
+                    rel_tol=0.0,
+                    abs_tol=1e-8,
+                )
+                for position in self.positions
+            ):
+                raise ValueError("ALLOW must preserve F37 quantities exactly")
+        if self.action == RiskAction.REDUCE:
+            if not 0.0 < self.reduction_factor < 1.0:
+                raise ValueError("REDUCE requires reduction_factor strictly between 0 and 1")
+            for position in self.positions:
+                max_lots = math.floor(
+                    position.source_quantity * self.reduction_factor / position.lot_size + 1e-12
+                )
+                if position.approved_quantity > max_lots * position.lot_size + 1e-8:
+                    raise ValueError("REDUCE cannot exceed the lot-rounded risk reduction")
         return self
 
 
