@@ -169,7 +169,9 @@ def _select_gradient_boosting_iterations(
             candidate.fit(x_fit, y_fit)
             predictions = np.asarray(candidate.predict(x_valid), dtype=np.float64)
             if not np.all(np.isfinite(predictions)):
-                raise MLTrainingError("gradient boosting produced non-finite validation predictions")
+                raise MLTrainingError(
+                    "gradient boosting produced non-finite validation predictions"
+                )
             score = float(mean_squared_error(y_valid.astype(np.float64), predictions))
             if score < best_score - 1e-12:
                 best_score = score
@@ -258,7 +260,9 @@ class ClassicalMLModel:
                 if not isinstance(
                     estimator, (GradientBoostingClassifier, GradientBoostingRegressor)
                 ):
-                    raise MLInputError("gradient boosting registry returned an incompatible estimator")
+                    raise MLInputError(
+                        "gradient boosting registry returned an incompatible estimator"
+                    )
                 requested_max_estimators = estimator.get_params(deep=False).get("n_estimators")
                 if (
                     isinstance(requested_max_estimators, bool)
