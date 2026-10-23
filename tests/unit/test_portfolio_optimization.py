@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
 import hashlib
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pytest
@@ -15,10 +15,10 @@ from core.contracts import (
     SignalType,
 )
 from portfolio.optimization import (
+    OptimizationMethod,
     PortfolioAssetInput,
     PortfolioOptimizationConfig,
     PortfolioOptimizationRequest,
-    OptimizationMethod,
     optimize_portfolio,
 )
 from signals.decision import DecisionOutput, DecisionProbabilities
@@ -198,7 +198,9 @@ def _config(
         "maximum_diversification",
     ),
 )
-def test_all_nine_methods_return_a_valid_fully_invested_allocation(method: OptimizationMethod) -> None:
+def test_all_nine_methods_return_a_valid_fully_invested_allocation(
+    method: OptimizationMethod,
+) -> None:
     request = _request(
         view_matrix=((1.0, -1.0, 0.0), (0.0, 0.0, 1.0)),
         view_returns=(0.02, 0.04),
