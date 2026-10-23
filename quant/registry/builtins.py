@@ -3853,7 +3853,6 @@ _EXTRA_SPECS += (
         "record",
         ("forecasting", "validation", "walk-forward"),
     ),
-
 )
 
 _EXTRA_ALGORITHMS: tuple[AlgorithmMetadata, ...] = tuple(
