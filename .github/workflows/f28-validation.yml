@@ -1,4 +1,4 @@
-name: F28 Classical ML
+name: F28 Adaptive Math and Classical ML
 
 on:
   push:
@@ -21,6 +21,9 @@ on:
       - ".github/workflows/f28-validation.yml"
   pull_request:
     paths:
+      - "docs/ADAPTIVE_MATH.md"
+      - "tests/unit/test_adaptive_math.py"
+      - "core/contracts/adaptive_math.py"
       - "core/contracts/ml.py"
       - "core/contracts/__init__.py"
       - "ml/**"
