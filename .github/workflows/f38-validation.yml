@@ -1,0 +1,90 @@
+name: F38 Portfolio Risk Governor
+
+on:
+  push:
+    branches: ["feature/f38-portfolio-risk-governor"]
+    paths:
+      - "risk/governor/**"
+      - "risk/constraints/**"
+      - "risk/metrics/**"
+      - "risk/tail/**"
+      - "portfolio/sizing/**"
+      - "portfolio/optimization/**"
+      - "core/contracts/**"
+      - "quant/registry/**"
+      - "tests/unit/test_risk_governor.py"
+      - "tests/unit/test_position_sizing.py"
+      - "tests/unit/test_portfolio_optimization.py"
+      - "tests/unit/test_decision_engine.py"
+      - "tests/unit/test_quant_ensemble.py"
+      - "tests/unit/test_algorithm_registry.py"
+      - "tests/numerical/test_risk_engine.py"
+      - "tests/numerical/test_dependence_references.py"
+      - "docs/RISK_GOVERNOR.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f38-validation.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "risk/governor/**"
+      - "risk/constraints/**"
+      - "risk/metrics/**"
+      - "risk/tail/**"
+      - "portfolio/sizing/**"
+      - "portfolio/optimization/**"
+      - "core/contracts/**"
+      - "quant/registry/**"
+      - "tests/unit/test_risk_governor.py"
+      - "tests/unit/test_position_sizing.py"
+      - "tests/unit/test_portfolio_optimization.py"
+      - "tests/unit/test_decision_engine.py"
+      - "tests/unit/test_quant_ensemble.py"
+      - "tests/unit/test_algorithm_registry.py"
+      - "tests/numerical/test_risk_engine.py"
+      - "tests/numerical/test_dependence_references.py"
+      - "docs/RISK_GOVERNOR.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f38-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-f38:
+    name: Validate F38 governor and upstream controls
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "${{ matrix.python-version }}"
+          cache: pip
+      - name: Install project and development dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: |
+          python -m ruff check risk/governor risk/constraints risk/metrics/portfolio.py
+          python -m ruff check tests/unit/test_risk_governor.py tests/unit/test_algorithm_registry.py
+      - name: Ruff format check
+        run: |
+          python -m ruff format --check risk/governor risk/constraints risk/metrics/portfolio.py
+          python -m ruff format --check tests/unit/test_risk_governor.py tests/unit/test_algorithm_registry.py
+      - name: Mypy
+        run: python -m mypy risk/governor risk/constraints risk/metrics quant/registry
+      - name: F38 behavior tests
+        run: python -m pytest tests/unit/test_risk_governor.py -q
+      - name: F37/F36/F35/F34/F33 regression
+        run: |
+          python -m pytest tests/unit/test_position_sizing.py tests/unit/test_portfolio_optimization.py -q
+          python -m pytest tests/unit/test_decision_engine.py tests/unit/test_quant_ensemble.py tests/unit/test_algorithm_registry.py -q
+      - name: F22/F23/F21 risk regression
+        run: |
+          python -m pytest tests/numerical/test_risk_engine.py tests/numerical/test_dependence_references.py -q
