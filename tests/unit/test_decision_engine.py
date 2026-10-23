@@ -106,7 +106,9 @@ def test_calibrated_bullish_evidence_produces_buy_and_preserves_audit() -> None:
     assert result.record.suggested_position_size == 0.0
     assert len(result.evidence) == 2
     assert result.agreement == pytest.approx(1.0)
-    assert result.probabilities.buy + result.probabilities.hold + result.probabilities.sell == pytest.approx(1.0)
+    assert (
+        result.probabilities.buy + result.probabilities.hold + result.probabilities.sell
+    ) == pytest.approx(1.0)
     assert result.record.signal_probability == pytest.approx(result.probabilities.buy)
     assert result.ensemble_fingerprint == request().ensemble.input_fingerprint
     assert len(result.decision_fingerprint) == 64
