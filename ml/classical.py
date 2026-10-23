@@ -192,9 +192,7 @@ def _select_gradient_boosting_iterations(
                 or np.any(probabilities < 0.0)
                 or np.any(probabilities > 1.0)
             ):
-                raise MLTrainingError(
-                    "gradient boosting produced invalid validation probabilities"
-                )
+                raise MLTrainingError("gradient boosting produced invalid validation probabilities")
             score = float(log_loss(y_valid, probabilities, labels=candidate.classes_))
             if score < best_score - 1e-12:
                 best_score = score
