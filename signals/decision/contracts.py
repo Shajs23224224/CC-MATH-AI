@@ -326,7 +326,10 @@ class DecisionOutput(BaseModel):
             assert self.calibration_validation_baseline_log_loss is not None
             if self.calibration_window_end > self.calibration_validation_window_start:
                 raise ValueError("calibration fit window must end before validation begins")
-            if self.calibration_validation_log_loss > self.calibration_validation_baseline_log_loss + 1e-12:
+            if (
+                self.calibration_validation_log_loss
+                > self.calibration_validation_baseline_log_loss + 1e-12
+            ):
                 raise ValueError("validated_oos output cannot report worse validation log loss")
         elif any(value is not None for value in calibration_fields):
             raise ValueError("uncalibrated output must not carry calibration artifact metadata")
