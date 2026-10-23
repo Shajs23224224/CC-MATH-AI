@@ -247,6 +247,9 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F28: ML clásico, patrones exploratorios, regresión simbólica acotada y motor adaptativo con búsqueda evolutiva de árboles de expresión; el estado de integración se determina por PR, CI y Security, no por la presencia de documentación.
 - F29: integrada en `main` por PR #17 (`96fcdb5`); ver [diseño técnico](GRADIENT_BOOSTING.md).
 - F30: integrada en `main` mediante [PR #18](https://github.com/Shajs23224224/CC-MATH-AI/pull/18), merge commit `25de38d`; workflow F30, CI general, regresiones de las fases anteriores y Security completados con éxito en el HEAD final antes de la fusión.
-- F31: implementación en curso en `feature/f31-deep-learning`; backend PyTorch opcional, modelos neuronales allow-listed, validación temporal, early stopping sólo en validation y test final reservado. Ver [diseño técnico](DEEP_LEARNING.md).
-- F32–F43: alcance técnico documentado; implementación reservada para sus respectivas fases.
-- **Siguiente fase planificada: F32 — Feature Engineering, sólo después de validar e integrar F31.**
+- F31: integrada en `main` mediante [PR #19](https://github.com/Shajs23224224/CC-MATH-AI/pull/19); ver [diseño técnico](DEEP_LEARNING.md).
+- F32: integrada en `main` mediante [PR #20](https://github.com/Shajs23224224/CC-MATH-AI/pull/20); ver [diseño técnico](FEATURE_ENGINEERING.md).
+- F33: integrada en `main` mediante [PR #21](https://github.com/Shajs23224224/CC-MATH-AI/pull/21); las referencias verificadas y los objetivos de implementación planificados están diferenciados.
+- F34: en implementación en `feature/f34-quant-ensemble`; requiere CI final y revisión antes de integrarse.
+- F35–F43: alcance documentado; avanzar por dependencias contractuales y gates de validación.
+- **Siguiente fase tras aceptar F34: F35 — Meta-model / Decision Engine.**
