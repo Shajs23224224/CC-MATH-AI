@@ -143,6 +143,16 @@ def make_decision(
         decision_config_version=policy.version,
         probability_calibration_status=policy.probability_calibration_status,
         calibration_id=policy.calibration_id,
+        calibration_fit_fingerprint=policy.calibration_fit_fingerprint,
+        calibration_version=policy.calibration_version,
+        calibration_data_snapshot_id=policy.calibration_data_snapshot_id,
+        calibration_window_start=policy.calibration_window_start,
+        calibration_window_end=policy.calibration_window_end,
+        calibration_validation_data_snapshot_id=policy.calibration_validation_data_snapshot_id,
+        calibration_validation_window_start=policy.calibration_validation_window_start,
+        calibration_validation_window_end=policy.calibration_validation_window_end,
+        calibration_validation_log_loss=policy.calibration_validation_log_loss,
+        calibration_validation_baseline_log_loss=policy.calibration_validation_baseline_log_loss,
         ensemble_fingerprint=ensemble.input_fingerprint,
         decision_fingerprint=decision_fingerprint,
     )
@@ -174,9 +184,9 @@ def _abstention_reason(
         return "probabilities_not_validated_out_of_sample"
     if policy.probability_calibration_status == "validated_oos":
         assert policy.calibration_window_end is not None
+        assert policy.calibration_validation_window_end is not None
         if policy.calibration_window_end > ensemble.as_of:
             return "calibration_window_after_decision_as_of"
-        assert policy.calibration_validation_window_end is not None
         if policy.calibration_validation_window_end > ensemble.as_of:
             return "calibration_validation_after_decision_as_of"
     failed_constraints = sorted(
