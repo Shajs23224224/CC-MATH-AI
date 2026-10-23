@@ -11,6 +11,15 @@ from .optimization import (
     SectorLimit,
     optimize_portfolio,
 )
+from .sizing import (
+    PositionSizingConfig,
+    PositionSizingRequest,
+    SizedPosition,
+    SizingAssetInput,
+    SizingMethod,
+    SizingResult,
+    size_positions,
+)
 
 __all__ = [
     "AssetExclusion",
@@ -22,4 +31,11 @@ __all__ = [
     "PortfolioOptimizationResult",
     "SectorLimit",
     "optimize_portfolio",
+    "PositionSizingConfig",
+    "PositionSizingRequest",
+    "SizedPosition",
+    "SizingAssetInput",
+    "SizingMethod",
+    "SizingResult",
+    "size_positions",
 ]
