@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import hashlib
 from datetime import UTC, datetime, timedelta
-from typing import Any
-
 import pytest
 from pydantic import ValidationError
 
@@ -65,7 +63,7 @@ def _decision(symbol: str, expected_return: float) -> DecisionOutput:
         constraints=(),
         decision_config_id="test-decision",
         decision_config_version="1.0.0",
-        probability_calibration_status="validated_oos",
+        probability_calibration_status="uncalibrated",
         ensemble_fingerprint=_sha(f"ensemble-{symbol}"),
         decision_fingerprint=_sha(f"decision-{symbol}"),
     )
@@ -271,7 +269,7 @@ def test_invalid_upstream_status_is_rejected() -> None:
     request = _request()
     failed = request.portfolio_optimization.model_copy(update={"status": "FAILED"})
     with pytest.raises(ValidationError, match="OPTIMAL or FEASIBLE"):
-        request.model_copy(update={"portfolio_optimization": failed})
+        PositionSizingRequest.model_validate(\n            {**request.model_dump(mode="python"), "portfolio_optimization": failed}\n        )
 
 
 def test_config_rejects_non_semantic_version() -> None:
