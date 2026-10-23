@@ -50,6 +50,16 @@ _F37_RESULT = AlgorithmPort(
     dtype="SizingResult",
     description="Auditable target weights, quantities, risk, liquidity, and fingerprint",
 )
+_F38_REQUEST = AlgorithmPort(
+    name="request",
+    dtype="RiskGovernorRequest",
+    description="F37 sizing, point-in-time exposures, dependence and risk evidence",
+)
+_F38_RESULT = AlgorithmPort(
+    name="governor_result",
+    dtype="RiskGovernorResult",
+    description="ALLOW, REDUCE or BLOCK with approved lot-sized quantities and audit lineage",
+)
 
 
 def _entry(
@@ -4193,8 +4203,41 @@ _F37_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
     ),
 )
 
+_F38_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
+    _entry(
+        "risk.portfolio_governor",
+        "Portfolio Risk Governor",
+        "risk",
+        "Apply the final hard veto or controlled lot-sized reduction to F37 target positions.",
+        (
+            "Fail-closed F21 constraints over position, leverage, sector/factor, dependence, "
+            "loss, liquidity, tail, turnover and quality metrics"
+        ),
+        (_F38_REQUEST,),
+        _F38_RESULT,
+        implementation_ref="risk.evaluate_risk_governor",
+        parameters=(
+            AlgorithmParameter(
+                name="reduction_factor",
+                dtype="float",
+                description="Multiplier applied only when soft constraints require REDUCE",
+                default=0.5,
+                minimum=0.01,
+                maximum=0.99,
+            ),
+        ),
+        units=("fraction of equity", "multiple of equity", "trading days", "score 0-1"),
+        tags=("risk-governance", "portfolio-risk", "F38", "fail-closed"),
+        limitations=(
+            "Does not submit orders or guarantee execution.",
+            "Missing, stale, future, or unit-inconsistent required evidence blocks.",
+            "Synthetic tests establish software behavior, not investment performance.",
+        ),
+    ),
+)
+
 BUILTIN_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
-    _SEED_ALGORITHMS + _EXTRA_ALGORITHMS + _F36_ALGORITHMS + _F37_ALGORITHMS
+    _SEED_ALGORITHMS + _EXTRA_ALGORITHMS + _F36_ALGORITHMS + _F37_ALGORITHMS + _F38_ALGORITHMS
 )
 
 
