@@ -6,7 +6,7 @@ F33 provides a versioned metadata catalog for quantitative algorithms, with disc
 
 ## Metadata contract
 
-Each entry declares a stable lowercase ID, semantic version, name, category, summary, method/formula, typed input/output ports, parameters and numeric bounds, units, frequencies, data requirements, limitations, tags, implementation reference, lifecycle and test-evidence status. Metadata is immutable and rejects unknown fields, malformed identifiers, invalid semantic versions, and duplicate port/parameter names.
+Each entry declares a stable lowercase ID, semantic version, name, category, summary, method/formula, typed input/output ports, parameters and numeric bounds, units, frequencies, data requirements, limitations, tags, lifecycle and test-evidence status. A verified `implementation_ref` is separate from a `planned_implementation_ref`; planned paths are not executable references. Metadata is immutable and rejects unknown fields, malformed identifiers, invalid semantic versions, and duplicate port/parameter names.
 
 ## Registry API
 
@@ -31,6 +31,6 @@ Test status is independent: not_run, passing, or failing. CI passing for the reg
 
 ## Seed catalog and scope
 
-The manifest currently contains 304 typed metadata entries spanning the repository's quantitative APIs. The registry validates metadata shape and identifier uniqueness; it does not prove that every referenced implementation has independent behavioral evidence. Each entry keeps `test_status=not_run` until evidence is explicitly recorded. Implementation references are declarative strings: the registry never imports or executes them. Placeholders and invented references are prohibited, and future additions should be tied to source implementations and contracts.
+The manifest currently contains 304 typed metadata entries. The seed set uses verified implementation references for existing APIs; the additional planned catalog entries remain `experimental` and expose their proposed path through `planned_implementation_ref`, not `implementation_ref`. This avoids presenting a future target as an existing function. All 304 entries currently keep `test_status=not_run` for algorithm-level evidence until independently tested and explicitly recorded. The registry never imports or executes either kind of reference, and passing registry CI is not evidence of algorithm correctness.
 
 The catalog is descriptive metadata, not proof of correctness, causality, market alpha or future performance. Units, frequency, data availability and temporal validation remain caller responsibilities.
