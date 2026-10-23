@@ -5,12 +5,15 @@ on:
     branches: ["phase-28-classical-ml"]
     paths:
       - "core/contracts/ml.py"
+      - "core/contracts/adaptive_math.py"
       - "core/contracts/__init__.py"
       - "ml/**"
+      - "tests/unit/test_adaptive_math.py"
       - "tests/unit/test_classical_ml.py"
       - "tests/unit/test_pattern_discovery.py"
       - "tests/unit/test_experiment_store.py"
       - "tests/numerical/test_symbolic_discovery.py"
+      - "docs/ADAPTIVE_MATH.md"
       - "docs/CLASSICAL_ML.md"
       - "docs/ROADMAP_F16_F42.md"
       - "README.md"
@@ -47,13 +50,13 @@ jobs:
       - name: Install project and development dependencies
         run: python -m pip install --upgrade pip setuptools wheel && python -m pip install -e ".[dev]"
       - name: Ruff lint
-        run: python -m ruff check core/contracts/ml.py core/contracts/__init__.py ml tests/unit/test_classical_ml.py tests/unit/test_pattern_discovery.py tests/unit/test_experiment_store.py tests/numerical/test_symbolic_discovery.py
+        run: python -m ruff check core/contracts/ml.py core/contracts/adaptive_math.py core/contracts/__init__.py ml tests/unit/test_adaptive_math.py tests/unit/test_classical_ml.py tests/unit/test_pattern_discovery.py tests/unit/test_experiment_store.py tests/numerical/test_symbolic_discovery.py
       - name: Ruff format check
-        run: python -m ruff format --check core/contracts/ml.py core/contracts/__init__.py ml tests/unit/test_classical_ml.py tests/unit/test_pattern_discovery.py tests/unit/test_experiment_store.py tests/numerical/test_symbolic_discovery.py
+        run: python -m ruff format --check core/contracts/ml.py core/contracts/adaptive_math.py core/contracts/__init__.py ml tests/unit/test_adaptive_math.py tests/unit/test_classical_ml.py tests/unit/test_pattern_discovery.py tests/unit/test_experiment_store.py tests/numerical/test_symbolic_discovery.py
       - name: Mypy
-        run: python -m mypy core/contracts/ml.py ml
+        run: python -m mypy core/contracts/ml.py core/contracts/adaptive_math.py ml
       - name: F28 behavioral tests
-        run: python -m pytest tests/unit/test_classical_ml.py tests/unit/test_pattern_discovery.py tests/unit/test_experiment_store.py tests/numerical/test_symbolic_discovery.py -q
+        run: python -m pytest tests/unit/test_adaptive_math.py tests/unit/test_classical_ml.py tests/unit/test_pattern_discovery.py tests/unit/test_experiment_store.py tests/numerical/test_symbolic_discovery.py -q
       - name: F27 causal walk-forward regression
         run: python -m pytest tests/numerical/test_probabilistic_forecasting.py -q
       - name: F26 regime regression
