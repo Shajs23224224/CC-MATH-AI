@@ -1,5 +1,15 @@
 # F29 — Gradient Boosting
 
+## Integration status
+
+F29 was merged by [PR #17](https://github.com/Shajs23224224/CC-MATH-AI/pull/17) into `main`.
+The merge commit is `96fcdb512e0aa2c09de3175bd4e68c62cd73335a`. The phase-close record
+states that the dedicated workflow, general CI and Security checks passed during integration.
+This records the result at phase closure; it does not claim a new CI run on the current date.
+
+The tests use synthetic inputs to verify implementation behavior and data separation. They do not
+demonstrate market alpha, economic validity, robustness on live data or investment profitability.
+
 ## Scope
 
 F29 integrates scikit-learn's GradientBoostingRegressor and

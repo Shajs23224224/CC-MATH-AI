@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F29 — Temporal Gradient Boosting built on the F28 ML contracts**
+Current milestone: **F30 — Unsupervised ML (implementation under review)**
 
 Completed:
 - F01 — System Specification
@@ -24,10 +24,13 @@ Completed:
 - F26 — Regime Detection: Gaussian HMM / Markov-switching, CUSUM, Bayesian online change-point probabilities and calibrated trailing-volatility regimes (merged in PR #11; validation workflows passed).
 - F27 — Probabilistic Forecasting Engine: expanding-window forecast evaluation, predictive intervals, bootstrap calibration and causal per-origin regime metadata; merged in PR #12 and hardened in PR #13 with CI/Security passed.
 - F28 — Classical ML and bounded mathematical discovery (merged and extended): supervised adapters, chronological out-of-sample evaluation, training-prefix association screening, polynomial symbolic regression, expression-tree evolution, validation-based strategy selection and JSONL experiment records. See [adaptive mathematics architecture](docs/ADAPTIVE_MATH.md).
-- F29 — Gradient Boosting (implemented with the existing scikit-learn dependency): regression/classification adapters, chronological internal validation for tree-count selection, bounded estimator budget, refit on the training prefix, reserved final test tail and auditable metadata. See [F29 technical design](docs/GRADIENT_BOOSTING.md).
+- F29 — Gradient Boosting (integrated in PR #17, merge commit `96fcdb5`): regression/classification adapters, chronological internal validation for tree-count selection, bounded estimator budget, refit on the training prefix, reserved final test tail and auditable metadata. Synthetic behavioral tests validate implementation boundaries, not investment performance. See [F29 technical design](docs/GRADIENT_BOOSTING.md).
+
+In implementation / review:
+- F30 — Unsupervised ML: clustering, dimensionality reduction and anomaly detection with training-prefix-only scaling and cluster stability diagnostics; proposed in [PR #18](https://github.com/Shajs23224224/CC-MATH-AI/pull/18). The PR must have a green final-head CI/Security result and complete review before integration. See [F30 technical design](docs/UNSUPERVISED_ML.md).
 
 Next planned:
-- F30 — Unsupervised ML: clustering, dimensionality reduction and anomaly detection with leakage-safe preprocessing and stability checks.
+- F31 — Deep Learning, after F30 closes its review and validation criteria.
 
 ## Architecture
 
@@ -66,6 +69,8 @@ See:
 - [F26 Regime Detection](docs/REGIME_DETECTION.md)
 - [F27 Probabilistic Forecasting](docs/PROBABILISTIC_FORECASTING.md)
 - [F28 Classical ML and symbolic discovery](docs/CLASSICAL_ML.md)
+- [F29 Gradient Boosting](docs/GRADIENT_BOOSTING.md)
+- [F30 Unsupervised ML](docs/UNSUPERVISED_ML.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
