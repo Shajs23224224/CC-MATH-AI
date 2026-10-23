@@ -1,7 +1,7 @@
-"""Curated metadata for existing public quantitative APIs.
+"""Curated algorithm metadata with verified and proposed implementation references.
 
-This manifest describes known implementations only; it does not claim that the
-roadmap's eventual 300+ algorithm catalog is complete.
+Seed entries declare existing implementation references. The extra catalog uses explicitly
+proposed module paths and remains experimental until concrete implementations are verified.
 """
 
 from __future__ import annotations
@@ -34,7 +34,9 @@ def _entry(
     inputs: tuple[AlgorithmPort, ...],
     output: AlgorithmPort,
     *,
-    implementation_ref: str,
+    implementation_ref: str | None,
+    planned_implementation_ref: str | None = None,
+    lifecycle: AlgorithmLifecycle = AlgorithmLifecycle.IMPLEMENTED,
     parameters: tuple[AlgorithmParameter, ...] = (),
     units: tuple[str, ...] = (),
     tags: tuple[str, ...] = (),
@@ -58,7 +60,8 @@ def _entry(
         limitations=limitations,
         tags=tags,
         implementation_ref=implementation_ref,
-        lifecycle=AlgorithmLifecycle.IMPLEMENTED,
+        planned_implementation_ref=planned_implementation_ref,
+        lifecycle=lifecycle,
         test_status=AlgorithmTestStatus.NOT_RUN,
     )
 
@@ -301,8 +304,8 @@ _SEED_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
 )
 
 
-# Additional public implementations and allow-listed model families. These are
-# metadata records only: no implementation module is imported or executed here.
+# Proposed additional algorithms and model families. Their module paths are planning
+# targets only; no implementation module is imported or executed here.
 _SERIES_VALUES = AlgorithmPort(
     name="values", dtype="series[float]", description="Chronological finite numeric series"
 )
@@ -448,7 +451,7 @@ def _extra_entry(spec: tuple[object, ...]) -> AlgorithmMetadata:
         category,
         summary,
         method,
-        implementation_ref,
+        proposed_module_path,
         input_kind,
         output_kind,
         tags,
@@ -473,7 +476,9 @@ def _extra_entry(spec: tuple[object, ...]) -> AlgorithmMetadata:
         str(method),
         _INPUT_PORTS[str(input_kind)],
         _OUTPUT_PORTS[str(output_kind)],
-        implementation_ref=str(implementation_ref),
+        implementation_ref=None,
+        planned_implementation_ref=str(proposed_module_path),
+        lifecycle=AlgorithmLifecycle.EXPERIMENTAL,
         parameters=parameters,
         tags=cast(tuple[str, ...], tags),
     )
@@ -3840,7 +3845,7 @@ BUILTIN_ALGORITHMS: tuple[AlgorithmMetadata, ...] = _SEED_ALGORITHMS + _EXTRA_AL
 
 
 def builtin_algorithms() -> tuple[AlgorithmMetadata, ...]:
-    """Return seed metadata without importing implementation modules."""
+    """Return immutable seed and experimental metadata without importing implementations."""
     return BUILTIN_ALGORITHMS
 
 

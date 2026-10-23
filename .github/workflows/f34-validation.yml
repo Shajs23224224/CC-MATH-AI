@@ -1,0 +1,62 @@
+name: F34 Quant Ensemble
+
+on:
+  push:
+    branches: ["feature/f34-quant-ensemble"]
+    paths:
+      - "signals/ensemble/**"
+      - "quant/registry/**"
+      - "tests/unit/test_quant_ensemble.py"
+      - "tests/unit/test_algorithm_registry.py"
+      - "docs/QUANT_ENSEMBLE.md"
+      - "docs/ALGORITHM_REGISTRY.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f34-validation.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "signals/ensemble/**"
+      - "quant/registry/**"
+      - "tests/unit/test_quant_ensemble.py"
+      - "tests/unit/test_algorithm_registry.py"
+      - "docs/QUANT_ENSEMBLE.md"
+      - "docs/ALGORITHM_REGISTRY.md"
+      - "docs/ROADMAP_F16_F42.md"
+      - "README.md"
+      - ".github/workflows/f34-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-f34:
+    name: Validate F33 registry and F34 ensemble
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "${{ matrix.python-version }}"
+          cache: pip
+      - name: Install project and development dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: python -m ruff check quant/registry signals tests/unit/test_algorithm_registry.py tests/unit/test_quant_ensemble.py
+      - name: Ruff format check
+        run: python -m ruff format --check quant/registry signals tests/unit/test_algorithm_registry.py tests/unit/test_quant_ensemble.py
+      - name: Mypy
+        run: python -m mypy quant/registry signals/ensemble
+      - name: F33 registry and F34 ensemble tests
+        run: python -m pytest tests/unit/test_algorithm_registry.py tests/unit/test_quant_ensemble.py -q
+      - name: Dependency regressions
+        run: |
+          python -m pytest tests/unit/test_feature_engineering.py -q
+          python -m pytest tests/unit/test_deep_learning.py tests/unit/test_unsupervised_ml.py -q
+          python -m pytest tests/unit/test_gradient_boosting.py tests/unit/test_classical_ml.py -q
