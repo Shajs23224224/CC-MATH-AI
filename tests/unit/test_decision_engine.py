@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 from core.contracts import Forecast, SignalType
 from signals.decision import (
