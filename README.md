@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F36 — Portfolio Optimization**
+Current milestone: **F37 — Position Sizing (PR #26 under validation)**
 
 Completed:
 - F01 — System Specification
@@ -35,6 +35,7 @@ Implemented in `main`:
 - F35 — Meta-model / Decision Engine: deterministic BUY/HOLD/SELL decisions from F34 evidence and a horizon-matched forecast, with versioned thresholds, strict abstention, calibration provenance and replay fingerprints. It never sizes positions, places orders or bypasses risk controls. F35 workflow and general CI passed on Python 3.11/3.12. See [F35 technical design](docs/DECISION_ENGINE.md).
 
 - F36 — Portfolio Optimization (integrated in [PR #25](https://github.com/Shajs23224224/CC-MATH-AI/pull/25), merge commit `b7a2628`): nine methods—equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity, inverse volatility, HRP, Black-Litterman and maximum diversification—with long-only F35 integration, point-in-time F23 covariance, asset/sector/turnover/HHI constraints, transaction-cost diagnostics, solver status, safe infeasibility handling and SHA-256 audit. F36, F33, general CI, Security and active regressions passed on Python 3.11/3.12. Synthetic tests validate code behavior, not market alpha. See [F36 technical design](docs/PORTFOLIO_OPTIMIZATION.md).
+- F37 — Position Sizing (implementation in [PR #26](https://github.com/Shajs23224224/CC-MATH-AI/pull/26), validation in progress): fixed fractional, volatility-based, stop-risk-budget, Kelly, fractional Kelly and confidence weighting. F36 target weights remain hard caps; units round down by lot size, ADV participation is bounded, residual cash remains unallocated, and results carry risk/liquidity diagnostics plus SHA-256 replay fingerprints. No orders are sent. Synthetic tests are engineering checks only. See [F37 technical design](docs/POSITION_SIZING.md).
 ## Architecture
 
 ```text
@@ -80,6 +81,7 @@ See:
 - [F34 Quant Ensemble](docs/QUANT_ENSEMBLE.md)
 - [F35 Meta-model / Decision Engine](docs/DECISION_ENGINE.md)
 - [F36 Portfolio Optimization](docs/PORTFOLIO_OPTIMIZATION.md)
+- [F37 Position Sizing](docs/POSITION_SIZING.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
