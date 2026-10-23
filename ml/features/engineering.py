@@ -144,7 +144,8 @@ class FeatureEngineer:
                 and asset_column is None
             ):
                 raise MLInputError(
-                    f"feature {definition.feature_id} requires asset_column for cross-sectional transforms"
+                    f"feature {definition.feature_id} requires asset_column for "
+                    "cross-sectional transforms"
                 )
             for source_column in definition.source_columns:
                 if source_column not in result.columns:
@@ -218,10 +219,10 @@ class FeatureEngineer:
             rows_with_warmup_missing_values=warmup_missing_rows,
             point_in_time_safe=point_in_time_safe,
             limitations=(
-                "Source rows must be aligned to the information actually available at each timestamp.",
-                "Cross-sectional ranks depend on a point-in-time eligible universe supplied by the caller.",
-                "Warm-up and unavailable values remain NaN; downstream missing-data handling is explicit.",
-                "Generated features are inputs, not causal explanations, trading signals or guarantees.",
+                "Source rows must be aligned to information available at each timestamp.",
+                "Cross-sectional ranks depend on a point-in-time eligible universe from the caller.",
+                "Warm-up and unavailable values remain NaN for explicit downstream handling.",
+                "Features are inputs, not causal explanations, signals or guarantees.",
             ),
         )
         return result, report
