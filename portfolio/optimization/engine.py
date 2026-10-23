@@ -534,9 +534,9 @@ def _trading_costs(
 ) -> tuple[float, float]:
     """Return one-way turnover and estimated full-turn trading cost fraction.
 
-    An implicit cash balance completes the current portfolio to 100%; allocating cash
-    to risky assets therefore counts as turnover. Transaction cost applies to total
-    absolute traded notional, while the reported turnover is half that notional.
+    An implicit cash balance completes the current portfolio to 100%; deploying cash
+    therefore counts as turnover. Commissions apply to absolute changes in risky-asset
+    notional only, not to the cash balance itself.
     """
     current_cash = max(0.0, 1.0 - float(np.sum(current_weights)))
     asset_traded_notional = float(np.sum(np.abs(target_weights - current_weights)))
