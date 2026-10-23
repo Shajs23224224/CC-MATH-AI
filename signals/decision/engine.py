@@ -7,7 +7,6 @@ import json
 import math
 
 from core.contracts import DecisionRecord, SignalType
-from signals.ensemble import EnsembleResult
 
 from ._math import class_probabilities
 
