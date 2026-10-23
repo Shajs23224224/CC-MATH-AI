@@ -239,6 +239,8 @@ class GovernorApprovedPosition(BaseModel):
 
     asset_symbol: str = Field(min_length=1, max_length=80)
     source_quantity: float = Field(ge=0.0)
+    source_notional: float = Field(ge=0.0)
+    source_weight: float = Field(ge=0.0, le=1.0)
     approved_quantity: float = Field(ge=0.0)
     approved_notional: float = Field(ge=0.0)
     approved_weight: float = Field(ge=0.0, le=1.0)
@@ -249,6 +251,16 @@ class GovernorApprovedPosition(BaseModel):
     @model_validator(mode="after")
     def validate_position(self) -> GovernorApprovedPosition:
         """Ensure zero quantity and lots are internally consistent."""
+        if self.approved_quantity > self.source_quantity + 1e-8:
+            raise ValueError("F38 cannot increase the source F37 quantity")
+        if self.approved_notional > self.source_notional + 1e-6:
+            raise ValueError("F38 cannot increase the source F37 notional")
+        if self.approved_weight > self.source_weight + 1e-8:
+            raise ValueError("F38 cannot increase the source F37 weight")
+        if self.source_quantity == 0.0 and (
+            self.source_notional != 0.0 or self.source_weight != 0.0
+        ):
+            raise ValueError("zero source quantity must have zero source notional and weight")
         if self.approved_quantity == 0.0:
             if self.approved_notional != 0.0 or self.approved_weight != 0.0:
                 raise ValueError("zero approved quantity must have zero notional and weight")
