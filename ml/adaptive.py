@@ -24,7 +24,6 @@ from core.contracts.adaptive_math import (
     AdaptiveCandidateEvidence,
     AdaptiveMathConfig,
     AdaptiveMathReport,
-    ExpressionNode,
 )
 from core.contracts.ml import ExperimentRecord, MLDataset, PatternRecord
 
@@ -49,7 +48,8 @@ FloatArray = NDArray[np.float64]
 Strategy = Literal["linear", "polynomial", "evolutionary"]
 _LIMITATIONS = (
     "The report is experimental evidence, not a formal mathematical proof.",
-    "Rows must already be ordered chronologically; the coordinator cannot repair bad source lineage.",
+    "Rows must already be ordered chronologically; the coordinator cannot repair bad source "
+    "lineage.",
     "The test tail is held out from candidate and strategy selection.",
     "Evolution explores only the configured allow-listed expression grammar and budgets.",
     "Association records are exploratory and do not establish causality.",
@@ -137,12 +137,6 @@ def _format_equation(
         if abs(coefficient) >= 1e-10:
             parts.append(f"({coefficient:+.8g} * {term})")
     return "y ≈ " + " ".join(parts)
-
-
-def _polynomial_terms(feature_names: tuple[str, ...], degree: int) -> tuple[str, ...]:
-    transformer = PolynomialFeatures(degree=degree, include_bias=False)
-    placeholder = np.zeros((1, len(feature_names)), dtype=np.float64)
-    return tuple(str(value) for value in transformer.fit(placeholder).get_feature_names_out(feature_names))
 
 
 def _evaluate_dense_candidate(
@@ -410,9 +404,16 @@ def predict_adaptive_candidate(
         predictions = matrix @ np.asarray(candidate.coefficients) + candidate.intercept
     else:
         assert candidate.degree is not None
-        term_count = math.comb(len(candidate.feature_names) + candidate.degree, candidate.degree) - 1
+        term_count = (
+            math.comb(
+                len(candidate.feature_names) + candidate.degree, candidate.degree
+            )
+            - 1
+        )
         if term_count > 512:
-            raise MLInputError("stored polynomial candidate exceeds the hard 512-term execution limit")
+            raise MLInputError(
+                "stored polynomial candidate exceeds the hard 512-term execution limit"
+            )
         transformed = PolynomialFeatures(degree=candidate.degree, include_bias=False).fit_transform(
             matrix
         )
@@ -442,7 +443,8 @@ class AdaptiveMathEngine:
     ) -> AdaptiveMathReport:
         if dataset.task != "regression":
             raise MLInputError(
-                "AdaptiveMathEngine currently handles regression; use ClassicalMLModel for classification"
+                "AdaptiveMathEngine currently handles regression; "
+                "use ClassicalMLModel for classification"
             )
         matrix = _matrix(dataset.features, len(dataset.feature_names))
         target = np.asarray(dataset.target, dtype=np.float64)
@@ -461,10 +463,15 @@ class AdaptiveMathEngine:
                 "adaptive analysis requires at least 12 training rows plus validation and test rows"
             )
         x_train, y_train = matrix[:train_end], target[:train_end]
-        x_validation, y_validation = matrix[train_end:validation_end], target[train_end:validation_end]
+        x_validation, y_validation = (
+            matrix[train_end:validation_end],
+            target[train_end:validation_end],
+        )
         x_development, y_development = matrix[:validation_end], target[:validation_end]
         x_test, y_test = matrix[validation_end:], target[validation_end:]
-        fingerprint = _fingerprint(dataset.dataset_id, x_development, y_development, self.config.random_seed)
+        fingerprint = _fingerprint(
+            dataset.dataset_id, x_development, y_development, self.config.random_seed
+        )
         rng = np.random.default_rng(self.config.random_seed)
 
         candidates: list[_ScoredCandidate] = []
@@ -554,7 +561,10 @@ class AdaptiveMathEngine:
                     )
                 else:
                     child = random_tree(rng, width, self.config.max_depth, self.config.max_nodes)
-                if node_count(child) > self.config.max_nodes or node_depth(child) > self.config.max_depth:
+                if (
+                    node_count(child) > self.config.max_nodes
+                    or node_depth(child) > self.config.max_depth
+                ):
                     child = random_tree(rng, width, self.config.max_depth, self.config.max_nodes)
                 next_population.append(child)
             population = next_population
@@ -563,7 +573,9 @@ class AdaptiveMathEngine:
         if not candidates:
             raise MLTrainingError("adaptive search could not produce any valid candidate")
         candidates.sort(
-            key=lambda item: (item.selection_score, item.complexity, item.strategy, item.candidate_id)
+            key=lambda item: (
+                item.selection_score, item.complexity, item.strategy, item.candidate_id
+            )
         )
         winner: _ScoredCandidate | None = None
         selected: AdaptiveCandidateEvidence | None = None
@@ -614,7 +626,9 @@ class AdaptiveMathEngine:
         best_by_id: dict[str, _ScoredCandidate] = {}
         for candidate in sorted(
             candidates,
-            key=lambda item: (item.selection_score, item.complexity, item.strategy, item.candidate_id),
+            key=lambda item: (
+                item.selection_score, item.complexity, item.strategy, item.candidate_id
+            ),
         ):
             best_by_id.setdefault(candidate.candidate_id, candidate)
         top_scored = list(best_by_id.values())[:8]
@@ -663,7 +677,8 @@ class AdaptiveMathEngine:
             strategy_scores=strategy_scores,
             selected_reason=(
                 f"Selected {winner.strategy} as the lowest-validation-score candidate that passed "
-                "final domain/numerical safety checks. Validation score is RMSE plus the configured "
+                "final domain/numerical safety checks. Validation score is RMSE plus the "
+                "configured "
                 "complexity penalty; test metrics do not rank candidates."
             ),
             verification_checks=verification_checks,
