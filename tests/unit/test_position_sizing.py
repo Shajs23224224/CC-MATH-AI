@@ -177,7 +177,10 @@ def test_all_six_methods_return_bounded_auditable_quantities(method: str) -> Non
         sum(item.target_notional for item in result.allocations)
     )
     assert len(result.sizing_fingerprint) == 64
-    assert result.portfolio_optimization_fingerprint == request.portfolio_optimization.optimization_fingerprint
+    assert (
+        result.portfolio_optimization_fingerprint
+        == request.portfolio_optimization.optimization_fingerprint
+    )
 
 
 def test_risk_based_method_enforces_stop_loss_risk_budget() -> None:
@@ -201,6 +204,7 @@ def test_risk_based_without_stop_loss_returns_zero_for_that_asset() -> None:
     assert result.status == "PARTIAL"
     assert positions["AAA"].status == "ZERO_SIZE"
     assert positions["AAA"].target_quantity == 0.0
+    assert positions["AAA"].estimated_loss_at_stop is None
     assert positions["BBB"].target_quantity > 0.0
 
 
