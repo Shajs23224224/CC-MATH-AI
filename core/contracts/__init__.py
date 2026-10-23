@@ -38,6 +38,11 @@ from .enums import (
     SignalType,
 )
 from .execution import ExecutionReport, Fill, Order
+from .feature_engineering import (
+    FeatureEngineeringConfig,
+    FeatureEngineeringReport,
+    FeatureTransformSpec,
+)
 from .forecasting import (
     ForecastCalibrationResult,
     ForecastingMethod,
@@ -148,6 +153,9 @@ __all__ = [
     "Evidence",
     "ExecutionReport",
     "FeatureDefinition",
+    "FeatureEngineeringConfig",
+    "FeatureEngineeringReport",
+    "FeatureTransformSpec",
     "FeatureRecord",
     "FeatureSet",
     "Fill",
