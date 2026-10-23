@@ -305,6 +305,18 @@ def test_equal_weight_results_are_reproducible() -> None:
     assert first.objective_value == pytest.approx(second.objective_value)
 
 
+def test_cash_deployment_is_turnover_but_cash_is_not_charged_commission() -> None:
+    request = _request()
+    result = optimize_portfolio(
+        request,
+        _config("equal_weight", transaction_cost_bps=10.0),
+    )
+
+    assert result.status in {"OPTIMAL", "FEASIBLE"}
+    assert result.turnover == pytest.approx(1.0, abs=1e-5)
+    assert result.estimated_transaction_cost_fraction == pytest.approx(0.002, abs=1e-7)
+
+
 def test_future_covariance_and_mismatched_horizons_are_rejected() -> None:
     with pytest.raises(ValidationError, match="covariance_as_of"):
         _request(covariance_as_of=AS_OF + timedelta(seconds=1))
