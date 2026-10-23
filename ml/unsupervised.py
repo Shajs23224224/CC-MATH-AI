@@ -45,9 +45,7 @@ _OPERATION_BY_ALGORITHM: dict[UnsupervisedAlgorithm, UnsupervisedOperation] = {
 
 _FACTORIES: dict[UnsupervisedAlgorithm, EstimatorFactory] = {
     "kmeans": lambda seed: KMeans(n_clusters=3, n_init=10, max_iter=300, random_state=seed),
-    "agglomerative_clustering": lambda seed: AgglomerativeClustering(
-        n_clusters=3, linkage="ward"
-    ),
+    "agglomerative_clustering": lambda seed: AgglomerativeClustering(n_clusters=3, linkage="ward"),
     "dbscan": lambda seed: DBSCAN(eps=0.5, min_samples=5, n_jobs=1),
     "gaussian_mixture": lambda seed: GaussianMixture(
         n_components=3, n_init=1, max_iter=100, random_state=seed
@@ -65,9 +63,7 @@ _FACTORIES: dict[UnsupervisedAlgorithm, EstimatorFactory] = {
     "local_outlier_factor": lambda seed: LocalOutlierFactor(
         n_neighbors=20, novelty=True, contamination=0.05, n_jobs=1
     ),
-    "elliptic_envelope": lambda seed: EllipticEnvelope(
-        contamination=0.05, random_state=seed
-    ),
+    "elliptic_envelope": lambda seed: EllipticEnvelope(contamination=0.05, random_state=seed),
 }
 
 
@@ -185,9 +181,7 @@ class UnsupervisedMLModel:
         rng = np.random.default_rng(self.config.random_seed)
         scores: list[float] = []
         for repeat in range(self.config.stability_repeats):
-            indices = np.sort(
-                rng.choice(len(training_features), size=sample_size, replace=False)
-            )
+            indices = np.sort(rng.choice(len(training_features), size=sample_size, replace=False))
             seed = (self.config.random_seed + repeat + 1) % (2**32)
             candidate = self._build_estimator(seed, sample_size)
             try:
@@ -268,12 +262,10 @@ class UnsupervisedMLModel:
                 ):
                     raise MLTrainingError("dimensionality reduction returned invalid embeddings")
                 training_embedding = tuple(
-                    tuple(float(value) for value in row)
-                    for row in train_embedding_array.tolist()
+                    tuple(float(value) for value in row) for row in train_embedding_array.tolist()
                 )
                 holdout_embedding = tuple(
-                    tuple(float(value) for value in row)
-                    for row in holdout_embedding_array.tolist()
+                    tuple(float(value) for value in row) for row in holdout_embedding_array.tolist()
                 )
             else:
                 if self.config.algorithm == "local_outlier_factor":
@@ -292,9 +284,8 @@ class UnsupervisedMLModel:
                     estimator.score_samples(holdout), dtype=np.float64
                 )
                 holdout_flags_array = np.asarray(estimator.predict(holdout), dtype=np.int64)
-                if (
-                    not np.all(np.isfinite(training_scores_array))
-                    or not np.all(np.isfinite(holdout_scores_array))
+                if not np.all(np.isfinite(training_scores_array)) or not np.all(
+                    np.isfinite(holdout_scores_array)
                 ):
                     raise MLTrainingError("anomaly estimator returned non-finite scores")
                 training_scores = tuple(float(value) for value in training_scores_array.tolist())
@@ -346,9 +337,7 @@ class UnsupervisedMLModel:
                 "cluster validity."
             )
         elif operation == "dimensionality_reduction":
-            limitations.append(
-                "Embedding axes are not automatically economically interpretable."
-            )
+            limitations.append("Embedding axes are not automatically economically interpretable.")
         else:
             limitations.append(
                 "Anomaly scores are relative to the fitted training distribution; larger scores "
@@ -356,10 +345,7 @@ class UnsupervisedMLModel:
             )
 
         result = UnsupervisedMLResult(
-            model_id=(
-                f"{self.config.algorithm}:"
-                f"{hashlib.sha256(identity.encode()).hexdigest()[:16]}"
-            ),
+            model_id=f"{self.config.algorithm}:{hashlib.sha256(identity.encode()).hexdigest()[:16]}",
             algorithm=self.config.algorithm,
             operation=operation,
             feature_names=names,
