@@ -172,9 +172,7 @@ class RiskGovernorRequest(BaseModel):
             self.sizing_result.equity + 1e-6
         ):
             raise ValueError("F37 notional cannot exceed account equity")
-        for allocation, context in zip(
-            self.sizing_result.allocations, self.assets, strict=True
-        ):
+        for allocation, context in zip(self.sizing_result.allocations, self.assets, strict=True):
             expected_weight = allocation.target_notional / self.sizing_result.equity
             if not math.isclose(
                 allocation.target_weight, expected_weight, rel_tol=0.0, abs_tol=1e-6
@@ -321,9 +319,7 @@ class RiskGovernorResult(BaseModel):
         notionals = math.fsum(position.approved_notional for position in self.positions)
         if not math.isclose(weights, self.total_approved_weight, rel_tol=0.0, abs_tol=1e-8):
             raise ValueError("total_approved_weight must equal sum of approved position weights")
-        if not math.isclose(
-            notionals, self.total_approved_notional, rel_tol=1e-10, abs_tol=1e-6
-        ):
+        if not math.isclose(notionals, self.total_approved_notional, rel_tol=1e-10, abs_tol=1e-6):
             raise ValueError("total_approved_notional must equal sum of approved notionals")
         if weights > 1.0 + 1e-8 or notionals > self.equity + 1e-6:
             raise ValueError("approved target exposure cannot exceed account equity")
