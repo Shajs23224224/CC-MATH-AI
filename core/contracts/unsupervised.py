@@ -19,9 +19,7 @@ UnsupervisedAlgorithm = Literal[
     "local_outlier_factor",
     "elliptic_envelope",
 ]
-UnsupervisedOperation = Literal[
-    "clustering", "dimensionality_reduction", "anomaly_detection"
-]
+UnsupervisedOperation = Literal["clustering", "dimensionality_reduction", "anomaly_detection"]
 
 
 class UnsupervisedMLConfig(BaseModel):
@@ -99,16 +97,11 @@ class UnsupervisedMLResult(BaseModel):
             raise ValueError("scaler statistics must align with feature_names")
         if self.train_end_index != self.holdout_start_index:
             raise ValueError("training and holdout boundaries must be contiguous")
-        if (
-            self.total_observations
-            != self.training_observations + self.holdout_observations
-        ):
+        if self.total_observations != self.training_observations + self.holdout_observations:
             raise ValueError("observation counts must sum to total_observations")
         if any(value <= 0.0 for value in self.scaler_scale):
             raise ValueError("scaler scales must be positive")
-        if any(
-            not math.isfinite(value) for value in (*self.scaler_mean, *self.scaler_scale)
-        ):
+        if any(not math.isfinite(value) for value in (*self.scaler_mean, *self.scaler_scale)):
             raise ValueError("scaler statistics must be finite")
         if self.operation == "clustering":
             if (
@@ -146,10 +139,7 @@ class UnsupervisedMLResult(BaseModel):
                 or len(self.training_anomaly_scores) != expected
             ):
                 raise ValueError("anomaly results require one score per training row")
-            if (
-                self.training_anomaly_flags is None
-                or len(self.training_anomaly_flags) != expected
-            ):
+            if self.training_anomaly_flags is None or len(self.training_anomaly_flags) != expected:
                 raise ValueError("anomaly results require one flag per training row")
             if (
                 self.holdout_anomaly_scores is None
