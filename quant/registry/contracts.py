@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 _ID_PATTERN = re.compile(r"^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$")
 _VERSION_PATTERN = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$")
@@ -95,10 +95,11 @@ class AlgorithmMetadata(BaseModel):
             raise ValueError("version must use semantic versioning, e.g. 1.0.0")
         return value
 
-    @field_validator("inputs", "outputs", "parameters")
-    @classmethod
-    def validate_unique_names(cls, value: tuple[BaseModel, ...]) -> tuple[BaseModel, ...]:
-        names = [item.name for item in value]
-        if len(names) != len(set(names)):
-            raise ValueError("port and parameter names must be unique within their group")
-        return value
+    @model_validator(mode="after")
+    def validate_unique_names(self) -> AlgorithmMetadata:
+        groups = (self.inputs, self.outputs, self.parameters)
+        for group in groups:
+            names = [item.name for item in group]
+            if len(names) != len(set(names)):
+                raise ValueError("port and parameter names must be unique within their group")
+        return self
