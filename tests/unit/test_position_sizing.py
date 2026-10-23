@@ -169,7 +169,7 @@ def test_all_six_methods_return_bounded_auditable_quantities(method: str) -> Non
     assert result.method == method
     assert len(result.allocations) == 2
     assert all(item.target_quantity >= 0.0 for item in result.allocations)
-    assert all(item.target_weight <= item.source_target_weight + 1e-8 for item in result.allocations)
+    assert all(p.target_weight <= p.source_target_weight + 1e-8 for p in result.allocations)
     assert result.total_target_weight <= 1.0
     assert result.total_target_notional == pytest.approx(
         sum(item.target_notional for item in result.allocations)
