@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from pydantic import ValidationError
@@ -16,7 +16,7 @@ from signals.ensemble import (
     combine_evidence,
 )
 
-AS_OF = datetime(2026, 10, 23, 15, 0, tzinfo=timezone.utc)
+AS_OF = datetime(2026, 10, 23, 15, 0, tzinfo=UTC)
 
 
 def evidence(
