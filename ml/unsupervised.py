@@ -313,6 +313,7 @@ class UnsupervisedMLModel:
             separators=(",", ":"),
             allow_nan=False,
         )
+        model_hash = hashlib.sha256(identity.encode()).hexdigest()[:16]
         parameters = _primitive_parameters(estimator)
         parameters["random_seed"] = self.config.random_seed
         parameters["fit_fraction"] = self.config.fit_fraction
@@ -345,7 +346,7 @@ class UnsupervisedMLModel:
             )
 
         result = UnsupervisedMLResult(
-            model_id=f"{self.config.algorithm}:{hashlib.sha256(identity.encode()).hexdigest()[:16]}",
+            model_id=f"{self.config.algorithm}:{model_hash}",
             algorithm=self.config.algorithm,
             operation=operation,
             feature_names=names,
