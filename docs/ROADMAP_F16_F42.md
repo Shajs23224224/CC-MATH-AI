@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F37 integradas en `main`; F38 en implementación/validación mediante PR #27.
+**Estado:** F21–F38 integradas en `main`; F39 es la siguiente fase.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -177,13 +177,13 @@
 **Validación:** workflow F37, CI general, Security y regresiones upstream pasaron en Python 3.11/3.12.
 
 ## F38 — Portfolio Risk Governor
-**Estado:** implementación en [PR #27](https://github.com/Shajs23224224/CC-MATH-AI/pull/27); validación en curso.
+**Estado:** integrada en `main` mediante [PR #27](https://github.com/Shajs23224224/CC-MATH-AI/pull/27), merge commit `f315c6e`.
 **Objetivo:** veto/reducción determinista final después de F37 y antes de cualquier adaptador de ejecución.
 **Controles:** peso por posición, gross leverage, HHI, sector/factor, correlación F23, drawdown, pérdida diaria, liquidez/ADV, CVaR F22, turnover, calidad de datos/modelos y frescura temporal.
 **Output:** ALLOW/REDUCE/BLOCK, razones, métricas, restricciones activadas, cantidades por lote aprobadas y huellas SHA-256.
 **Regla:** ausencia, antigüedad, futuro o unidades incorrectas en evidencia obligatoria bloquean; un BLOCK nunca puede convertirse en ALLOW; REDUCE redondea cantidades hacia abajo y puede acabar en BLOCK si no quedan lotes válidos.
 **Límites:** no envía órdenes ni modela todavía derivados, cortos, FX o ejecución real. Parámetros predeterminados son configurables y no recomendaciones universales.
-**Cierre:** requiere workflow F38, CI general, Security y regresiones F21–F37 aprobados en Python 3.11/3.12.
+**Validación:** workflow F38, CI general, Security y regresiones upstream pasaron en Python 3.11/3.12.
 
 ## F39 — Backtesting
 **Objetivo:** simulación histórica end-to-end.  
@@ -265,6 +265,6 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F35: implementada en main mediante PR #24.
 - F36: integrada en main mediante PR #25.
 - F37: integrada en `main` mediante [PR #26](https://github.com/Shajs23224224/CC-MATH-AI/pull/26), merge commit `f65ee22`; workflow F37, CI general, Security y regresiones upstream aprobados.
-- F38: implementación en curso mediante PR #27; el estado final depende de los checks del HEAD de esa PR.
+- F38: integrada en `main` mediante [PR #27](https://github.com/Shajs23224224/CC-MATH-AI/pull/27), merge commit `f315c6e`; workflow F38, CI general, Security y regresiones upstream aprobados.
 - F39–F43: alcance documentado; avanzar por dependencias contractuales y gates de validación.
-- **Siguiente fase de desarrollo: completar la validación de F38 — Portfolio Risk Governor.**
+- **Siguiente fase: F39 — Backtesting.**
