@@ -6,6 +6,8 @@ roadmap's eventual 300+ algorithm catalog is complete.
 
 from __future__ import annotations
 
+from typing import cast
+
 from .contracts import (
     AlgorithmLifecycle,
     AlgorithmMetadata,
@@ -373,19 +375,22 @@ def _extra_entry(spec: tuple[object, ...]) -> AlgorithmMetadata:
         algorithm_id, name, category, summary, method, implementation_ref,
         input_kind, output_kind, tags,
     ) = spec[:9]
-    parameter_spec = spec[9] if len(spec) > 9 else None
-    parameters = ()
+    parameter_spec = cast(
+        tuple[str, str, str, str | int | float | bool | None] | None,
+        spec[9] if len(spec) > 9 else None,
+    )
+    parameters: tuple[AlgorithmParameter, ...] = ()
     if parameter_spec is not None:
         p_name, p_dtype, p_description, p_default = parameter_spec
         parameters = (
             AlgorithmParameter(
-                name=str(p_name), dtype=str(p_dtype), description=str(p_description), default=p_default
+                name=p_name, dtype=p_dtype, description=p_description, default=p_default
             ),
         )
     return _entry(
         str(algorithm_id), str(name), str(category), str(summary), str(method),
         _INPUT_PORTS[str(input_kind)], _OUTPUT_PORTS[str(output_kind)],
-        implementation_ref=str(implementation_ref), parameters=parameters, tags=tuple(tags),
+        implementation_ref=str(implementation_ref), parameters=parameters, tags=cast(tuple[str, ...], tags),
     )
 
 _EXTRA_SPECS: tuple[tuple[object, ...], ...] = (
