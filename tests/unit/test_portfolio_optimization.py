@@ -219,6 +219,7 @@ def test_sell_and_abstained_decisions_are_excluded() -> None:
     request = _request(
         current_weights=(0.5, 0.3, 0.2),
         signals=(SignalType.BUY, SignalType.SELL, SignalType.BUY),
+        maxima=(1.0, 0.8, 0.8),
         abstained=(False, False, True),
     )
 
