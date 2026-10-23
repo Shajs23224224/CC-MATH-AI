@@ -557,20 +557,21 @@ def _scipy_constraints(
     ]
     if policy.max_turnover is not None:
         current_cash = max(0.0, 1.0 - float(np.sum(original_weights)))
+        turnover_limit = policy.max_turnover
 
         def turnover_slack(weights: np.ndarray) -> float:
             full = _expand_weights(weights, active_indices, len(request.assets))
             traded = float(np.sum(np.abs(full - original_weights))) + current_cash
-            return policy.max_turnover - 0.5 * traded
+            return turnover_limit - 0.5 * traded
 
         constraints.append({"type": "ineq", "fun": turnover_slack})
 
     if policy.max_concentration_hhi is not None:
+        concentration_limit = policy.max_concentration_hhi
         constraints.append(
             {
                 "type": "ineq",
-                "fun": lambda weights: policy.max_concentration_hhi
-                - float(weights @ weights),
+                "fun": lambda weights: concentration_limit - float(weights @ weights),
             }
         )
 
