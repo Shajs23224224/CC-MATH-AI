@@ -207,4 +207,3 @@ def test_f36_portfolio_optimizers_are_registered_without_claiming_validation() -
         assert item.lifecycle == AlgorithmLifecycle.IMPLEMENTED
         assert item.test_status == AlgorithmTestStatus.NOT_RUN
         assert "portfolio-optimization" in item.tags
-
