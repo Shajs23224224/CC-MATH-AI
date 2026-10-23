@@ -84,7 +84,7 @@ def _build_network(
 
         if config.algorithm == "autoencoder":
 
-            class DenseAutoencoder(nn.Module):
+            class DenseAutoencoder(nn.Module):  # type: ignore[name-defined]
                 def __init__(self) -> None:
                     super().__init__()
                     self.encoder = nn.Sequential(
@@ -104,7 +104,7 @@ def _build_network(
 
             return DenseAutoencoder()
 
-        class VariationalAutoencoder(nn.Module):
+        class VariationalAutoencoder(nn.Module):  # type: ignore[name-defined]
             def __init__(self) -> None:
                 super().__init__()
                 self.encoder_body = nn.Sequential(
@@ -136,7 +136,7 @@ def _build_network(
     if config.algorithm in {"lstm", "gru"}:
         recurrent_type = nn.LSTM if config.algorithm == "lstm" else nn.GRU
 
-        class RecurrentNetwork(nn.Module):
+        class RecurrentNetwork(nn.Module):  # type: ignore[name-defined]
             def __init__(self) -> None:
                 super().__init__()
                 self.recurrent = recurrent_type(
@@ -157,7 +157,7 @@ def _build_network(
 
     if config.algorithm == "tcn":
 
-        class TemporalConvNetwork(nn.Module):
+        class TemporalConvNetwork(nn.Module):  # type: ignore[name-defined]
             def __init__(self) -> None:
                 super().__init__()
                 blocks: list[Any] = []
@@ -189,7 +189,7 @@ def _build_network(
 
     if config.algorithm == "attention":
 
-        class AttentionNetwork(nn.Module):
+        class AttentionNetwork(nn.Module):  # type: ignore[name-defined]
             def __init__(self) -> None:
                 super().__init__()
                 self.projection = nn.Linear(feature_count, hidden)
@@ -202,16 +202,14 @@ def _build_network(
 
             def forward(self, values: Any) -> Any:
                 embedded = self.projection(values) + self.position
-                attended, _ = self.attention(
-                    embedded, embedded, embedded, need_weights=False
-                )
+                attended, _ = self.attention(embedded, embedded, embedded, need_weights=False)
                 return self.head(self.norm(embedded + attended)[:, -1, :])
 
         return AttentionNetwork()
 
     if config.algorithm == "transformer":
 
-        class TransformerNetwork(nn.Module):
+        class TransformerNetwork(nn.Module):  # type: ignore[name-defined]
             def __init__(self) -> None:
                 super().__init__()
                 self.projection = nn.Linear(feature_count, hidden)
@@ -235,7 +233,7 @@ def _build_network(
 
     if config.algorithm == "temporal_fusion_transformer":
 
-        class TemporalFusionNetwork(nn.Module):
+        class TemporalFusionNetwork(nn.Module):  # type: ignore[name-defined]
             """Compact TFT-inspired network; intentionally not the full canonical TFT."""
 
             def __init__(self) -> None:
@@ -260,9 +258,7 @@ def _build_network(
                 weights = torch.softmax(self.variable_selection(values), dim=-1)
                 selected = self.projection(values * weights)
                 temporal, _ = self.recurrent(selected)
-                attended, _ = self.attention(
-                    temporal, temporal, temporal, need_weights=False
-                )
+                attended, _ = self.attention(temporal, temporal, temporal, need_weights=False)
                 latest_temporal = temporal[:, -1, :]
                 latest_attention = attended[:, -1, :]
                 gate = torch.sigmoid(
@@ -292,9 +288,7 @@ def _as_matrix(
     if feature_count is not None and matrix.shape[1] != feature_count:
         raise MLInputError(f"expected {feature_count} features per row")
     if matrix.shape[0] > max_observations:
-        raise MLInputError(
-            f"observations exceed the configured maximum of {max_observations}"
-        )
+        raise MLInputError(f"observations exceed the configured maximum of {max_observations}")
     if matrix.shape[1] > 64:
         raise MLInputError("at most 64 features are supported")
     if not np.all(np.isfinite(matrix)):
@@ -456,9 +450,7 @@ class DeepLearningModel:
         test_input = as_input(test_x)
         target_dtype = torch.long if self.config.task == "classification" else torch.float32
         train_target = torch.tensor(train_y_array, dtype=target_dtype, device=device)
-        validation_target = torch.tensor(
-            validation_y_array, dtype=target_dtype, device=device
-        )
+        validation_target = torch.tensor(validation_y_array, dtype=target_dtype, device=device)
 
         generator = torch.Generator(device="cpu")
         generator.manual_seed(self.config.random_seed)
@@ -714,9 +706,7 @@ class DeepLearningModel:
         predictions = tuple(float(value) for value in values.reshape(-1).tolist())
         return MLPrediction(predictions=predictions)
 
-    def reconstruct(
-        self, features: Sequence[Sequence[float]]
-    ) -> tuple[tuple[float, ...], ...]:
+    def reconstruct(self, features: Sequence[Sequence[float]]) -> tuple[tuple[float, ...], ...]:
         """Return flattened reconstructed windows after fitting an autoencoder or VAE."""
         if (
             self._network is None
