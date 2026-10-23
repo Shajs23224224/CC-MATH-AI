@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F28 — Adaptive mathematical intelligence built on classical ML and bounded symbolic discovery**
+Current milestone: **F29 — Temporal Gradient Boosting built on the F28 ML contracts**
 
 Completed:
 - F01 — System Specification
@@ -23,10 +23,11 @@ Completed:
 - F25 — Derivatives: Black–Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and versioned volatility surfaces (merged in PR #10; F25, general CI and Security passed).
 - F26 — Regime Detection: Gaussian HMM / Markov-switching, CUSUM, Bayesian online change-point probabilities and calibrated trailing-volatility regimes (merged in PR #11; validation workflows passed).
 - F27 — Probabilistic Forecasting Engine: expanding-window forecast evaluation, predictive intervals, bootstrap calibration and causal per-origin regime metadata; merged in PR #12 and hardened in PR #13 with CI/Security passed.
-- F28 — Classical ML and bounded mathematical discovery (base merged in PR #14; extended by the adaptive mathematics implementation): supervised regression/classification adapters, chronological out-of-sample evaluation, training-prefix association screening, polynomial symbolic regression, expression-tree evolution, validation-based strategy selection and validated JSONL experiment records. See [adaptive mathematics architecture](docs/ADAPTIVE_MATH.md).
+- F28 — Classical ML and bounded mathematical discovery (merged and extended): supervised adapters, chronological out-of-sample evaluation, training-prefix association screening, polynomial symbolic regression, expression-tree evolution, validation-based strategy selection and JSONL experiment records. See [adaptive mathematics architecture](docs/ADAPTIVE_MATH.md).
+- F29 — Gradient Boosting (implemented with the existing scikit-learn dependency): regression/classification adapters, chronological internal validation for tree-count selection, bounded estimator budget, refit on the training prefix, reserved final test tail and auditable metadata. See [F29 technical design](docs/GRADIENT_BOOSTING.md).
 
 Next planned:
-- F29 — Gradient Boosting under the existing ML contracts, with temporal validation and explicit dependency review.
+- F30 — Unsupervised ML: clustering, dimensionality reduction and anomaly detection with leakage-safe preprocessing and stability checks.
 
 ## Architecture
 
