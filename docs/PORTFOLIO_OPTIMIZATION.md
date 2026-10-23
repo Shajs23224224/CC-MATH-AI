@@ -55,7 +55,7 @@ Supported hard controls:
 - Maximum Herfindahl concentration index (HHI).
 - Fully invested weights summing to one.
 
-Each accepted solution carries per-constraint measured values, limits, pass/fail state and explanations. The estimated transaction-cost fraction uses configured basis points applied to total absolute traded notional; reported turnover is half that notional. Return-based objectives subtract estimated trading costs; all methods report costs and can use the explicit turnover penalty and turnover limit. A cost estimate is only as good as its supplied basis-point assumption.
+Each accepted solution carries per-constraint measured values, limits, pass/fail state and explanations. The estimated transaction-cost fraction applies configured basis points to the absolute changes in risky-asset weights; reported one-way turnover is half that amount plus the implied cash deployment change. Cash deployment contributes to turnover but is not charged a commission. Return-based objectives subtract estimated trading costs; all methods report costs and can use the explicit turnover penalty and turnover limit. A cost estimate is only as good as its supplied basis-point assumption.
 
 Every result records the chosen method/config version, forecast and covariance snapshot IDs, horizon, F35 decision fingerprints, solver message/status/iteration count, covariance ridge, expected portfolio return, volatility, net Sharpe diagnostic, turnover, cost estimate, concentration and a canonical SHA-256 request/config fingerprint.
 
