@@ -352,6 +352,7 @@ class FeatureEngineer:
             spec.availability_lag
         )
 
+
 def _fingerprint(frame: pd.DataFrame) -> str:
     """Hash ordered rows, column names and dtypes without serializing model objects."""
     digest = hashlib.sha256()

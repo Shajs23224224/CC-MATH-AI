@@ -31,9 +31,7 @@ spec = FeatureTransformSpec(
     periods=5,
 )
 frame = pd.DataFrame({"timestamp": ..., "close": ...})
-features, report = FeatureEngineer().transform(
-    frame, (spec,), dataset_id="market-snapshot-v1"
-)
+features, report = FeatureEngineer().transform(frame, (spec,), dataset_id="market-snapshot-v1")
 ```
 
 ## Allow-listed operations

@@ -142,9 +142,7 @@ def test_cross_sectional_features_require_panel_and_are_timestamp_scoped() -> No
 def test_per_asset_rolling_never_crosses_asset_boundaries() -> None:
     frame = pd.DataFrame(
         {
-            "timestamp": pd.to_datetime(
-                ["2025-01-01", "2025-01-01", "2025-01-02", "2025-01-02"]
-            ),
+            "timestamp": pd.to_datetime(["2025-01-01", "2025-01-01", "2025-01-02", "2025-01-02"]),
             "asset_symbol": ["A", "B", "A", "B"],
             "close": [10.0, 100.0, 20.0, 200.0],
         }
