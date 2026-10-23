@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F27 integradas en main; F28 Classical ML en implementación y validación en rama aislada  
+**Estado:** F21–F28 integradas en main; F28 Classical ML validada; F29 es la siguiente fase  
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -87,25 +87,26 @@
 **Cierre:** pricing/Greeks reproducibles y auditables.
 
 ## F26 — Regime Detection
-**Estado:** IMPLEMENTADA en `phase-26-regime-detection`; PR #11 abierta, F26/CI general/Security y regresiones aprobados; pendiente de merge.
+**Estado:** INTEGRADA en `main`; PR #11 fusionada; workflows de validación y regresiones aprobados.
 **Objetivo:** detectar estados y transiciones de mercado.  
 **Alcance:** HMM, Markov switching, change-point, CUSUM, Bayesian change detection y volatility regimes.  
 **Reglas:** probabilidades cuando proceda, labels/versiones, estimación sin futuro, estabilidad por ventana.  
 **Cierre:** output probabilístico/explicable integrable con ensemble.
 
 ## F27 — Probabilistic Forecasting Engine
-**Estado:** INTEGRADA en `main` mediante PR #12 (`e54694d`); endurecimiento causal de walk-forward en curso en `hardening/f27-causal-regimes`.
+**Estado:** INTEGRADA y endurecida en `main`; PR #12 más PR #13 para causalidad estricta en walk-forward; CI y Security aprobados.
 **Objetivo:** estimar distribuciones predictivas de retornos futuros con incertidumbre explícita, no sólo una predicción puntual.  
 **Alcance:** bootstrap empírico, simulación de paths, cuantiles e intervalos centrales (50/80/90/95%), probabilidad de pérdida, bootstrap condicionado a regímenes de F26, calibración de cobertura/Brier/Winkler y evaluación walk-forward expansiva.  
 **Reglas:** retornos simples compuestos, semillas explícitas, entrenamiento anterior a cada origen, labels/transiciones de régimen causales y calibradas en train; documentar que IID bootstrap no conserva autocorrelación. No emite órdenes ni sustituye F21 Risk Engine.  
 **Cierre:** contratos reproducibles, pruebas numéricas y de leakage, calibración OOS, documentación y CI propia con regresiones F26 y F21–F25.
 
-## F28 — Classical ML
-**Objetivo:** modelos ML sobre features validadas.  
-**Alcance:** linear/logistic regression, Ridge, Lasso, Elastic Net, SVM/SVR, KNN, Decision Tree y Random Forest.  
-**Cambios:** contratos dataset/model/prediction, fit/predict, metadata, evaluación, calibration y artefactos.  
-**Reglas:** split temporal, preprocessing sólo sobre train, seeds y lineage.  
-**Cierre:** modelos reproducibles y OOS.
+## F28 — Classical ML and bounded mathematical discovery
+**Estado:** INTEGRADA en `main` mediante PR #14; F28 behavioral tests, CI general en Python 3.11/3.12 y Security aprobados.
+**Objetivo:** modelos ML clásicos, detección exploratoria de asociaciones, búsqueda simbólica acotada y memoria reproducible de experimentos.
+**Implementado:** contratos tipados para datasets/modelos/predicciones/evaluaciones/candidatos/experimentos; adaptadores allow-listed de regresión y clasificación con preprocessing fit sólo en train; evaluación cronológica holdout; metadatos y fingerprint del prefijo de entrenamiento; asociación Pearson/Spearman con diagnóstico de estabilidad; búsqueda de regresión polinómica de grado 1–4 con selección en validación y test final reservado; evaluación de candidatos sin `eval`/`exec`; persistencia JSONL validada.
+**Reglas:** respetar el orden temporal de entrada, no usar el test para seleccionar el grado, no interpretar correlación como causalidad, y mantener los descubrimientos simbólicos como `EXPERIMENTAL`.
+**Límites explícitos:** no incluye síntesis general de programas, búsqueda evolutiva multiobjetivo, calibración de probabilidades, clustering, deep learning, artefactos ejecutables ni prueba formal. La regresión polinómica descubre candidatos dentro de una gramática acotada; no demuestra la fórmula verdadera.
+**Cierre:** modelos reproducibles y OOS con contratos, pruebas de comportamiento, registro de experimentos y controles de seguridad.
 
 ## F29 — Gradient Boosting
 **Objetivo:** boosting bajo el mismo contrato ML.  

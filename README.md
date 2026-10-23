@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current phase: **F28 — Classical ML and bounded mathematical discovery**
+Current milestone: **F28 — Classical ML and bounded mathematical discovery integrated; F29 is next**
 
 Completed:
 - F01 — System Specification
@@ -23,9 +23,10 @@ Completed:
 - F25 — Derivatives: Black–Scholes, binomial/trinomial trees, Monte Carlo option pricing, Greeks, implied volatility and versioned volatility surfaces (merged in PR #10; F25, general CI and Security passed).
 - F26 — Regime Detection: Gaussian HMM / Markov-switching, CUSUM, Bayesian online change-point probabilities and calibrated trailing-volatility regimes (merged in PR #11; validation workflows passed).
 - F27 — Probabilistic Forecasting Engine: expanding-window forecast evaluation, predictive intervals, bootstrap calibration and causal per-origin regime metadata; merged in PR #12 and hardened in PR #13 with CI/Security passed.
+- F28 — Classical ML and bounded mathematical discovery (merged in PR #14): supervised regression/classification adapters, chronological out-of-sample evaluation, exploratory association screening, bounded polynomial symbolic regression and validated JSONL experiment records; dedicated F28 tests, general CI and Security passed.
 
-Active:
-- F28 — Classical ML: supervised regression/classification adapters, chronological out-of-sample evaluation, association screening, bounded polynomial symbolic regression and JSONL experiment records; implemented on an isolated branch pending CI/review.
+Next planned:
+- F29 — Gradient Boosting under the existing ML contracts, with temporal validation and explicit dependency review.
 
 ## Architecture
 
