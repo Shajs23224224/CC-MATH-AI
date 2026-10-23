@@ -48,7 +48,8 @@ def size_positions(
     """
     policy = config or PositionSizingConfig()
     optimization = request.portfolio_optimization
-    source_weights = {allocation.asset_symbol: allocation.target_weight for allocation in optimization.allocations}
+    source_allocations = optimization.allocations
+    source_weights = {a.asset_symbol: a.target_weight for a in source_allocations}
     total_source_weight = math.fsum(source_weights.values())
     raw: list[dict[str, Any]] = []
 
@@ -58,7 +59,8 @@ def size_positions(
         weight_limited = source_weight > policy.maximum_position_weight + 1e-12
         reasons: list[str] = []
         risk_budget = 0.0
-        stop_distance = asset.price - asset.stop_loss_price if asset.stop_loss_price is not None else None
+        stop_price = asset.stop_loss_price
+        stop_distance = asset.price - stop_price if stop_price is not None else None
 
         if source_weight <= 0.0:
             desired_weight = 0.0
@@ -140,7 +142,7 @@ def size_positions(
             reasons.append("no positive target quantity remains after constraints")
 
         target_weight = notional / request.equity
-        estimated_loss = quantity * stop_distance if stop_distance is not None and stop_distance > 0.0 else None
+        estimated_loss = quantity * stop_distance if stop_distance else None
         adv_participation = quantity / asset.average_daily_volume
         status = "SIZED" if quantity > 0.0 else "ZERO_SIZE"
         raw.append(
