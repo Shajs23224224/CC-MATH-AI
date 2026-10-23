@@ -125,7 +125,7 @@ def _candidate_id(
     fingerprint: str, strategy: Strategy, representation: str
 ) -> str:
     return hashlib.sha256(
-        f"{fingerprint}|{strategy}|{representation}".encode("utf-8")
+        f"{fingerprint}|{strategy}|{representation}".encode()
     ).hexdigest()[:24]
 
 
