@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F32 integradas en `main`; F33 en revisión en PR #21, dirigida a `main`.
+**Estado:** F21–F33 integradas en `main`; F34 en implementación en la rama `feature/f34-quant-ensemble`.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -134,17 +134,20 @@
 **Cierre:** feature catalog reproducible para ML/ensemble.
 
 ## F33 — Algorithm Registry
-**Estado:** implementación inicial en revisión; depende de la aceptación de F32.  
-**Objetivo:** establecer la infraestructura del registro versionado y un catálogo de al menos 300 entradas con metadatos tipados. La rama actual contiene 304 registros únicos; esto valida el catálogo de metadatos, no la corrección funcional de cada algoritmo.  
-**Implementado:** contratos inmutables para metadatos, puertos y parámetros; IDs/versiones validados; registro versionado con inserción por lotes atómica; descubrimiento por categoría, lifecycle, puertos y tags; compatibilidad por nombre/tipo/unidad; estados separados de ciclo de vida y evidencia de tests; manifiesto inicial curado; workflow dedicado y pruebas de comportamiento.  
-**Seguridad:** el registro sólo maneja metadatos; no importa ni ejecuta código dinámico. No marca algoritmos como validados automáticamente.  
-**Cierre:** mantener 300+ registros únicos con contratos válidos, CI/regresiones verdes, referencias de implementación trazables y evidencia de prueba explícita antes de marcar algoritmos como validados. La integración de F32 está completa; F33 se fusionará tras aprobar la matriz de CI y las regresiones.
+**Estado:** integrada en `main` mediante PR #21 (merge commit `4f400ff`); CI general, Python 3.11/3.12 y Security aprobados.  
+**Objetivo:** establecer la infraestructura del registro versionado y un catálogo de al menos 300 entradas con metadatos tipados. La implementación contiene 304 IDs únicos; este conteo valida la integridad del catálogo, no la corrección funcional de cada algoritmo.  
+**Implementado:** contratos inmutables para metadatos, puertos y parámetros; IDs/versiones validados; registro versionado con inserción por lotes atómica; descubrimiento por categoría, lifecycle, puertos y tags; compatibilidad por nombre/tipo/unidad; estados separados de ciclo de vida y evidencia de tests; manifiesto y workflow de validación.  
+**Corrección final de evidencia:** las entradas semilla con referencias declaradas a APIs existentes conservan `implementation_ref`; las entradas de planificación exponen `planned_implementation_ref`, permanecen `experimental` y no simulan tener una implementación disponible. Los 304 elementos continúan con `test_status=not_run` para evidencia funcional individual.  
+**Seguridad:** el registro sólo gestiona metadatos; no importa ni ejecuta referencias, ni promueve automáticamente algoritmos a `validated`.  
+**Cierre de F33:** infraestructura del registro y metadatos cerrados; validar individualmente las implementaciones a medida que existan queda como trabajo de calidad de cada algoritmo, no como una afirmación implícita del catálogo.
 
 ## F34 — Quant Ensemble
-**Objetivo:** combinar evidencia heterogénea conservando contribuciones.  
-**Alcance:** normalización, weighting, agreement/disagreement, score, uncertainty y attribution.  
-**Reglas:** pesos versionados, evitar doble conteo de señales correlacionadas, conservar evidencia original y no saltar Risk Governor.  
-**Cierre:** ensemble auditable y versionado.
+**Estado:** implementación inicial en `feature/f34-quant-ensemble`; aceptación pendiente de CI, regresiones y Security.
+**Objetivo:** combinar evidencia heterogénea con un resultado reproducible sin perder contribuciones ni exclusiones.
+**Implementado en la rama:** contratos inmutables de evidencia, solicitud, configuración, contribución y resultado; normalización acotada por `bounded`, `tanh` o `zscore`; pesos predeterminados y por fuente versionados; ajuste por confianza y fiabilidad; límite de peso total por grupo de correlación; cálculo de score, acuerdo, incertidumbre, abstención, atribución por fuente y fingerprint SHA-256 de entradas/configuración.
+**Reglas:** timestamps con zona horaria; rechazar evidencia posterior a `as_of`; un único horizonte y fuente por solicitud; excluir y auditar fuentes no elegibles o de peso efectivo cero; la cantidad mínima de grupos independientes es una condición de abstención. El cap por grupo es una heurística de ingeniería, no un estimador estadístico de correlación.  
+**Límites:** no aprende pesos, no calibra probabilidades, no produce BUY/HOLD/SELL, no optimiza cartera, no ordena operaciones ni puede anular Risk Governor. F35 consume la evidencia agregada.  
+**Cierre:** contratos tipados, pruebas numéricas/temporales, trazabilidad de contribuciones, regresiones F29–F33, CI Python 3.11/3.12, Security y documentación aprobados.
 
 ## F35 — Meta-model / Decision Engine
 **Objetivo:** producir el DecisionRecord.  
