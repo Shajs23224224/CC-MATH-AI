@@ -242,6 +242,6 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F27: forecasting probabilístico integrado y endurecido en `main` mediante PR #12 y PR #13 (`b07b3c4`); CI Python 3.11/3.12 y Security aprobados.
 - F28: ML clásico, patrones exploratorios, regresión simbólica acotada y motor adaptativo con búsqueda evolutiva de árboles de expresión; el estado de integración se determina por PR, CI y Security, no por la presencia de documentación.
 - F29: integrada en `main` por PR #17 (`96fcdb5`); ver [diseño técnico](GRADIENT_BOOSTING.md).
-- F30: implementación propuesta en `feature/f30-unsupervised-ml`; pendiente de revisión, CI general, Security y merge.
+- F30: implementación propuesta en `feature/f30-unsupervised-ml` mediante [PR #18](https://github.com/Shajs23224224/CC-MATH-AI/pull/18); revisión y validación del HEAD final requeridas antes de integrar. No debe considerarse integrada hasta que la PR esté fusionada.
 - F31–F43: alcance técnico documentado; implementación reservada para sus respectivas fases.
 - **Siguiente fase planificada: F31 — Deep Learning, sólo después de cerrar F30 según los criterios de avance.**
