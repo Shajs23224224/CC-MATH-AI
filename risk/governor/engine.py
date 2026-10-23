@@ -184,9 +184,7 @@ def _derived_metrics(
     notionals = {item.asset_symbol.upper(): item.target_notional for item in allocations}
     weights = {item.asset_symbol.upper(): item.target_weight for item in allocations}
     active_symbols = tuple(
-        item.asset_symbol.upper()
-        for item in allocations
-        if item.target_quantity > 0.0
+        item.asset_symbol.upper() for item in allocations if item.target_quantity > 0.0
     )
     gross_notional = math.fsum(notionals.values())
 
@@ -270,9 +268,7 @@ def _derived_metrics(
     if not active_pairs:
         max_abs_correlation = 0.0
     elif not missing_pairs:
-        max_abs_correlation = max(
-            abs(pair_map[tuple(sorted(pair))]) for pair in active_pairs
-        )
+        max_abs_correlation = max(abs(pair_map[tuple(sorted(pair))]) for pair in active_pairs)
     else:
         max_abs_correlation = None
     if max_abs_correlation is not None:
@@ -342,10 +338,7 @@ def _freshness_failures(
         if age < 0.0:
             failures.append(f"{label} timestamp is later than governor as_of")
         elif age > cutoff_seconds:
-            failures.append(
-                f"{label} timestamp is stale by {age:.0f}s "
-                f"(maximum {cutoff_seconds}s)"
-            )
+            failures.append(f"{label} timestamp is stale by {age:.0f}s (maximum {cutoff_seconds}s)")
 
     check("F37 sizing", request.sizing_result.as_of)
     check("market data", request.market_data_as_of)
@@ -433,9 +426,7 @@ def evaluate_risk_governor(
             if factor == 1.0:
                 approved_quantity = source_quantity
             else:
-                lots = math.floor(
-                    source_quantity * factor / context.lot_size + 1e-12
-                )
+                lots = math.floor(source_quantity * factor / context.lot_size + 1e-12)
                 approved_quantity = max(0.0, lots * context.lot_size)
             if source_quantity > 0.0:
                 unit_price = allocation.target_notional / source_quantity
