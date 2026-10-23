@@ -4084,7 +4084,7 @@ _F37_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
         ),
         units=("fraction of equity", "shares or units", "account currency"),
         tags=("position-sizing", "fixed-fractional", "F37"),
-        limitations=("This method fixes notional exposure; it does not imply a fixed stop-out risk.",),
+        limitations=("Notional-exposure sizing; stop risk is not fixed.",),
     ),
     _entry(
         "portfolio.volatility_based",
@@ -4105,7 +4105,7 @@ _F37_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
         ),
         units=("fraction of equity", "horizon return volatility"),
         tags=("position-sizing", "volatility", "F37"),
-        limitations=("Volatility estimates are horizon-specific and can underestimate future losses.",),
+        limitations=("Horizon volatility estimates may understate future risk.",),
     ),
     _entry(
         "portfolio.risk_based",
@@ -4126,7 +4126,7 @@ _F37_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
         ),
         units=("account currency at risk", "shares or units"),
         tags=("position-sizing", "risk-budget", "stop-loss", "F37"),
-        limitations=("Requires a valid stop loss and assumes the stop price is a sizing reference, not a guaranteed fill.",),
+        limitations=("Requires a stop price; actual fills may differ.",),
     ),
     _entry(
         "portfolio.kelly",
@@ -4147,7 +4147,7 @@ _F37_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
         ),
         units=("fraction of equity", "horizon return", "horizon return variance"),
         tags=("position-sizing", "kelly", "F37"),
-        limitations=("Kelly sizing is sensitive to misspecified expected returns and is not a performance guarantee.",),
+        limitations=("Kelly sizing is sensitive to expected-return estimation error.",),
     ),
     _entry(
         "portfolio.fractional_kelly",
@@ -4168,7 +4168,7 @@ _F37_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
         ),
         units=("fraction of equity", "dimensionless multiplier"),
         tags=("position-sizing", "fractional-kelly", "F37"),
-        limitations=("Fractional Kelly reduces but does not eliminate model-estimation risk.",),
+        limitations=("Fractional Kelly does not eliminate model risk.",),
     ),
     _entry(
         "portfolio.confidence_weighting",
@@ -4189,7 +4189,7 @@ _F37_ALGORITHMS: tuple[AlgorithmMetadata, ...] = (
         ),
         units=("fraction of equity", "confidence ratio"),
         tags=("position-sizing", "confidence", "F37"),
-        limitations=("Confidence is supplied upstream and must not be interpreted as a calibrated probability unless independently validated.",),
+        limitations=("Confidence is not necessarily a calibrated probability.",),
     ),
 )
 
