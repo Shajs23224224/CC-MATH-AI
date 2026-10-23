@@ -31,8 +31,8 @@ Completed:
 - F33 — Algorithm Registry (integrated in [PR #21](https://github.com/Shajs23224224/CC-MATH-AI/pull/21), merge commit `4f400ff`): versioned metadata, deterministic discovery and compatibility checks. The 304-entry manifest distinguishes verified implementation references from planned targets; planned entries remain experimental and algorithm evidence stays `not_run` until independently tested. See [F33 technical design](docs/ALGORITHM_REGISTRY.md).
 - F34 — Quant Ensemble (integrated in [PR #22](https://github.com/Shajs23224224/CC-MATH-AI/pull/22), merge commit `26e7888`): deterministic bounded score normalization, versioned source weighting, correlation-group influence caps, agreement, uncertainty, abstention, contribution attribution and SHA-256 replay fingerprint. Validation includes Python 3.11/3.12, F29–F33 regressions, general CI and Security on the PR head. It emits auditable research evidence, not trade decisions. See [F34 technical design](docs/QUANT_ENSEMBLE.md).
 
-Next planned:
-- F35 — Meta-model / Decision Engine: consume F34's versioned score, agreement, uncertainty and attributed evidence to produce a reproducible DecisionRecord. F35 is the next phase and is not implemented by F34.
+In implementation on `feature/f35-meta-decision-engine`:
+- F35 — Meta-model / Decision Engine: deterministic BUY/HOLD/SELL decision records from F34 evidence plus an explicitly sourced, horizon-matched forecast; versioned thresholds, class probabilities, calibration provenance, strict abstention, SHA-256 fingerprints and source-level audit. The default policy abstains unless probabilities carry validated out-of-sample calibration metadata. It never sizes positions, places orders or bypasses risk controls. See [F35 technical design](docs/DECISION_ENGINE.md).
 
 ## Architecture
 
@@ -76,6 +76,8 @@ See:
 - [F31 Deep Learning](docs/DEEP_LEARNING.md)
 - [F32 Feature Engineering](docs/FEATURE_ENGINEERING.md)
 - [F33 Algorithm Registry](docs/ALGORITHM_REGISTRY.md)
+- [F34 Quant Ensemble](docs/QUANT_ENSEMBLE.md)
+- [F35 Meta-model / Decision Engine](docs/DECISION_ENGINE.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
