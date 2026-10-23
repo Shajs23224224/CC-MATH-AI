@@ -140,7 +140,7 @@ class SizedPosition(BaseModel):
     target_quantity: float = Field(ge=0.0)
     target_notional: float = Field(ge=0.0)
     risk_budget_amount: float = Field(ge=0.0)
-    estimated_loss_at_stop: float = Field(ge=0.0)
+    estimated_loss_at_stop: float | None = Field(default=None, ge=0.0)
     adv_participation: float = Field(ge=0.0, le=1.0)
     liquidity_limited: bool
     position_weight_limited: bool
