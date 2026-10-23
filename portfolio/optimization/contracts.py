@@ -154,9 +154,7 @@ class PortfolioOptimizationRequest(BaseModel):
         if len(set(symbols)) != len(symbols):
             raise ValueError("decision asset symbols must be unique")
         if symbols != self.covariance.assets:
-            raise ValueError(
-                "assets must be sorted and exactly match covariance asset order"
-            )
+            raise ValueError("assets must be sorted and exactly match covariance asset order")
         if self.horizon != self.covariance_horizon:
             raise ValueError("forecast and covariance horizons must match")
         if self.covariance_as_of > self.as_of:
@@ -197,8 +195,7 @@ class PortfolioOptimizationRequest(BaseModel):
         if any(not any(abs(value) > 1e-12 for value in row) for row in self.view_matrix):
             raise ValueError("each Black-Litterman view must reference at least one asset")
         if any(
-            not math.isfinite(value) or not 0.0 < value <= 1.0
-            for value in self.view_confidences
+            not math.isfinite(value) or not 0.0 < value <= 1.0 for value in self.view_confidences
         ):
             raise ValueError("view_confidences must be finite and in (0, 1]")
         covariance_values = tuple(value for row in self.covariance.matrix for value in row)
