@@ -9,7 +9,6 @@ import math
 from core.contracts import DecisionRecord, SignalType
 
 from ._math import class_probabilities
-
 from .contracts import (
     DecisionConfig,
     DecisionEvidence,
@@ -125,7 +124,10 @@ def make_decision(
             rationale=item.rationale,
             observed_at=item.observed_at,
         )
-        for item in sorted(ensemble.contributions, key=lambda item: (item.source_id, item.source_version))
+        for item in sorted(
+            ensemble.contributions,
+            key=lambda item: (item.source_id, item.source_version),
+        )
     )
 
     return DecisionOutput(
