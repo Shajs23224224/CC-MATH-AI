@@ -73,6 +73,8 @@ def run_robustness(
         if scenario.name in scenario_names:
             raise ValueError("scenario names must be unique")
         scenario_names.add(scenario.name)
+        if scenario.price_shock_bps != 0 and scenario.shock_start_index >= len(series):
+            raise ValueError("shock_start_index must refer to an existing bar")
         stressed_bars = perturb_bars(series, scenario)
         stressed_signals = delay_signals(
             series, targets_by_timestamp, scenario.execution_delay_bars
@@ -82,6 +84,7 @@ def run_robustness(
         scenario_results.append(
             ScenarioResult(
                 name=scenario.name,
+                spec=scenario,
                 total_return=stressed.total_return,
                 max_drawdown=stressed.max_drawdown,
                 sharpe_ratio=stressed.sharpe_ratio,
