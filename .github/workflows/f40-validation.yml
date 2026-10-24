@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "backtest/walk_forward/**"
+      - "backtest/engine/**"
       - "tests/unit/test_walk_forward.py"
       - "docs/WALK_FORWARD_OOS.md"
       - ".github/workflows/f40-validation.yml"
