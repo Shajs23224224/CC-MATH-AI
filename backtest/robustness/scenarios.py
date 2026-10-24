@@ -10,6 +10,15 @@ from backtest.engine import BacktestConfig, Bar
 from backtest.robustness.contracts import ScenarioSpec
 
 
+def _adjust_price(
+    price: float,
+    previous_original_close: float,
+    previous_adjusted_close: float,
+    scale: float,
+) -> float:
+    return previous_adjusted_close + (price - previous_original_close) * scale
+
+
 def perturb_bars(bars: Sequence[Bar], scenario: ScenarioSpec) -> tuple[Bar, ...]:
     """Scale OHLC movement and apply one persistent price-level shock."""
     series = tuple(bars)
@@ -21,16 +30,13 @@ def perturb_bars(bars: Sequence[Bar], scenario: ScenarioSpec) -> tuple[Bar, ...]
         previous_adjusted_close = volatility_adjusted[-1].close
         scale = scenario.volatility_scale
 
-        def adjust(price: float) -> float:
-            return previous_adjusted_close + (price - previous_original_close) * scale
-
         volatility_adjusted.append(
             Bar(
                 timestamp=bar.timestamp,
-                open=adjust(bar.open),
-                high=adjust(bar.high),
-                low=adjust(bar.low),
-                close=adjust(bar.close),
+                open=_adjust_price(bar.open, previous_original_close, previous_adjusted_close, scale),
+                high=_adjust_price(bar.high, previous_original_close, previous_adjusted_close, scale),
+                low=_adjust_price(bar.low, previous_original_close, previous_adjusted_close, scale),
+                close=_adjust_price(bar.close, previous_original_close, previous_adjusted_close, scale),
                 volume=bar.volume,
             )
         )
