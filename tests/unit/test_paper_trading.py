@@ -234,6 +234,16 @@ def test_cancel_is_terminal_and_audited() -> None:
     assert simulator.verify_audit_chain()
 
 
+def test_risk_decision_must_be_fresh() -> None:
+    simulator = engine(PaperExecutionPolicy(max_risk_decision_age_seconds=2))
+    later_request = request(key="stale-risk-00001").model_copy(
+        update={"submitted_at": now() + timedelta(seconds=3)}
+    )
+    order = simulator.submit_order(later_request, decision())
+    assert order.status == "REJECTED"
+    assert "risk decision is stale" in (order.rejection_reason or "")
+
+
 def test_market_order_cannot_use_stale_or_future_evidence() -> None:
     with pytest.raises(ValueError, match="bid cannot exceed ask"):
         ExecutionQuote(asset_symbol="XYZ", bid=102.0, ask=101.0, timestamp=now())
