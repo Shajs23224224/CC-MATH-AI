@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from math import fsum, isclose, isfinite
+from math import isfinite
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
