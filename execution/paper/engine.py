@@ -104,7 +104,11 @@ class PaperTradingEngine:
             order_id = _sha256(f"{self.account_id}|{request.idempotency_key}")
             risk_action = cast(Literal["ALLOW", "REDUCE", "BLOCK"], risk_decision.action.value)
             approved_position = next(
-                (item for item in risk_decision.positions if item.asset_symbol == request.asset_symbol),
+                (
+                    item
+                    for item in risk_decision.positions
+                    if item.asset_symbol == request.asset_symbol
+                ),
                 None,
             )
             reason: str | None = None
