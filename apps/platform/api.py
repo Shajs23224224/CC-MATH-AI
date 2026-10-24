@@ -42,7 +42,11 @@ class PlatformWSGIApplication:
             query = parse_qs(str(environ.get("QUERY_STRING", "")), keep_blank_values=False)
 
             if method == "GET" and path in {"/health", "/ready"}:
-                status, content_type, body = HTTPStatus.OK, "application/json", self.service.health()
+                status, content_type, body = (
+                    HTTPStatus.OK,
+                    "application/json",
+                    self.service.health(),
+                )
             elif method == "GET" and path == "/algorithms":
                 limit = int(query.get("limit", ["100"])[0])
                 body = self.service.algorithms(
@@ -71,7 +75,11 @@ class PlatformWSGIApplication:
                 raw_body = self._read_body(environ)
                 request = PlatformRunRequest.model_validate_json(raw_body)
                 job = self.service.submit_job(request)
-                status, content_type, body = HTTPStatus.OK, "application/json", job.model_dump(mode="json")
+                status, content_type, body = (
+                    HTTPStatus.OK,
+                    "application/json",
+                    job.model_dump(mode="json"),
+                )
             elif method == "GET" and path.startswith("/jobs/"):
                 rest = path[len("/jobs/") :]
                 if rest.endswith("/audit/verify"):
@@ -92,17 +100,32 @@ class PlatformWSGIApplication:
             else:
                 raise _HTTPError(HTTPStatus.NOT_FOUND, "route not found")
         except _HTTPError as exc:
-            status, content_type, body = HTTPStatus(exc.status), "application/json", {"error": exc.message}
+            status, content_type, body = (
+                HTTPStatus(exc.status),
+                "application/json",
+                {"error": exc.message},
+            )
         except JobConflictError as exc:
-            status, content_type, body = HTTPStatus.CONFLICT, "application/json", {"error": str(exc)}
+            status, content_type, body = (
+                HTTPStatus.CONFLICT,
+                "application/json",
+                {"error": str(exc)},
+            )
         except ValidationError as exc:
             status, content_type, body = (
                 HTTPStatus.UNPROCESSABLE_ENTITY,
                 "application/json",
-                {"error": "request validation failed", "details": exc.errors(include_url=False, include_context=False)},
+                {
+                    "error": "request validation failed",
+                    "details": exc.errors(include_url=False, include_context=False),
+                },
             )
         except (ValueError, json.JSONDecodeError) as exc:
-            status, content_type, body = HTTPStatus.BAD_REQUEST, "application/json", {"error": str(exc)}
+            status, content_type, body = (
+                HTTPStatus.BAD_REQUEST,
+                "application/json",
+                {"error": str(exc)},
+            )
         except Exception:
             # Do not return internal exception details or runtime configuration to callers.
             status, content_type, body = (
