@@ -214,8 +214,13 @@ class PaperTradingEngine:
             self._last_timestamp = evaluated_at
             position = self._positions.get(quote.asset_symbol)
             if position is not None:
+                mark = (quote.bid + quote.ask) / 2.0
                 self._positions[quote.asset_symbol] = position.model_copy(
-                    update={"last_mark": (quote.bid + quote.ask) / 2.0}
+                    update={
+                        "last_mark": mark,
+                        "unrealized_pnl": (mark - position.average_cost) * position.quantity,
+                        "market_value": mark * position.quantity,
+                    }
                 )
 
             new_fills: list[PaperFill] = []
