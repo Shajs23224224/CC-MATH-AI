@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F38 integradas en `main`; F39 implementada en rama de trabajo, pendiente de validación y PR.
+**Estado:** F21–F38 integradas en main; F39 implementada en feature/f39-backtesting-engine con CI y regresiones aprobadas, PR #28 abierta; F40 implementada en feature/f40-walk-forward-oos, pendiente de validación.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -266,8 +266,10 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F36: integrada en main mediante PR #25.
 - F37: integrada en `main` mediante [PR #26](https://github.com/Shajs23224224/CC-MATH-AI/pull/26), merge commit `f65ee22`; workflow F37, CI general, Security y regresiones upstream aprobados.
 - F38: integrada en `main` mediante [PR #27](https://github.com/Shajs23224224/CC-MATH-AI/pull/27), merge commit `f315c6e`; workflow F38, CI general, Security y regresiones upstream aprobados.
-- F39–F43: alcance documentado; avanzar por dependencias contractuales y gates de validación.
-- **Siguiente fase: F39 — Backtesting.**
+- F39: implementada en feature/f39-backtesting-engine; workflow F39, CI general en Python 3.11/3.12, Security y regresiones upstream aprobados en el HEAD validado; PR #28 sigue abierta.
+- F40: implementación en feature/f40-walk-forward-oos, apilada sobre la rama F39; split modes, runner causal, métricas OOS, documentación y workflow específico añadidos; requiere CI final antes de cierre.
+- F41–F43: alcance documentado; avanzar por dependencias contractuales y gates de validación.
+- **Siguiente fase: F40 — Walk-Forward / OOS.**
 
 
 ## F39 — Backtesting Engine
@@ -276,4 +278,12 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 **Alcance inicial:** OHLC validado, timestamps estrictamente crecientes, posiciones enteras con signo, fills market-style next-open, curva de equity, retorno total, drawdown máximo, Sharpe, Sortino, turnover y pruebas temporales/contables.
 **Seguridad temporal:** las señales del cierre no se ejecutan hasta la siguiente apertura; la señal de la última barra queda sin ejecutar; no se envían órdenes reales.
 **Limitaciones:** sin fills parciales, órdenes limit/stop, impacto de mercado, financiación, corporate actions ni integración automática F35–F38. Los tests sintéticos validan ingeniería, no rentabilidad de estrategias.
-**Cierre requerido:** CI Python 3.11/3.12, regresiones, revisión de la lógica contable y actualización de documentación antes de fusionar.
+**Validación:** workflow F39 y CI general en Python 3.11/3.12, Security y regresiones upstream aprobados en el HEAD `73c4e68`; PR #28 abierta y sin fusionar.
+
+## F40 — Walk-Forward / OOS
+**Estado:** implementación en `feature/f40-walk-forward-oos`, apilada sobre F39; pendiente de CI y revisión.
+**Objetivo:** validación temporal estricta mediante ventanas OOS reproducibles.
+**Modos:** rolling (train de longitud fija), expanding (prefijo creciente desde el primer registro) y anchored (train creciente desde un índice de anclaje explícito).
+**Implementado:** contratos de configuración/splits, gap de purga opcional, ventanas de test no solapadas, ajuste por fold sólo sobre filas de entrenamiento, predicción sobre una vista temporal causal de sólo lectura, evaluación de cada ventana mediante F39, volatilidad anualizada, retorno/dispersión entre ventanas, drawdown, Sharpe/Sortino, turnover, costes, métricas por régimen opcionales, fingerprint SHA-256, tests y documentación.
+**Reglas y límites:** el predictor ve como máximo el prefijo hasta la barra actual; las señales de cierre se ejecutan en la siguiente apertura; cada ventana comienza con capital en efectivo y posición plana; la señal final no se ejecuta dentro de la ventana. Las callbacks aún son código confiable: no se puede probar automáticamente que no usen estado global, labels futuros o datos externos con leakage. Las etiquetas de régimen las suministra la aplicación.
+**Cierre requerido:** workflow F40 en Python 3.11/3.12, Ruff, mypy, CI general, Security y regresiones upstream aprobados antes de fusionar.
