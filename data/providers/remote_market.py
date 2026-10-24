@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timezone
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
