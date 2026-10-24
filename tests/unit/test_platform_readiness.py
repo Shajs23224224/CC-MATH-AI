@@ -64,9 +64,7 @@ def test_failed_required_check_blocks_even_when_flagged_noncritical() -> None:
 
 
 def test_failed_optional_check_degrades() -> None:
-    checks = healthy_checks() + [
-        ComponentCheck("dashboard", False, critical=False)
-    ]
+    checks = healthy_checks() + [ComponentCheck("dashboard", False, critical=False)]
     result = build_readiness(checks)
     assert result.status is ReadinessStatus.DEGRADED
     assert not result.can_paper_trade
