@@ -33,10 +33,18 @@ def perturb_bars(bars: Sequence[Bar], scenario: ScenarioSpec) -> tuple[Bar, ...]
         volatility_adjusted.append(
             Bar(
                 timestamp=bar.timestamp,
-                open=_adjust_price(bar.open, previous_original_close, previous_adjusted_close, scale),
-                high=_adjust_price(bar.high, previous_original_close, previous_adjusted_close, scale),
-                low=_adjust_price(bar.low, previous_original_close, previous_adjusted_close, scale),
-                close=_adjust_price(bar.close, previous_original_close, previous_adjusted_close, scale),
+                open=_adjust_price(
+                    bar.open, previous_original_close, previous_adjusted_close, scale
+                ),
+                high=_adjust_price(
+                    bar.high, previous_original_close, previous_adjusted_close, scale
+                ),
+                low=_adjust_price(
+                    bar.low, previous_original_close, previous_adjusted_close, scale
+                ),
+                close=_adjust_price(
+                    bar.close, previous_original_close, previous_adjusted_close, scale
+                ),
                 volume=bar.volume,
             )
         )
