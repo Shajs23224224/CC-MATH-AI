@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from math import isfinite
+from math import fsum, isclose, isfinite
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -189,6 +189,24 @@ class PaperAccountSnapshot(BaseModel):
     @classmethod
     def validate_timestamp(cls, value: datetime) -> datetime:
         return _aware(value)
+
+    @model_validator(mode="after")
+    def validate_accounting_identities(self) -> PaperAccountSnapshot:
+        """Reject snapshots whose stated totals disagree with their position ledger."""
+        expected_market_value = fsum(
+            position.quantity * position.last_mark for position in self.positions
+        )
+        expected_realized = fsum(position.realized_pnl for position in self.positions)
+        expected_unrealized = fsum(position.unrealized_pnl for position in self.positions)
+        if not isclose(self.equity, self.cash + self.market_value, rel_tol=1e-10, abs_tol=1e-6):
+            raise ValueError("equity must equal cash plus market_value")
+        if not isclose(self.market_value, expected_market_value, rel_tol=1e-10, abs_tol=1e-6):
+            raise ValueError("market_value must equal the sum of marked positions")
+        if not isclose(self.realized_pnl, expected_realized, rel_tol=1e-10, abs_tol=1e-6):
+            raise ValueError("realized_pnl must equal the sum of realized position PnL")
+        if not isclose(self.unrealized_pnl, expected_unrealized, rel_tol=1e-10, abs_tol=1e-6):
+            raise ValueError("unrealized_pnl must equal the sum of unrealized position PnL")
+        return self
 
 
 class AuditEvent(BaseModel):
