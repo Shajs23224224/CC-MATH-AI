@@ -84,7 +84,8 @@ class YahooFinanceMarketDataProvider:
             import yfinance as yf
         except ImportError as exc:
             raise DataProviderError(
-                'Yahoo Finance adapter requires the optional dependency: pip install -e ".[market-data]"'
+                'Yahoo Finance adapter requires the optional dependency: '
+                'pip install -e ".[market-data]"'
             ) from exc
 
         intervals = {
@@ -184,7 +185,9 @@ class CCXTHistoricalMarketDataProvider:
             raise
         except Exception as exc:
             raise DataProviderError(f"CCXT historical download failed: {exc}") from exc
-        frame = pd.DataFrame(rows, columns=["timestamp_ms", "open", "high", "low", "close", "volume"])
+        frame = pd.DataFrame(
+            rows, columns=["timestamp_ms", "open", "high", "low", "close", "volume"]
+        )
         if frame.empty:
             return pd.DataFrame(columns=list(_COLUMNS))
         frame["timestamp"] = pd.to_datetime(frame.pop("timestamp_ms"), unit="ms", utc=True)
@@ -218,15 +221,24 @@ class AlphaVantageMarketDataProvider:
             else:
                 params["function"] = "TIME_SERIES_WEEKLY"
         elif request.frequency == Frequency.DAILY:
-            params["function"] = "TIME_SERIES_DAILY_ADJUSTED" if request.adjusted else "TIME_SERIES_DAILY"
+            params["function"] = (
+                "TIME_SERIES_DAILY_ADJUSTED" if request.adjusted else "TIME_SERIES_DAILY"
+            )
             params["outputsize"] = "full"
         elif request.frequency in {
             Frequency.MINUTE_1, Frequency.MINUTE_5, Frequency.MINUTE_15, Frequency.HOUR_1
         }:
             if request.adjusted:
-                raise DataProviderError("Alpha Vantage intraday endpoint does not provide adjusted OHLCV")
+                raise DataProviderError(
+                    "Alpha Vantage intraday endpoint does not provide adjusted OHLCV"
+                )
             params["function"] = "TIME_SERIES_INTRADAY"
-            params["interval"] = {Frequency.MINUTE_1: "1min", Frequency.MINUTE_5: "5min", Frequency.MINUTE_15: "15min", Frequency.HOUR_1: "60min"}[request.frequency]
+            params["interval"] = {
+                Frequency.MINUTE_1: "1min",
+                Frequency.MINUTE_5: "5min",
+                Frequency.MINUTE_15: "15min",
+                Frequency.HOUR_1: "60min",
+            }[request.frequency]
             params["outputsize"] = "full"
         else:
             raise DataProviderError(f"Alpha Vantage does not support {request.frequency.value}")
@@ -238,17 +250,27 @@ class AlphaVantageMarketDataProvider:
         except (HTTPError, URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
             raise DataProviderError(f"Alpha Vantage request failed: {exc}") from exc
         if "Error Message" in payload or "Note" in payload or "Information" in payload:
-            detail = payload.get("Error Message") or payload.get("Note") or payload.get("Information")
+            detail = (
+                payload.get("Error Message")
+                or payload.get("Note")
+                or payload.get("Information")
+            )
             raise DataProviderError(f"Alpha Vantage response: {detail}")
         series_key = next(
-            (key for key, value in payload.items() if "Time Series" in key and isinstance(value, dict)),
+            (
+                key for key, value in payload.items()
+                if "Time Series" in key and isinstance(value, dict)
+            ),
             None,
         )
         if series_key is None:
             raise DataProviderError("Alpha Vantage response has no time-series payload")
         records: list[dict[str, Any]] = []
         for timestamp, values in payload[series_key].items():
-            normalized = {str(k).split(". ", 1)[-1].lower().replace(" ", "_"): v for k, v in values.items()}
+            normalized = {
+                str(k).split(". ", 1)[-1].lower().replace(" ", "_"): v
+                for k, v in values.items()
+            }
             close = float(normalized.get("close", normalized.get("adjusted_close", 0)))
             open_price = float(normalized["open"])
             high = float(normalized["high"])
@@ -256,7 +278,10 @@ class AlphaVantageMarketDataProvider:
             if request.adjusted and "adjusted_close" in normalized and "close" in normalized:
                 factor = float(normalized["adjusted_close"]) / float(normalized["close"])
                 open_price, high, low, close = (
-                    open_price * factor, high * factor, low * factor, float(normalized["adjusted_close"])
+                    open_price * factor,
+                    high * factor,
+                    low * factor,
+                    float(normalized["adjusted_close"]),
                 )
             records.append({
                 "timestamp": timestamp, "open": open_price, "high": high, "low": low,
