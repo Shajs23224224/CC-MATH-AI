@@ -363,7 +363,11 @@ class PlatformService:
                 "reason": "at least four bars are required for an OOS split",
             }
             stages.append(
-                PlatformStageResult(stage="walk_forward", state="SKIPPED", summary=walk_forward_result)
+                PlatformStageResult(
+                    stage="walk_forward",
+                    state="SKIPPED",
+                    summary=walk_forward_result,
+                )
             )
         else:
             train_size = request.walk_forward.initial_train_size
