@@ -360,11 +360,8 @@ class PaperTradingEngine:
                 )
                 return None
             remaining = max(0.0, current.quantity - quantity)
-            realized = (
-                current.realized_pnl
-                + (fill_price - current.average_cost) * quantity
-                - commission
-            )
+            trade_pnl = (fill_price - current.average_cost) * quantity
+            realized = current.realized_pnl + trade_pnl - commission
             self._cash += notional - commission
             mark = (quote.bid + quote.ask) / 2.0
             self._positions[request.asset_symbol] = PaperPosition(
