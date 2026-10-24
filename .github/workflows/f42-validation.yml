@@ -1,0 +1,46 @@
+name: F42 Paper Trading Validation
+
+on:
+  pull_request:
+    paths:
+      - "execution/**"
+      - "tests/unit/test_paper_trading.py"
+      - "docs/PAPER_TRADING_F42.md"
+      - ".github/workflows/f42-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "execution/**"
+      - "tests/unit/test_paper_trading.py"
+      - "docs/PAPER_TRADING_F42.md"
+      - ".github/workflows/f42-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: Run F42 paper trading tests
+        run: python -m pytest tests/unit/test_paper_trading.py -q
+      - name: Lint F42 implementation
+        run: python -m ruff check execution tests/unit/test_paper_trading.py
+      - name: Check F42 formatting
+        run: python -m ruff format --check execution tests/unit/test_paper_trading.py
+      - name: Type-check F42 implementation
+        run: python -m mypy execution/paper execution/policies/paper.py

@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F41 integradas en `main`. F39 mediante [PR #28](https://github.com/Shajs23224224/CC-MATH-AI/pull/28) (`ea0158a`), F40 mediante [PR #29](https://github.com/Shajs23224224/CC-MATH-AI/pull/29) (`bd74f41`) y F41 mediante [PR #30](https://github.com/Shajs23224224/CC-MATH-AI/pull/30) (`b810dee`). CI, Security y los workflows específicos/regresiones activados pasaron en los HEAD validados. Siguiente fase: F42.
+**Estado:** F21–F41 integradas en `main`. F39 mediante [PR #28](https://github.com/Shajs23224224/CC-MATH-AI/pull/28), F40 mediante [PR #29](https://github.com/Shajs23224224/CC-MATH-AI/pull/29) y F41 mediante [PR #30](https://github.com/Shajs23224224/CC-MATH-AI/pull/30). F42 en implementación inicial en `feature/f42-paper-trading-execution`; validación automatizada y revisión pendientes.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -207,10 +207,12 @@
 
 
 ## F42 — Paper Trading + Execution
-**Objetivo:** reproducir operación sin dinero real y preparar adapters futuros.  
-**Cambios:** execution/paper/, orders, fills, execution policies, accounting y audit.  
-**Reglas:** sólo decisiones risk-approved, idempotencia, estados explícitos, slippage/comisiones configurables, credenciales aisladas y sin órdenes directas desde LLM.  
-**Cierre:** paper trading end-to-end.
+**Estado:** implementación inicial en `feature/f42-paper-trading-execution`; workflow específico, CI general, Security y revisión pendientes.
+**Objetivo:** reproducir operación end-to-end sin dinero real y dejar un contrato claro para futuros adapters.
+**Implementado:** contratos de órdenes/quotes/fills/account snapshots/audit events; órdenes MARKET/LIMIT; lifecycle ACCEPTED/FILLED/CANCELLED/REJECTED; matching determinista contra bid/ask; slippage y comisiones versionables; contabilidad long-only en una moneda; coste medio, PnL realizado/no realizado, efectivo y equity; idempotencia por clave; controles de frescura y orden temporal; verificación de auditoría SHA-256 encadenada; tests y workflow Python 3.11/3.12.
+**Reglas:** cada orden requiere un resultado real tipado F38; BLOCK, símbolo no aprobado, quantity superior al target aprobado, decisión stale, efectivo insuficiente o holdings insuficientes no pueden producir fills. No existe ruta desde LLM ni adapter live.
+**Límites:** sólo estado en memoria, fills completos, long-only, sin stops, market impact, prioridad de cola, credenciales, broker/exchange ni persistencia/recovery.
+**Cierre requerido:** workflow F42, Ruff, mypy, CI general, Security y regresiones upstream aprobados en HEAD final; revisión y merge a `main`.
 
 ## F43 — C-MATH-AI Platform 1.0
 **Objetivo:** integración completa y operable.  
