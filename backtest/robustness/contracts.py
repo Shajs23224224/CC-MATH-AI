@@ -57,10 +57,7 @@ class ScenarioSpec:
             raise ValueError("scenario name must be a non-empty string")
         if not isfinite(self.volatility_scale) or not 0 < self.volatility_scale <= 5:
             raise ValueError("volatility_scale must be finite and in (0, 5]")
-        if (
-            not isfinite(self.price_shock_bps)
-            or not -10_000 < self.price_shock_bps <= 10_000
-        ):
+        if not isfinite(self.price_shock_bps) or not -10_000 < self.price_shock_bps <= 10_000:
             raise ValueError("price_shock_bps must be finite and in (-10000, 10000]")
         if (
             not isinstance(self.shock_start_index, int)
