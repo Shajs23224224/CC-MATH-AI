@@ -200,7 +200,7 @@
 **Cierre:** framework OOS reproducible.
 
 ## F41 — Monte Carlo + Adversarial Validation
-**Estado:** implementación inicial en feature/f41-monte-carlo-adversarial, apilada sobre F40/PR #29 y F39/PR #28; CI/revisión pendientes.
+**Estado:** implementación inicial en feature/f41-monte-carlo-adversarial, apilada sobre F40/PR #29 y F39/PR #28. Workflow F41 aprobado en Python 3.11/3.12 (14 tests por versión, Ruff, formato y mypy); workflows F39 y regresiones F22–F28 aprobados en HEAD 3fed645. CI general, Security y revisión final pendientes hasta integrar las dependencias y retargetear la PR a main.
 **Objetivo:** cuantificar sensibilidad y fragilidad de resultados de backtest, sin afirmar capacidad predictiva futura.
 **Implementado:** contratos versionables; bootstrap de retornos de equity mediante IID o moving-block con seed local, número de simulaciones, confianza y block size explícitos; distribución de retorno terminal, pérdida, expected shortfall y drawdown; escenarios de volatilidad, shock persistente de precio, comisión/slippage incrementales y latencia de señales que re-ejecutan F39; métricas de degradación, score heurístico de fragilidad y fingerprints SHA-256; estrés de matrices de correlación desde paneles multiactivo alineados.
 **Reglas:** equity estrictamente positiva para bootstrap; series de correlación finitas, alineadas y no constantes; escenarios con nombres únicos y supuestos explícitos; ejecuciones retrasadas fuera del periodo disponible se descartan, nunca se inventan fills. Seeds, supuestos, entradas y resultados se incluyen en la huella.
@@ -271,7 +271,7 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F38: integrada en `main` mediante [PR #27](https://github.com/Shajs23224224/CC-MATH-AI/pull/27), merge commit `f315c6e`; workflow F38, CI general, Security y regresiones upstream aprobados.
 - F39: implementada en feature/f39-backtesting-engine; workflow F39, CI general en Python 3.11/3.12, Security y regresiones upstream aprobados en el HEAD validado; PR #28 sigue abierta.
 - F40: implementación en feature/f40-walk-forward-oos, apilada sobre la rama F39; split modes, runner causal, métricas OOS, documentación y workflow específico añadidos; requiere CI final antes de cierre.
-- F41: implementación inicial de Monte Carlo, perturbaciones adversariales, estrés de correlación, tests y workflow en feature/f41-monte-carlo-adversarial; validación automatizada y revisión pendientes.
+- F41: implementación inicial de Monte Carlo, perturbaciones adversariales, estrés de correlación, tests y workflow en feature/f41-monte-carlo-adversarial; workflow específico y regresiones F39/F22–F28 aprobados en HEAD 3fed645; CI general, Security y revisión final pendientes por la dependencia de F39/F40.
 - F42–F43: alcance documentado; dependen de completar e integrar F39–F41.
 - **Siguiente fase: F41 — Monte Carlo + Adversarial Validation.**
 
