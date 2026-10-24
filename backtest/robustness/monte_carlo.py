@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Sequence
 from math import ceil, isfinite
 from statistics import mean, median
 
@@ -54,7 +55,7 @@ def _simulate_path(returns: tuple[float, ...]) -> tuple[float, float]:
     return equity - 1.0, max_drawdown
 
 
-def _percentile(values: tuple[float, ...], quantile: float) -> float:
+def _percentile(values: Sequence[float], quantile: float) -> float:
     if not values:
         raise ValueError("percentile requires at least one value")
     ordered = sorted(values)
