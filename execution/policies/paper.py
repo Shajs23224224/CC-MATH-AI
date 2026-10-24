@@ -31,10 +31,7 @@ class PaperExecutionPolicy:
         object.__setattr__(self, "base_currency", currency)
         if not isfinite(self.commission_bps) or self.commission_bps < 0:
             raise ValueError("commission_bps must be finite and non-negative")
-        if (
-            not isfinite(self.market_slippage_bps)
-            or not 0 <= self.market_slippage_bps < 10_000
-        ):
+        if not isfinite(self.market_slippage_bps) or not 0 <= self.market_slippage_bps < 10_000:
             raise ValueError("market_slippage_bps must be finite and in [0, 10000)")
         if (
             not isinstance(self.max_quote_age_seconds, int)
