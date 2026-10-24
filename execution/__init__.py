@@ -6,8 +6,8 @@ This package exposes only the paper simulator. No live broker adapter is impleme
 from execution.paper import (
     ExecutionQuote,
     PaperExecutionPolicy,
-    PaperTradingEngine,
     PaperOrderRequest,
+    PaperTradingEngine,
 )
 
 __all__ = [
