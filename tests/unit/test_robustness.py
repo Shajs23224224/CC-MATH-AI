@@ -67,9 +67,7 @@ def test_monte_carlo_rejects_non_positive_equity_curves() -> None:
         **{
             **{field: getattr(baseline, field) for field in baseline.__dataclass_fields__},
             "equity_curve": tuple(
-                point.__class__(
-                    point.timestamp, point.cash, point.units, point.close, -1.0
-                )
+                point.__class__(point.timestamp, point.cash, point.units, point.close, -1.0)
                 for point in baseline.equity_curve
             ),
         }
@@ -85,9 +83,7 @@ def test_adversarial_price_shock_reduces_long_strategy_return() -> None:
         {series[0].timestamp: 1},
         backtest_config=BacktestConfig(commission_bps=0, slippage_bps=0),
         monte_carlo_config=MonteCarloConfig(simulations=50, seed=2),
-        scenarios=(
-            ScenarioSpec(name="gap-down", price_shock_bps=-2_000, shock_start_index=2),
-        ),
+        scenarios=(ScenarioSpec(name="gap-down", price_shock_bps=-2_000, shock_start_index=2),),
     )
     assert result.scenarios[0].total_return < result.baseline_return
     assert result.scenarios[0].return_delta < 0
