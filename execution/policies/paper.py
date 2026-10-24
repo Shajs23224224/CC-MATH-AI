@@ -16,6 +16,7 @@ class PaperExecutionPolicy:
     commission_bps: float = 1.0
     market_slippage_bps: float = 2.0
     max_quote_age_seconds: int = 30
+    max_risk_decision_age_seconds: int = 300
     allow_market_orders: bool = True
     allow_limit_orders: bool = True
 
@@ -41,3 +42,9 @@ class PaperExecutionPolicy:
             or self.max_quote_age_seconds < 1
         ):
             raise ValueError("max_quote_age_seconds must be a positive integer")
+        if (
+            not isinstance(self.max_risk_decision_age_seconds, int)
+            or isinstance(self.max_risk_decision_age_seconds, bool)
+            or self.max_risk_decision_age_seconds < 1
+        ):
+            raise ValueError("max_risk_decision_age_seconds must be a positive integer")
