@@ -15,13 +15,13 @@ Provide a deterministic application-level readiness contract that consolidates o
 
 Data quality; quant research; model evaluation; decision engine; portfolio; Risk Governor; backtest; paper execution; audit integrity.
 
-A required check is considered present only when the caller submits a ComponentCheck; configuration alone is not evidence of success. A present critical check marked passed=False blocks readiness. Missing required checks also block readiness. A failed optional check yields DEGRADED, which is not paper-trading-ready.
+A required check is considered present only when the caller submits a ComponentCheck; configuration alone is not evidence of success. A failed required component blocks readiness even if a caller mistakenly marks it noncritical. A failed non-required critical check also blocks readiness. Missing required checks block readiness. Only failed non-required, noncritical checks produce DEGRADED, which is not paper-trading-ready.
 
 ## Status and safety semantics
 
 - READY: all required checks pass and no optional check failed.
 - DEGRADED: required checks pass but at least one optional check fails.
-- BLOCKED: a required component is missing or a critical check fails.
+- BLOCKED: a required component is missing or fails, or any critical check fails.
 
 Only READY reports can_paper_trade=True. F43 always reports can_live_trade=False and execution_mode=PAPER_ONLY. The readiness object does not place orders, instantiate broker adapters, or bypass the F38 Risk Governor / F42 order contract.
 
