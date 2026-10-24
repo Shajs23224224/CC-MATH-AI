@@ -160,7 +160,7 @@ class PaperPosition(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     asset_symbol: str
-    quantity: float = Field(ge=0.0)
+    quantity: float = Field(default=0.0, ge=0.0)
     average_cost: float = Field(default=0.0, ge=0.0)
     last_mark: float = Field(default=0.0, ge=0.0)
     realized_pnl: float = 0.0
