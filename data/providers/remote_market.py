@@ -34,8 +34,12 @@ def _window(frame: pd.DataFrame, request: MarketDataRequest) -> pd.DataFrame:
     """Apply an inclusive UTC date window and return canonical column names."""
     frame = frame.copy()
     frame.columns = [str(column).strip().lower().replace(" ", "_") for column in frame.columns]
-    aliases = {"date": "timestamp", "datetime": "timestamp", "adj_close": "close"}
+    aliases = {"date": "timestamp", "datetime": "timestamp"}
     frame = frame.rename(columns=aliases)
+    if "close" not in frame.columns and "adj_close" in frame.columns:
+        frame = frame.rename(columns={"adj_close": "close"})
+    elif "close" in frame.columns and "adj_close" in frame.columns:
+        frame = frame.drop(columns=["adj_close"])
     missing = set(_COLUMNS) - set(frame.columns)
     if missing:
         raise DataProviderError(f"provider returned incomplete OHLCV columns: {sorted(missing)}")
