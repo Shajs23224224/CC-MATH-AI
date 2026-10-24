@@ -9,8 +9,21 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from backtest.engine import Bar
 from backtest.robustness.contracts import MonteCarloConfig
+from core.contracts import DependenceMatrix, RiskMetric
 from execution.paper import ExecutionQuote, PaperExecutionPolicy, PaperOrderRequest
-from risk.governor.contracts import RiskGovernorConfig, RiskGovernorRequest
+from portfolio.optimization import (
+    PortfolioAssetInput,
+    PortfolioOptimizationConfig,
+    PortfolioOptimizationRequest,
+)
+from portfolio.sizing import PositionSizingConfig, PositionSizingRequest, SizingAssetInput
+from risk.governor import (
+    GovernorAssetContext,
+    PairwiseCorrelation,
+    RiskGovernorConfig,
+    RiskGovernorRequest,
+)
+from signals.decision import DecisionConfig, DecisionRequest, DecisionOutput
 
 JobState = Literal["PENDING", "RUNNING", "SUCCEEDED", "FAILED"]
 StageState = Literal["SUCCEEDED", "SKIPPED", "FAILED"]
@@ -116,6 +129,132 @@ class PlatformScenarioInput(BaseModel):
     execution_delay_bars: int = Field(default=0, ge=0)
 
 
+class PortfolioAssetMetadata(BaseModel):
+    """Point-in-time price, liquidity and exposure inputs aligned to a portfolio asset."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+
+    asset_symbol: str = Field(min_length=1, max_length=80)
+    sector: str = Field(min_length=1, max_length=100)
+    current_weight: float = Field(default=0.0, ge=0.0, le=1.0)
+    minimum_weight: float = Field(default=0.0, ge=0.0, le=1.0)
+    maximum_weight: float = Field(default=1.0, ge=0.0, le=1.0)
+    eligible: bool = True
+    price: float = Field(gt=0.0)
+    volatility: float = Field(ge=0.0, le=10.0)
+    average_daily_volume: float = Field(gt=0.0)
+    average_daily_dollar_volume: float = Field(gt=0.0)
+    lot_size: float = Field(default=1.0, gt=0.0)
+    stop_loss_price: float | None = Field(default=None, gt=0.0)
+    current_notional: float = Field(default=0.0, ge=0.0)
+    factor_loadings: dict[str, float] = Field(default_factory=dict)
+
+    @field_validator("asset_symbol")
+    @classmethod
+    def normalize_symbol(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if not normalized:
+            raise ValueError("asset_symbol must not be blank")
+        return normalized
+
+    @field_validator("sector")
+    @classmethod
+    def normalize_sector(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if not normalized:
+            raise ValueError("sector must not be blank")
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_limits(self) -> PortfolioAssetMetadata:
+        if self.minimum_weight > self.maximum_weight:
+            raise ValueError("minimum_weight must not exceed maximum_weight")
+        if self.stop_loss_price is not None and self.stop_loss_price >= self.price:
+            raise ValueError("stop_loss_price must be below price for long-only sizing")
+        if any(not math.isfinite(value) for value in self.factor_loadings.values()):
+            raise ValueError("factor loadings must be finite")
+        return self
+
+
+class PortfolioPipelineInput(BaseModel):
+    """Optional F35→F36→F37→F38 request using the real module contracts."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+
+    decisions: tuple[DecisionRequest, ...] = Field(min_length=2, max_length=500)
+    decision_config: DecisionConfig = DecisionConfig()
+    assets: tuple[PortfolioAssetMetadata, ...] = Field(min_length=2, max_length=500)
+    covariance: DependenceMatrix
+    horizon: str = Field(min_length=1, max_length=80)
+    covariance_as_of: datetime
+    covariance_data_snapshot_id: str = Field(min_length=1, max_length=200)
+    optimization_config: PortfolioOptimizationConfig = PortfolioOptimizationConfig()
+    sizing_config: PositionSizingConfig = PositionSizingConfig()
+    equity: float = Field(gt=0.0)
+    base_currency: str = Field(default="USD", min_length=3, max_length=3)
+    sizing_as_of: datetime
+    market_data_as_of: datetime
+    risk_snapshot_as_of: datetime
+    risk_snapshot_id: str = Field(min_length=1, max_length=200)
+    model_snapshot_id: str = Field(min_length=1, max_length=200)
+    risk_metrics: tuple[RiskMetric, ...] = Field(default=(), max_length=1000)
+    pairwise_correlations: tuple[PairwiseCorrelation, ...] = Field(default=(), max_length=124750)
+
+    @field_validator(
+        "covariance_as_of", "sizing_as_of", "market_data_as_of", "risk_snapshot_as_of"
+    )
+    @classmethod
+    def require_timezone(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("portfolio pipeline timestamps must be timezone-aware")
+        return value
+
+    @field_validator("base_currency")
+    @classmethod
+    def normalize_currency(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if len(normalized) != 3 or not normalized.isalpha():
+            raise ValueError("base_currency must be a three-letter currency code")
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_alignment(self) -> PortfolioPipelineInput:
+        symbols = tuple(item.asset_symbol for item in self.assets)
+        if len(set(symbols)) != len(symbols):
+            raise ValueError("portfolio metadata symbols must be unique")
+        if symbols != self.covariance.assets:
+            raise ValueError("portfolio metadata must match sorted covariance asset order")
+        decision_symbols = tuple(item.ensemble.asset_symbol.strip().upper() for item in self.decisions)
+        if decision_symbols != symbols:
+            raise ValueError("F35 decision inputs must exactly match portfolio asset order")
+        if any(item.ensemble.horizon != self.horizon for item in self.decisions):
+            raise ValueError("F35 ensemble horizons must match the portfolio horizon")
+        if any(item.ensemble.as_of > self.covariance_as_of for item in self.decisions):
+            raise ValueError("covariance_as_of cannot precede the F35 decision cutoff")
+        if self.covariance_as_of > self.sizing_as_of:
+            raise ValueError("covariance_as_of cannot be later than sizing_as_of")
+        if self.market_data_as_of > self.sizing_as_of:
+            raise ValueError("market_data_as_of cannot be later than sizing_as_of")
+        if any(item.ensemble.as_of > self.sizing_as_of for item in self.decisions):
+            raise ValueError("F35 decisions cannot be later than sizing_as_of")
+        if any(item.ensemble.as_of > self.risk_snapshot_as_of for item in self.decisions):
+            raise ValueError("risk snapshot cannot precede the F35 decision cutoff")
+        if self.covariance.kind != "covariance":
+            raise ValueError("F36 requires a covariance matrix")
+        if any(not math.isfinite(item.price) for item in self.assets):
+            raise ValueError("asset prices must be finite")
+        pair_keys = tuple(item.pair_key for item in self.pairwise_correlations)
+        if len(pair_keys) != len(set(pair_keys)):
+            raise ValueError("pairwise correlations must be unique")
+        for pair in self.pairwise_correlations:
+            if pair.asset_a not in symbols or pair.asset_b not in symbols:
+                raise ValueError("pairwise correlation references an unknown asset")
+        metric_names = tuple(item.name for item in self.risk_metrics)
+        if len(metric_names) != len(set(metric_names)):
+            raise ValueError("risk metrics must have unique names")
+        return self
+
+
 class PlatformRunRequest(BaseModel):
     """Idempotent, bounded research-to-paper job request.
 
@@ -137,6 +276,7 @@ class PlatformRunRequest(BaseModel):
         default=(), max_length=100
     )
     walk_forward: PlatformWalkForwardConfig = PlatformWalkForwardConfig()
+    portfolio_pipeline: PortfolioPipelineInput | None = None
     risk_request: RiskGovernorRequest | None = None
     risk_policy: RiskGovernorConfig = RiskGovernorConfig()
     paper_orders: tuple[PaperOrderRequest, ...] = Field(default=(), max_length=1_000)
@@ -178,14 +318,32 @@ class PlatformRunRequest(BaseModel):
         scenario_names = tuple(item.name for item in self.adversarial_scenarios)
         if len(scenario_names) != len(set(scenario_names)):
             raise ValueError("adversarial scenario names must be unique")
-        if self.paper_orders and self.risk_request is None:
-            raise ValueError("paper orders require an F38 RiskGovernorRequest")
+        if self.portfolio_pipeline is not None and self.risk_request is not None:
+            raise ValueError("provide either portfolio_pipeline or risk_request, not both")
+        if self.paper_orders and self.risk_request is None and self.portfolio_pipeline is None:
+            raise ValueError("paper orders require an F38 request or an F35-F38 portfolio pipeline")
         if self.paper_orders and not self.paper_quotes:
             raise ValueError("paper orders require at least one execution quote")
         if self.paper_quotes and not self.paper_orders:
             raise ValueError("paper quotes are only accepted when paper orders are requested")
         if self.risk_request is not None and self.risk_request.as_of > self.as_of:
             raise ValueError("risk request as_of cannot be later than platform as_of")
+        if self.portfolio_pipeline is not None:
+            pipeline = self.portfolio_pipeline
+            if any(
+                timestamp > self.as_of
+                for timestamp in (
+                    pipeline.covariance_as_of,
+                    pipeline.sizing_as_of,
+                    pipeline.market_data_as_of,
+                    pipeline.risk_snapshot_as_of,
+                )
+            ):
+                raise ValueError("portfolio pipeline evidence cannot be later than platform as_of")
+            if any(item.ensemble.as_of > self.as_of for item in pipeline.decisions):
+                raise ValueError("F35 decisions cannot be later than platform as_of")
+            if len(pipeline.assets) != len(pipeline.decisions):
+                raise ValueError("F35 decisions and portfolio metadata must have equal lengths")
         if self.walk_forward.enabled and len(self.bars) < 4 and (
             self.walk_forward.initial_train_size is not None
         ):
