@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F38 — Portfolio Risk Governor**
+Current milestone: **F39 — Backtesting Engine**
 
 Completed:
 - F01 — System Specification
@@ -32,6 +32,7 @@ Completed:
 - F34 — Quant Ensemble (integrated in [PR #22](https://github.com/Shajs23224224/CC-MATH-AI/pull/22), merge commit `26e7888`): deterministic bounded score normalization, versioned source weighting, correlation-group influence caps, agreement, uncertainty, abstention, contribution attribution and SHA-256 replay fingerprint. Validation includes Python 3.11/3.12, F29–F33 regressions, general CI and Security on the PR head. It emits auditable research evidence, not trade decisions. See [F34 technical design](docs/QUANT_ENSEMBLE.md).
 
 Implemented in `main`:
+- F39 — Deterministic Backtesting Engine: next-bar-open event loop, signed-unit position accounting, commission and adverse-slippage model, equity curve, return/drawdown/Sharpe/Sortino/turnover metrics, temporal and accounting tests. Research-only; no broker execution and no automatic F35–F38 integration yet. See [F39 backtesting documentation](docs/BACKTESTING.md).
 - F35 — Meta-model / Decision Engine: deterministic BUY/HOLD/SELL decisions from F34 evidence and a horizon-matched forecast, with versioned thresholds, strict abstention, calibration provenance and replay fingerprints. It never sizes positions, places orders or bypasses risk controls. F35 workflow and general CI passed on Python 3.11/3.12. See [F35 technical design](docs/DECISION_ENGINE.md).
 
 - F36 — Portfolio Optimization (integrated in [PR #25](https://github.com/Shajs23224224/CC-MATH-AI/pull/25), merge commit `b7a2628`): nine methods—equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity, inverse volatility, HRP, Black-Litterman and maximum diversification—with long-only F35 integration, point-in-time F23 covariance, asset/sector/turnover/HHI constraints, transaction-cost diagnostics, solver status, safe infeasibility handling and SHA-256 audit. F36, F33, general CI, Security and active regressions passed on Python 3.11/3.12. Synthetic tests validate code behavior, not market alpha. See [F36 technical design](docs/PORTFOLIO_OPTIMIZATION.md).

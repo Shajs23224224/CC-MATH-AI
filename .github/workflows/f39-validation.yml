@@ -1,0 +1,46 @@
+name: F39 Backtesting Validation
+
+on:
+  pull_request:
+    paths:
+      - "backtest/**"
+      - "core/contracts/backtest.py"
+      - "tests/unit/test_backtest_engine.py"
+      - "docs/BACKTESTING.md"
+      - ".github/workflows/f39-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backtest/**"
+      - "core/contracts/backtest.py"
+      - "tests/unit/test_backtest_engine.py"
+      - "docs/BACKTESTING.md"
+      - ".github/workflows/f39-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: Run F39 tests
+        run: python -m pytest tests/unit/test_backtest_engine.py -q
+      - name: Lint F39 implementation
+        run: python -m ruff check backtest/engine tests/unit/test_backtest_engine.py
+      - name: Format check
+        run: python -m ruff format --check backtest/engine tests/unit/test_backtest_engine.py

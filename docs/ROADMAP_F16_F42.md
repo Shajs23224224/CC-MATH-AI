@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F38 integradas en `main`; F39 es la siguiente fase.
+**Estado:** F21–F38 integradas en `main`; F39 implementada en rama de trabajo, pendiente de validación y PR.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -268,3 +268,12 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F38: integrada en `main` mediante [PR #27](https://github.com/Shajs23224224/CC-MATH-AI/pull/27), merge commit `f315c6e`; workflow F38, CI general, Security y regresiones upstream aprobados.
 - F39–F43: alcance documentado; avanzar por dependencias contractuales y gates de validación.
 - **Siguiente fase: F39 — Backtesting.**
+
+
+## F39 — Backtesting Engine
+**Estado:** Implementación inicial en `feature/f39-backtesting-engine`; pendiente de CI y revisión.
+**Objetivo:** simulación determinista de señales con ejecución en la apertura de la siguiente barra, contabilidad de posiciones, comisiones, slippage y métricas de cartera.
+**Alcance inicial:** OHLC validado, timestamps estrictamente crecientes, posiciones enteras con signo, fills market-style next-open, curva de equity, retorno total, drawdown máximo, Sharpe, Sortino, turnover y pruebas temporales/contables.
+**Seguridad temporal:** las señales del cierre no se ejecutan hasta la siguiente apertura; la señal de la última barra queda sin ejecutar; no se envían órdenes reales.
+**Limitaciones:** sin fills parciales, órdenes limit/stop, impacto de mercado, financiación, corporate actions ni integración automática F35–F38. Los tests sintéticos validan ingeniería, no rentabilidad de estrategias.
+**Cierre requerido:** CI Python 3.11/3.12, regresiones, revisión de la lógica contable y actualización de documentación antes de fusionar.
