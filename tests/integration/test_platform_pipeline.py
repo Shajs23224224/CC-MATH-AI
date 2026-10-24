@@ -83,7 +83,9 @@ def test_platform_pipeline_is_reproducible_and_persisted(tmp_path) -> None:
     assert len(service.audit_events(request.job_id)) == audit_count
 
     with pytest.raises(JobConflictError, match="different request fingerprint"):
-        service.submit_job(sample_request(job_id=request.job_id).model_copy(update={"symbol": "ABC"}))
+        service.submit_job(
+            sample_request(job_id=request.job_id).model_copy(update={"symbol": "ABC"})
+        )
 
 
 def test_platform_catalog_distinguishes_experimental_metadata(tmp_path) -> None:
