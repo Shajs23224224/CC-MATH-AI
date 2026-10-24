@@ -273,7 +273,10 @@ class SQLiteJobStore:
                 "SELECT state, COUNT(*) AS count FROM platform_jobs GROUP BY state"
             ).fetchall()
             counts = {str(row["state"]): int(row["count"]) for row in rows}
-        return {state: counts.get(state, 0) for state in ("PENDING", "RUNNING", "SUCCEEDED", "FAILED")}
+        return {
+            state: counts.get(state, 0)
+            for state in ("PENDING", "RUNNING", "SUCCEEDED", "FAILED")
+        }
 
     def events(self, job_id: str) -> tuple[dict[str, Any], ...]:
         with self._lock:
@@ -349,7 +352,15 @@ class SQLiteJobStore:
             (job_id, sequence, event_type, timestamp, payload_json, previous_hash, event_hash)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (job_id, sequence, event_type, timestamp, payload_json, previous_hash, _digest(material)),
+            (
+                job_id,
+                sequence,
+                event_type,
+                timestamp,
+                payload_json,
+                previous_hash,
+                _digest(material),
+            ),
         )
 
     @staticmethod
