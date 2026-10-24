@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F42 — Paper Trading + Execution** (F39–F41 merged into main; F42 is the next implementation phase).
+Current milestone: **F42 — Paper Trading + Execution** (initial in-memory simulator implemented on feature/f42-paper-trading-execution; dedicated validation/review pending).
 
 Completed:
 - F01 — System Specification
@@ -90,6 +90,7 @@ See:
 - [F37 Position Sizing](docs/POSITION_SIZING.md)
 - [F38 Portfolio Risk Governor](docs/RISK_GOVERNOR.md)
 - [F41 Monte Carlo and Adversarial Robustness](docs/ROBUSTNESS_F41.md)
+- [F42 Paper Trading and Execution](docs/PAPER_TRADING_F42.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
