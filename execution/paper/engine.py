@@ -6,12 +6,13 @@ import hashlib
 import json
 import threading
 from datetime import datetime
-from math import isclose, isfinite
-from typing import Any
+from math import isfinite
+from typing import Any, Literal, cast
 
 from core.contracts import RiskAction
 from execution.paper.contracts import (
     AuditEvent,
+    AuditEventType,
     ExecutionQuote,
     PaperAccountSnapshot,
     PaperFill,
@@ -101,7 +102,7 @@ class PaperTradingEngine:
             if self._last_timestamp is not None and request.submitted_at < self._last_timestamp:
                 raise ValueError("order timestamp must be monotonic")
             order_id = _sha256(f"{self.account_id}|{request.idempotency_key}")
-            risk_action = risk_decision.action.value
+            risk_action = cast(Literal["ALLOW", "REDUCE", "BLOCK"], risk_decision.action.value)
             approved_position = next(
                 (item for item in risk_decision.positions if item.asset_symbol == request.asset_symbol),
                 None,
@@ -149,7 +150,7 @@ class PaperTradingEngine:
                 if request.quantity > available - pending_sells + 1e-9:
                     reason = "sell quantity exceeds unreserved paper holdings"
 
-            status = "REJECTED" if reason else "ACCEPTED"
+            status: Literal["REJECTED", "ACCEPTED"] = "REJECTED" if reason else "ACCEPTED"
             updated_at = request.submitted_at
             order = PaperOrder(
                 order_id=order_id,
@@ -404,7 +405,7 @@ class PaperTradingEngine:
 
     def _append_audit(
         self,
-        event_type: str,
+        event_type: AuditEventType,
         timestamp: datetime,
         entity_id: str,
         payload: dict[str, Any],
