@@ -39,9 +39,7 @@ def perturb_bars(bars: Sequence[Bar], scenario: ScenarioSpec) -> tuple[Bar, ...]
                 high=_adjust_price(
                     bar.high, previous_original_close, previous_adjusted_close, scale
                 ),
-                low=_adjust_price(
-                    bar.low, previous_original_close, previous_adjusted_close, scale
-                ),
+                low=_adjust_price(bar.low, previous_original_close, previous_adjusted_close, scale),
                 close=_adjust_price(
                     bar.close, previous_original_close, previous_adjusted_close, scale
                 ),
