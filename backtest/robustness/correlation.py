@@ -84,9 +84,7 @@ def stress_correlation_matrix(
         "asset_names": asset_names,
         "observations": next(iter(lengths)),
         "shock": shock,
-        "returns_by_asset": {
-            name: series[index] for index, name in enumerate(asset_names)
-        },
+        "returns_by_asset": {name: series[index] for index, name in enumerate(asset_names)},
         "baseline_matrix": baseline,
         "stressed_matrix": stressed,
     }
