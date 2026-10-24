@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -6,7 +6,7 @@ from backtest.engine import BacktestConfig, Bar, run_backtest
 
 
 def bars(*closes: float) -> list[Bar]:
-    start = datetime(2025, 1, 1, tzinfo=timezone.utc)
+    start = datetime(2025, 1, 1, tzinfo=UTC)
     return [
         Bar(start + timedelta(days=index), close, close, close, close, 1000.0)
         for index, close in enumerate(closes)
@@ -64,7 +64,7 @@ def test_rejects_unsorted_or_duplicate_timestamps() -> None:
 
 def test_rejects_invalid_prices_and_non_integer_positions() -> None:
     with pytest.raises(ValueError, match="finite and positive"):
-        Bar(datetime.now(timezone.utc), float("nan"), 1, 1, 1)
+        Bar(datetime.now(UTC), float("nan"), 1, 1, 1)
     series = bars(100.0, 101.0)
     with pytest.raises(ValueError, match="integer units"):
         run_backtest(series, {series[0].timestamp: 1.5})  # type: ignore[dict-item]
