@@ -160,7 +160,7 @@ def test_correlation_stress_validates_alignment_variance_and_shock() -> None:
         stress_correlation_matrix({"a": (0.1, 0.2), "b": (0.2, 0.3, 0.1)}, 0.0)
     with pytest.raises(ValueError, match="constant"):
         stress_correlation_matrix({"a": (0.1, 0.1), "b": (0.2, 0.3)}, 0.0)
-    with pytest.raises(ValueError, match="[-1, 1]"):
+    with pytest.raises(ValueError, match="correlation shock"):
         stress_correlation_matrix({"a": (0.1, 0.2), "b": (0.2, 0.4)}, 1.1)
 
 
