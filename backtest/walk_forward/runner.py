@@ -111,9 +111,7 @@ class WalkForwardResult:
 
 def _period_returns(result: BacktestResult) -> tuple[float, ...]:
     returns: list[float] = []
-    for previous, current in zip(
-        result.equity_curve, result.equity_curve[1:], strict=False
-    ):
+    for previous, current in zip(result.equity_curve, result.equity_curve[1:], strict=False):
         if previous.equity > 0:
             period_return = current.equity / previous.equity - 1.0
             if isfinite(period_return):
