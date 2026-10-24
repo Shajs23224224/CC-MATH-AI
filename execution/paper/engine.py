@@ -90,7 +90,7 @@ class PaperTradingEngine:
         Reusing that key for a different payload raises instead of duplicating exposure.
         """
         with self._lock:
-            request_json = request.model_dump_json()
+            request_json = _canonical(request.model_dump(mode="json"))
             previous = self._idempotency.get(request.idempotency_key)
             if previous is not None:
                 order_id, prior_request_json = previous
@@ -98,6 +98,8 @@ class PaperTradingEngine:
                     raise ValueError("idempotency_key was already used for a different request")
                 return self._orders[order_id]
 
+            if self._last_timestamp is not None and request.submitted_at < self._last_timestamp:
+                raise ValueError("order timestamp must be monotonic")
             order_id = _sha256(f"{self.account_id}|{request.idempotency_key}")
             risk_action = risk_decision.action.value
             approved_position = next(
@@ -105,8 +107,13 @@ class PaperTradingEngine:
                 None,
             )
             reason: str | None = None
+            risk_age = (request.submitted_at - risk_decision.as_of).total_seconds()
             approved_quantity = 0.0 if approved_position is None else approved_position.approved_quantity
-            if risk_decision.action == RiskAction.BLOCK:
+            if risk_age < 0:
+                reason = "F38 risk decision timestamp is later than order submission"
+            elif risk_age > self.policy.max_risk_decision_age_seconds:
+                reason = "F38 risk decision is stale under the paper execution policy"
+            elif risk_decision.action == RiskAction.BLOCK:
                 reason = "F38 risk governor BLOCK vetoed order submission"
             elif approved_position is None:
                 reason = "asset is absent from the F38 approved-position set"
@@ -156,6 +163,7 @@ class PaperTradingEngine:
             )
             self._orders[order_id] = order
             self._idempotency[request.idempotency_key] = (order_id, request_json)
+            self._last_timestamp = request.submitted_at
             self._append_audit(
                 "ORDER_REJECTED" if reason else "ORDER_ACCEPTED",
                 updated_at,
