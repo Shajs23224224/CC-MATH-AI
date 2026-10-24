@@ -139,6 +139,8 @@ The repository intentionally keeps:
 - simulation in `backtest/`;
 - execution adapters in `execution/`.
 
+- [Historical Market API Adapters](docs/HISTORICAL_MARKET_APIS.md) — optional Yahoo Finance, CCXT and Alpha Vantage historical OHLCV providers.
+
 ## Security
 
 Never commit API keys, broker credentials, access tokens or other secrets.

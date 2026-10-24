@@ -19,6 +19,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+market-data = [
+  "yfinance>=0.2.50,<2",
+  "ccxt>=4.4,<5",
+]
 deep-learning = [
   "torch>=2.4,<3",
 ]
