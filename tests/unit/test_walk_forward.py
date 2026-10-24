@@ -134,7 +134,7 @@ def test_predict_must_return_signed_integer_units_not_boolean_or_float() -> None
 
 def test_regime_metrics_are_computed_per_label_and_require_complete_oos_coverage() -> None:
     series = bars(100, 101, 102, 103, 104, 105, 106)
-    regimes = {bar.timestamp: ("bull" if index % 2 else "bear") for index, bar in enumerate(series)}
+    regimes = {bar.timestamp: ("bull" if index >= 5 else "bear") for index, bar in enumerate(series)}
     result = run_walk_forward(
         series,
         WalkForwardConfig(initial_train_size=3, test_size=2),
