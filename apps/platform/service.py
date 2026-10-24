@@ -16,7 +16,6 @@ from apps.platform.contracts import (
     PlatformStageResult,
 )
 from apps.platform.store import JobConflictError, SQLiteJobStore, canonical_json
-
 from backtest.engine import BacktestConfig, Bar, run_backtest
 from backtest.robustness import ScenarioSpec, run_robustness
 from backtest.walk_forward import run_walk_forward
