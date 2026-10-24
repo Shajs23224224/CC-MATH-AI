@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F41 integradas en `main`. F39 mediante [PR #28](https://github.com/Shajs23224224/CC-MATH-AI/pull/28), F40 mediante [PR #29](https://github.com/Shajs23224224/CC-MATH-AI/pull/29) y F41 mediante [PR #30](https://github.com/Shajs23224224/CC-MATH-AI/pull/30). F42 en implementación inicial en `feature/f42-paper-trading-execution`; validación automatizada y revisión pendientes.
+**Estado:** F21–F42 integradas en `main`. F39 mediante [PR #28](https://github.com/Shajs23224224/CC-MATH-AI/pull/28), F40 mediante [PR #29](https://github.com/Shajs23224224/CC-MATH-AI/pull/29), F41 mediante [PR #30](https://github.com/Shajs23224224/CC-MATH-AI/pull/30) y F42 mediante [PR #31](https://github.com/Shajs23224224/CC-MATH-AI/pull/31), squash commit `ee03933`. F42 validó su workflow, CI general, Security, F38 y las regresiones activadas completadas en el HEAD final.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -207,12 +207,12 @@
 
 
 ## F42 — Paper Trading + Execution
-**Estado:** implementación inicial en `feature/f42-paper-trading-execution`; workflow específico, CI general, Security y revisión pendientes.
+**Estado:** integrada en `main` mediante [PR #31](https://github.com/Shajs23224224/CC-MATH-AI/pull/31), squash commit `ee03933`.
 **Objetivo:** reproducir operación end-to-end sin dinero real y dejar un contrato claro para futuros adapters.
 **Implementado:** contratos de órdenes/quotes/fills/account snapshots/audit events; órdenes MARKET/LIMIT; lifecycle ACCEPTED/FILLED/CANCELLED/REJECTED; matching determinista contra bid/ask; slippage y comisiones versionables; contabilidad long-only en una moneda; coste medio, PnL realizado/no realizado, efectivo y equity; idempotencia por clave; controles de frescura y orden temporal; verificación de auditoría SHA-256 encadenada; tests y workflow Python 3.11/3.12.
 **Reglas:** cada orden requiere un resultado real tipado F38; BLOCK, símbolo no aprobado, quantity superior al target aprobado, decisión stale, efectivo insuficiente o holdings insuficientes no pueden producir fills. No existe ruta desde LLM ni adapter live.
 **Límites:** sólo estado en memoria, fills completos, long-only, sin stops, market impact, prioridad de cola, credenciales, broker/exchange ni persistencia/recovery.
-**Cierre requerido:** workflow F42, Ruff, mypy, CI general, Security y regresiones upstream aprobados en HEAD final; revisión y merge a `main`.
+**Validación de cierre:** 14 tests en Python 3.11 y 14 en Python 3.12; Ruff lint/formato y mypy aprobados en ambos entornos; CI general y Security aprobados; workflow F38 y las demás regresiones activadas completadas pasaron en el HEAD final. F31 Deep Learning seguía instalando dependencias opcionales al momento de fusionar y no modifica la ruta de ejecución.
 
 ## F43 — C-MATH-AI Platform 1.0
 **Objetivo:** integración completa y operable.  
@@ -272,8 +272,9 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F39: integrada en `main` mediante PR #28 (`ea0158a`); workflow F39, CI general Python 3.11/3.12, Security y regresiones upstream aprobados.
 - F40: integrada en `main` mediante PR #29 (`bd74f41`); workflow F40, CI general Python 3.11/3.12, Security y regresiones upstream activadas aprobados.
 - F41: integrada en `main` mediante PR #30 (`b810dee`); workflow F41, 14 tests por Python 3.11/3.12, Ruff, formato, mypy, CI general, Security y 18 workflows de regresión upstream aprobados en el HEAD final de la PR.
-- F42–F43: siguientes fases del roadmap; F42 depende de las bases de backtesting y robustez ya integradas.
-- **Siguiente fase: F42 — Paper Trading + Execution.**
+- F42: integrada en `main` mediante PR #31 (`ee03933`); ver [diseño técnico](PAPER_TRADING_F42.md).
+- F43: siguiente fase para integrar la plataforma end-to-end hasta paper trading.
+- **Siguiente fase: F43 — C-MATH-AI Platform 1.0.**
 
 
 ## F39 — Backtesting Engine
