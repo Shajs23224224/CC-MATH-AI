@@ -23,15 +23,15 @@ from backtest.walk_forward.splits import WalkForwardConfig
 from core.contracts import FeatureDefinition
 from core.contracts.enums import DataQualityStatus
 from core.contracts.feature_engineering import FeatureEngineeringConfig, FeatureTransformSpec
+from data.quality import DataQualityEngine
+from execution.paper import PaperTradingEngine
+from ml.features.engineering import FeatureEngineer
 from portfolio.optimization import (
     PortfolioAssetInput,
     PortfolioOptimizationRequest,
     optimize_portfolio,
 )
 from portfolio.sizing import PositionSizingRequest, SizingAssetInput, size_positions
-from data.quality import DataQualityEngine
-from execution.paper import PaperTradingEngine
-from ml.features.engineering import FeatureEngineer
 from quant.registry import AlgorithmLifecycle, builtin_algorithms, discover_algorithms
 from risk.governor import (
     GovernorAssetContext,
@@ -261,7 +261,9 @@ class PlatformService:
             ],
             "config_id": pipeline.decision_config.config_id,
             "config_version": pipeline.decision_config.version,
-            "probability_calibration_status": pipeline.decision_config.probability_calibration_status,
+            "probability_calibration_status": (
+                pipeline.decision_config.probability_calibration_status
+            ),
         }
         stages.append(self._stage(request.job_id, "decision_f35", decision_summary))
 
@@ -291,7 +293,10 @@ class PlatformService:
         if optimization.status not in {"OPTIMAL", "FEASIBLE"}:
             raise PlatformExecutionError(
                 "F36_OPTIMIZATION_FAILED",
-                f"F36 optimizer did not produce a feasible allocation: {optimization.solver_message}",
+                (
+                    "F36 optimizer did not produce a feasible allocation: "
+                    f"{optimization.solver_message}"
+                ),
             )
         stages.append(
             self._stage(
@@ -304,7 +309,10 @@ class PlatformService:
                     "volatility": optimization.volatility,
                     "turnover": optimization.turnover,
                     "allocations": [
-                        {"asset_symbol": item.asset_symbol, "target_weight": item.target_weight}
+                        {
+                            "asset_symbol": item.asset_symbol,
+                            "target_weight": item.target_weight,
+                        }
                         for item in optimization.allocations
                     ],
                     "fingerprint": optimization.optimization_fingerprint,
