@@ -8,8 +8,16 @@ from .fundamental_csv import LocalCSVFundamentalProvider
 from .local_csv import LocalCSVMarketDataProvider
 from .macro_base import MacroDataProvider
 from .macro_csv import LocalCSVMacroProvider
+from .remote_market import (
+    AlphaVantageMarketDataProvider,
+    CCXTHistoricalMarketDataProvider,
+    YahooFinanceMarketDataProvider,
+)
 
 __all__ = [
+    "AlphaVantageMarketDataProvider",
+    "CCXTHistoricalMarketDataProvider",
+    "YahooFinanceMarketDataProvider",
     "CorporateActionProvider",
     "FundamentalDataProvider",
     "LocalCSVCorporateActionProvider",
