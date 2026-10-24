@@ -239,3 +239,39 @@ def test_market_order_cannot_use_stale_or_future_evidence() -> None:
         ExecutionQuote(asset_symbol="XYZ", bid=102.0, ask=101.0, timestamp=now())
     with pytest.raises(ValueError, match="LIMIT order requires"):
         request(order_type="LIMIT", limit_price=None)
+
+
+def test_stale_risk_decision_is_rejected_before_acceptance() -> None:
+    stale_request = request(
+        key="stale-risk-order-0001",
+    ).model_copy(update={"submitted_at": now() + timedelta(seconds=301)})
+    order = engine().submit_order(stale_request, decision())
+    assert order.status == "REJECTED"
+    assert "decision is stale" in (order.rejection_reason or "")
+
+
+def test_insufficient_cash_rejects_fill_without_partial_execution() -> None:
+    simulator = PaperTradingEngine("small-account", 100.0)
+    order = simulator.submit_order(request(), decision())
+    assert order.status == "ACCEPTED"
+    assert simulator.process_quote(quote()) == ()
+    assert simulator.orders[0].status == "REJECTED"
+    snapshot = simulator.snapshot()
+    assert snapshot.cash == 100.0
+    assert snapshot.market_value == 0.0
+    assert simulator.verify_audit_chain()
+
+
+def test_pending_buy_reservations_cannot_exceed_approved_target() -> None:
+    simulator = engine()
+    first = simulator.submit_order(
+        request(quantity=6.0, key="reserve-order-0001"),
+        decision(quantity=10.0),
+    )
+    second = simulator.submit_order(
+        request(quantity=5.0, key="reserve-order-0002"),
+        decision(quantity=10.0),
+    )
+    assert first.status == "ACCEPTED"
+    assert second.status == "REJECTED"
+    assert "pending buys" in (second.rejection_reason or "")
