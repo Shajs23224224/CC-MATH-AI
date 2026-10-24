@@ -1,0 +1,125 @@
+{
+  "job_id": "research-smoke-0001",
+  "dataset_id": "sample-bars-v1",
+  "symbol": "XYZ",
+  "as_of": "2026-01-12T14:30:00Z",
+  "bars": [
+    {
+      "timestamp": "2026-01-02T14:30:00Z",
+      "open": 100,
+      "high": 101.5,
+      "low": 99.2,
+      "close": 100.8,
+      "volume": 100000
+    },
+    {
+      "timestamp": "2026-01-03T14:30:00Z",
+      "open": 100.8,
+      "high": 102.2,
+      "low": 100,
+      "close": 101.7,
+      "volume": 104000
+    },
+    {
+      "timestamp": "2026-01-04T14:30:00Z",
+      "open": 101.7,
+      "high": 102.1,
+      "low": 100.4,
+      "close": 100.9,
+      "volume": 97000
+    },
+    {
+      "timestamp": "2026-01-05T14:30:00Z",
+      "open": 100.9,
+      "high": 103,
+      "low": 100.5,
+      "close": 102.6,
+      "volume": 112000
+    },
+    {
+      "timestamp": "2026-01-06T14:30:00Z",
+      "open": 102.6,
+      "high": 104.4,
+      "low": 102,
+      "close": 103.8,
+      "volume": 118000
+    },
+    {
+      "timestamp": "2026-01-07T14:30:00Z",
+      "open": 103.8,
+      "high": 104,
+      "low": 101.7,
+      "close": 102.3,
+      "volume": 109000
+    },
+    {
+      "timestamp": "2026-01-08T14:30:00Z",
+      "open": 102.3,
+      "high": 105.1,
+      "low": 102,
+      "close": 104.7,
+      "volume": 130000
+    },
+    {
+      "timestamp": "2026-01-09T14:30:00Z",
+      "open": 104.7,
+      "high": 106,
+      "low": 103.8,
+      "close": 105.4,
+      "volume": 125000
+    },
+    {
+      "timestamp": "2026-01-10T14:30:00Z",
+      "open": 105.4,
+      "high": 106.2,
+      "low": 104.2,
+      "close": 104.9,
+      "volume": 121000
+    },
+    {
+      "timestamp": "2026-01-12T14:30:00Z",
+      "open": 104.9,
+      "high": 107,
+      "low": 104.6,
+      "close": 106.4,
+      "volume": 139000
+    }
+  ],
+  "targets": [
+    {
+      "timestamp": "2026-01-02T14:30:00Z",
+      "target_units": 10
+    },
+    {
+      "timestamp": "2026-01-08T14:30:00Z",
+      "target_units": 0
+    }
+  ],
+  "backtest": {
+    "initial_capital": 100000,
+    "commission_bps": 1,
+    "slippage_bps": 2,
+    "periods_per_year": 252
+  },
+  "monte_carlo": {
+    "simulations": 100,
+    "seed": 42,
+    "confidence_level": 0.95,
+    "method": "moving_block",
+    "block_size": 3
+  },
+  "adversarial_scenarios": [
+    {
+      "name": "higher-friction",
+      "volatility_scale": 1,
+      "price_shock_bps": 0,
+      "shock_start_index": 1,
+      "extra_commission_bps": 5,
+      "extra_slippage_bps": 10,
+      "execution_delay_bars": 0
+    }
+  ],
+  "walk_forward": {
+    "enabled": true
+  }
+}

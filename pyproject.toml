@@ -18,6 +18,9 @@ dependencies = [
   "scikit-learn>=1.7,<2",
 ]
 
+[project.scripts]
+c-math-ai = "apps.platform.cli:main"
+
 [project.optional-dependencies]
 deep-learning = [
   "torch>=2.4,<3",
@@ -34,6 +37,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 include = [
+  "apps*",
   "core*",
   "data*",
   "quant*",
@@ -57,6 +61,9 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "backtest", "config", "core", "data", "execution", "ml", "portfolio", "quant", "risk", "signals"]
 
 [tool.mypy]
 python_version = "3.11"

@@ -1,0 +1,62 @@
+name: F43 Platform 1.0 Validation
+
+on:
+  pull_request:
+    paths:
+      - "apps/**"
+      - "tests/unit/test_platform_*.py"
+      - "tests/integration/test_platform_pipeline.py"
+      - "pyproject.toml"
+      - "docs/PLATFORM_F43.md"
+      - ".github/workflows/f43-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/**"
+      - "tests/unit/test_platform_*.py"
+      - "tests/integration/test_platform_pipeline.py"
+      - "pyproject.toml"
+      - "docs/PLATFORM_F43.md"
+      - ".github/workflows/f43-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  platform:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: Run F43 platform and integration tests
+        run: |
+          python -m pytest \
+            tests/unit/test_platform_store.py \
+            tests/unit/test_platform_api.py \
+            tests/unit/test_decision_engine.py \
+            tests/unit/test_position_sizing.py \
+            tests/unit/test_risk_governor.py \
+            tests/unit/test_backtest_engine.py \
+            tests/unit/test_robustness.py \
+            tests/unit/test_paper_trading.py \
+            tests/integration/test_platform_pipeline.py -q
+      - name: Lint F43 platform
+        run: |
+          python -m ruff check apps tests/unit/test_platform_store.py tests/unit/test_platform_api.py tests/integration/test_platform_pipeline.py
+      - name: Check F43 formatting
+        run: |
+          python -m ruff format --check apps tests/unit/test_platform_store.py tests/unit/test_platform_api.py tests/integration/test_platform_pipeline.py
+      - name: Type-check F43 platform
+        run: python -m mypy apps/platform

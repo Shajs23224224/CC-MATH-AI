@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F42 integradas en `main`. F39 mediante [PR #28](https://github.com/Shajs23224224/CC-MATH-AI/pull/28), F40 mediante [PR #29](https://github.com/Shajs23224224/CC-MATH-AI/pull/29), F41 mediante [PR #30](https://github.com/Shajs23224224/CC-MATH-AI/pull/30) y F42 mediante [PR #31](https://github.com/Shajs23224224/CC-MATH-AI/pull/31), squash commit `ee03933`. F42 validó su workflow, CI general, Security, F38 y las regresiones activadas completadas en el HEAD final.
+**Estado:** F21–F42 integradas en `main`. F39 mediante [PR #28](https://github.com/Shajs23224224/CC-MATH-AI/pull/28), F40 mediante [PR #29](https://github.com/Shajs23224224/CC-MATH-AI/pull/29), F41 mediante [PR #30](https://github.com/Shajs23224224/CC-MATH-AI/pull/30) y F42 mediante [PR #31](https://github.com/Shajs23224224/CC-MATH-AI/pull/31), squash commit `ee03933`. F42 validó su workflow, CI general y Security en el HEAD final. F43 está en implementación inicial en `feature/f43-platform-1-0`; su workflow, CI, Security y revisión aún están pendientes.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -215,12 +215,12 @@
 **Validación de cierre:** 14 tests en Python 3.11 y 14 en Python 3.12; Ruff lint/formato y mypy aprobados en ambos entornos; CI general y Security aprobados; workflow F38 y las demás regresiones activadas completadas pasaron en el HEAD final. F31 Deep Learning seguía instalando dependencias opcionales al momento de fusionar y no modifica la ruta de ejecución.
 
 ## F43 — C-MATH-AI Platform 1.0
-**Objetivo:** integración completa y operable.  
-**Cadena:** DATA → QUALITY → FEATURES → 300+ ALGORITHMS → REGIMES → ML → ENSEMBLE → DECISION → PORTFOLIO → RISK → BACKTEST/OOS → PAPER → EXECUTION ADAPTER.  
-**Cambios:** API/CLI/jobs, dashboard si procede, stores, registry, observabilidad, auditoría y deployment.  
-**Release:** contratos estables, CI/security, reproducibilidad, documentación, smoke/integration tests, rollback y manejo de fallos.  
-**No implica:** trading real automático, garantías de rentabilidad ni bypass del Risk Governor.  
-**Cierre:** cadena end-to-end reproducible desde datos hasta paper trading.
+**Estado:** release candidate inicial en `feature/f43-platform-1-0`; pendiente de workflow F43, CI general, Security, regresiones y revisión final.
+**Objetivo:** composición operativa y reproducible de los módulos implementados, desde la validación de datos hasta paper trading bajo el Risk Governor.
+**Implementado en la primera vertical:** contratos de petición con límites de recursos; data quality fail-closed; features point-in-time de retornos y volatilidad; inventario de algoritmos por lifecycle; F39 backtest; F40 baseline OOS de persistencia del último target (etiquetado explícitamente como baseline, no como OOS de una estrategia desconocida); F41 Monte Carlo/adversarial; evaluación F38 opcional; órdenes F42 paper sólo con decisión de riesgo y quotes; almacenamiento SQLite de jobs, idempotencia, estados y auditoría SHA-256; WSGI API, CLI y tests de integración.
+**Límites de la primera entrega:** los targets de estrategia son entrada explícita y no se generan automáticamente; el registry no ejecuta sus entradas ni demuestra que todas las entradas experimentales estén implementadas; los jobs son síncronos; el API WSGI no incorpora autenticación; el ledger paper se reinicia por job y se mantiene en memoria; no hay adapter de broker, live trading, dashboard ni deployment productivo.
+**Seguridad:** no se almacenan credenciales; ningún LLM puede emitir órdenes; un request de órdenes requiere evidencia F38 y se somete al Risk Governor; no se declara rentabilidad.
+**Cierre requerido:** workflow F43 Python 3.11/3.12, tests unitarios/de integración, Ruff, mypy, CI general, Security y regresiones pertinentes aprobados en el HEAD final; revisión del API/retención de datos y merge a `main`.
 
 ## Dependencias
 ```
@@ -273,8 +273,8 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F40: integrada en `main` mediante PR #29 (`bd74f41`); workflow F40, CI general Python 3.11/3.12, Security y regresiones upstream activadas aprobados.
 - F41: integrada en `main` mediante PR #30 (`b810dee`); workflow F41, 14 tests por Python 3.11/3.12, Ruff, formato, mypy, CI general, Security y 18 workflows de regresión upstream aprobados en el HEAD final de la PR.
 - F42: integrada en `main` mediante PR #31 (`ee03933`); ver [diseño técnico](PAPER_TRADING_F42.md).
-- F43: siguiente fase para integrar la plataforma end-to-end hasta paper trading.
-- **Siguiente fase: F43 — C-MATH-AI Platform 1.0.**
+- F43: release candidate en `feature/f43-platform-1-0`; la validación no se presume hasta comprobar GitHub Actions en el HEAD final.
+- **Fase en curso: F43 — C-MATH-AI Platform 1.0.**
 
 
 ## F39 — Backtesting Engine
