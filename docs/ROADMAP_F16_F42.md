@@ -269,7 +269,7 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F38: integrada en `main` mediante [PR #27](https://github.com/Shajs23224224/CC-MATH-AI/pull/27), merge commit `f315c6e`; workflow F38, CI general, Security y regresiones upstream aprobados.
 - F39: integrada en `main` mediante PR #28 (`ea0158a`); workflow F39, CI general Python 3.11/3.12, Security y regresiones upstream aprobados.
 - F40: integrada en `main` mediante PR #29 (`bd74f41`); workflow F40, CI general Python 3.11/3.12, Security y regresiones upstream activadas aprobados.
-- F41: integrada en `main` mediante PR #30 (`b810dee`); workflow F41, 14 tests por Python 3.11/3.12, Ruff, formato, mypy, CI general, Security y 20 workflows de regresión upstream aprobados en el HEAD final de la PR.
+- F41: integrada en `main` mediante PR #30 (`b810dee`); workflow F41, 14 tests por Python 3.11/3.12, Ruff, formato, mypy, CI general, Security y 18 workflows de regresión upstream aprobados en el HEAD final de la PR.
 - F42–F43: siguientes fases del roadmap; F42 depende de las bases de backtesting y robustez ya integradas.
 - **Siguiente fase: F42 — Paper Trading + Execution.**
 
