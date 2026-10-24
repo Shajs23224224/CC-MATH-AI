@@ -298,7 +298,12 @@ def _garch_fit(
                 values[index] = omega + alpha * errors[index - 1] ** 2 + beta * values[index - 1]
             return -_normal_log_likelihood(errors, values)
     elif kind == "egarch":
-        initial = (math.log(max(0.05 * variance, _EPSILON)), 0.10, 0.0, 0.90)
+        initial = (
+            (1.0 - 0.90) * math.log(max(variance, _EPSILON)),
+            0.10,
+            0.0,
+            0.90,
+        )
         bounds = ((-10.0, 10.0), (-5.0, 5.0), (-5.0, 5.0), (-0.999, 0.999))
 
         def objective(params: np.ndarray) -> float:
