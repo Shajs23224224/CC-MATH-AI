@@ -10,6 +10,13 @@ from typing import Any
 
 import pandas as pd
 
+from apps.platform.contracts import (
+    PlatformJobRecord,
+    PlatformRunRequest,
+    PlatformStageResult,
+)
+from apps.platform.store import JobConflictError, SQLiteJobStore, canonical_json
+
 from backtest.engine import BacktestConfig, Bar, run_backtest
 from backtest.robustness import ScenarioSpec, run_robustness
 from backtest.walk_forward import run_walk_forward
@@ -22,13 +29,6 @@ from execution.paper import PaperTradingEngine
 from ml.features.engineering import FeatureEngineer
 from quant.registry import AlgorithmLifecycle, builtin_algorithms, discover_algorithms
 from risk.governor import evaluate_risk_governor
-
-from apps.platform.contracts import (
-    PlatformJobRecord,
-    PlatformRunRequest,
-    PlatformStageResult,
-)
-from apps.platform.store import JobConflictError, SQLiteJobStore, canonical_json
 
 _LOGGER = logging.getLogger("c_math_ai.platform")
 
@@ -131,7 +131,9 @@ class PlatformService:
             try:
                 selected_lifecycle = AlgorithmLifecycle(lifecycle)
             except ValueError as exc:
-                raise ValueError("lifecycle must be experimental, implemented, validated or deprecated") from exc
+                raise ValueError(
+                    "lifecycle must be experimental, implemented, validated or deprecated"
+                ) from exc
         entries = discover_algorithms(
             category=category,
             lifecycle=selected_lifecycle,
@@ -178,7 +180,11 @@ class PlatformService:
             self.store.transition(request.job_id, "SUCCEEDED", result=result)
             return self.store.get_job(request.job_id)  # type: ignore[return-value]
         except Exception as exc:
-            code = exc.code if isinstance(exc, PlatformExecutionError) else type(exc).__name__.upper()
+            code = (
+                exc.code
+                if isinstance(exc, PlatformExecutionError)
+                else type(exc).__name__.upper()
+            )
             message = str(exc) or type(exc).__name__
             _LOGGER.exception("platform job %s failed at runtime", request.job_id)
             self.store.record_event(
@@ -345,7 +351,11 @@ class PlatformService:
         if not request.walk_forward.enabled:
             walk_forward_result = {"state": "SKIPPED", "reason": "disabled by request"}
             stages.append(
-                PlatformStageResult(stage="walk_forward", state="SKIPPED", summary=walk_forward_result)
+                PlatformStageResult(
+                    stage="walk_forward",
+                    state="SKIPPED",
+                    summary=walk_forward_result,
+                )
             )
         elif len(bars) < 4:
             walk_forward_result = {
@@ -424,7 +434,9 @@ class PlatformService:
                     "strategy_version": wf.strategy_version,
                 }))
 
-        scenarios = tuple(ScenarioSpec(**item.model_dump()) for item in request.adversarial_scenarios)
+        scenarios = tuple(
+            ScenarioSpec(**item.model_dump()) for item in request.adversarial_scenarios
+        )
         robustness = run_robustness(
             bars,
             targets,
@@ -484,11 +496,25 @@ class PlatformService:
                 initial_cash,
                 request.paper_policy,
             )
-            # Replay all quote and order events in timestamp order; at a tie, submit before matching.
+            # Replay in timestamp order; submit orders before matching quotes at a tie.
             timeline: list[tuple[datetime, int, str, Any]] = []
-            timeline.extend((order.submitted_at, 0, "order", order) for order in request.paper_orders)
-            timeline.extend((quote.timestamp, 1, "quote", quote) for quote in request.paper_quotes)
-            timeline.sort(key=lambda event: (event[0], event[1], getattr(event[3], "idempotency_key", getattr(event[3], "asset_symbol", ""))))
+            timeline.extend(
+                (order.submitted_at, 0, "order", order) for order in request.paper_orders
+            )
+            timeline.extend(
+                (quote.timestamp, 1, "quote", quote) for quote in request.paper_quotes
+            )
+            timeline.sort(
+                key=lambda event: (
+                    event[0],
+                    event[1],
+                    getattr(
+                        event[3],
+                        "idempotency_key",
+                        getattr(event[3], "asset_symbol", ""),
+                    ),
+                )
+            )
             for event_time, _, event_type, event_payload in timeline:
                 if event_type == "order":
                     paper.submit_order(event_payload, risk_result)
@@ -538,7 +564,13 @@ class PlatformService:
                 },
                 "features": feature_report.model_dump(mode="json"),
                 "feature_last_row": {
-                    key: (None if pd.isna(value) else value.isoformat() if hasattr(value, "isoformat") else value)
+                    key: (
+                        None
+                        if pd.isna(value)
+                        else value.isoformat()
+                        if hasattr(value, "isoformat")
+                        else value
+                    )
                     for key, value in featured.tail(1).iloc[0].to_dict().items()
                 },
             },
