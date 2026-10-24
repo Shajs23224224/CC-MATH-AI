@@ -1,6 +1,6 @@
 # C-MATH-AI — Roadmap técnico F16–F43
 
-**Estado:** F21–F38 integradas en main; F39/PR #28, F40/PR #29 y F41/feature/f41-monte-carlo-adversarial son cambios apilados pendientes de su orden de validación e integración.
+**Estado:** F21–F41 integradas en `main`. F39 mediante [PR #28](https://github.com/Shajs23224224/CC-MATH-AI/pull/28) (`ea0158a`), F40 mediante [PR #29](https://github.com/Shajs23224224/CC-MATH-AI/pull/29) (`bd74f41`) y F41 mediante [PR #30](https://github.com/Shajs23224224/CC-MATH-AI/pull/30) (`b810dee`). CI, Security y los workflows específicos/regresiones activados pasaron en los HEAD validados. Siguiente fase: F42.
 **Base:** SYSTEM_SPEC.md, docs/ARCHITECTURE.md y contratos implementados hasta F18.
 
 ## Reglas globales
@@ -186,26 +186,24 @@
 **Validación:** workflow F38, CI general, Security y regresiones upstream pasaron en Python 3.11/3.12.
 
 ## F39 — Backtesting
-**Objetivo:** simulación histórica end-to-end.  
-**Flujo:** Signal → Order → Execution → Slippage → Commission → Portfolio → PnL.  
-**Cambios:** event loop, lifecycle de órdenes, fills, costes, accounting, métricas y audit trail.  
-**Reglas:** corporate actions, información disponible, delistings cuando existan, costes/slippage/liquidez realistas.  
-**Cierre:** backtest reproducible y contablemente consistente.
+**Estado:** integrada en `main` mediante [PR #28](https://github.com/Shajs23224224/CC-MATH-AI/pull/28), merge commit `ea0158a`. Workflow F39, CI general Python 3.11/3.12, Security y regresiones upstream aprobados.
+**Objetivo:** simulación determinista de señales con ejecución en la apertura de la siguiente barra, contabilidad de posiciones, costes y métricas.
+**Implementado:** barras OHLC validadas, timestamps estrictamente crecientes, posiciones enteras con signo, fills next-open, comisiones, slippage adverso, curva de equity, retorno, drawdown, Sharpe/Sortino, turnover, tests y documentación.
+**Límite:** simulador de investigación, sin órdenes a broker, fills parciales, corporate actions, financing o integración automática F35–F38.
 
 ## F40 — Walk-Forward / OOS
-**Objetivo:** validación temporal estricta.  
-**Modos:** rolling, expanding, anchored.  
-**Métricas:** retorno, volatilidad, drawdown, Sharpe/Sortino, turnover, costes y estabilidad por ventana/régimen.  
-**Reglas:** ningún fit con test; parámetros congelados durante test; dispersión visible.  
-**Cierre:** framework OOS reproducible.
+**Estado:** integrada en `main` mediante [PR #29](https://github.com/Shajs23224224/CC-MATH-AI/pull/29), merge commit `bd74f41`. Workflow F40, CI general Python 3.11/3.12, Security y regresiones upstream activadas aprobados.
+**Objetivo:** validación temporal estricta mediante ventanas OOS reproducibles.
+**Modos:** rolling, expanding, anchored; gap opcional; ventanas de test no solapadas.
+**Implementado:** fit por fold limitado al train, vista causal de sólo lectura para predicción, backtests F39 por ventana, volatilidad, dispersión, drawdown, Sharpe/Sortino, turnover, costes, métricas opcionales por régimen y fingerprint SHA-256.
+**Límite:** callbacks siguen siendo código confiable y pueden filtrar información desde globals o fuentes externas; cada fold reinicia capital y posición.
 
 ## F41 — Monte Carlo + Adversarial Validation
-**Estado:** implementación inicial en feature/f41-monte-carlo-adversarial, apilada sobre F40/PR #29 y F39/PR #28. Workflow F41 aprobado en Python 3.11/3.12 (14 tests por versión, Ruff, formato y mypy); workflows F39 y regresiones F22–F28 aprobados en HEAD 3fed645. CI general, Security y revisión final pendientes hasta integrar las dependencias y retargetear la PR a main.
-**Objetivo:** cuantificar sensibilidad y fragilidad de resultados de backtest, sin afirmar capacidad predictiva futura.
-**Implementado:** contratos versionables; bootstrap de retornos de equity mediante IID o moving-block con seed local, número de simulaciones, confianza y block size explícitos; distribución de retorno terminal, pérdida, expected shortfall y drawdown; escenarios de volatilidad, shock persistente de precio, comisión/slippage incrementales y latencia de señales que re-ejecutan F39; métricas de degradación, score heurístico de fragilidad y fingerprints SHA-256; estrés de matrices de correlación desde paneles multiactivo alineados.
-**Reglas:** equity estrictamente positiva para bootstrap; series de correlación finitas, alineadas y no constantes; escenarios con nombres únicos y supuestos explícitos; ejecuciones retrasadas fuera del periodo disponible se descartan, nunca se inventan fills. Seeds, supuestos, entradas y resultados se incluyen en la huella.
-**Límite importante:** el motor F39 admite un solo flujo OHLC. El estrés de correlación devuelve matrices diagnósticas y no atribuye PnL multiactivo; para eso se requiere un contrato posterior de contabilidad de cartera multiactivo. El bootstrap re-muestrea resultados observados y no elimina sesgo de selección ni look-ahead.
-**Validación pendiente:** workflow F41 en Python 3.11/3.12, tests específicos, Ruff, mypy, CI general, Security y regresiones upstream sobre la rama final de la cadena. Los tests sintéticos validan ingeniería, no rentabilidad.
+**Estado:** integrada en `main` mediante [PR #30](https://github.com/Shajs23224224/CC-MATH-AI/pull/30), merge commit `b810dee`. Workflow F41, CI general, Security y los workflows de regresión activados aprobaron en el HEAD final de la PR.
+**Objetivo:** cuantificar sensibilidad y fragilidad de los resultados de backtest, no predecir rentabilidad futura.
+**Implementado:** contratos versionables; bootstrap IID/moving-block con seed, simulaciones, confianza y block size; cuantiles de retorno, frecuencia de pérdida, expected shortfall y drawdown; escenarios de volatilidad, shock persistente, costes y latencia re-ejecutados en F39; estrés matricial de correlación; degradación, score heurístico y huellas SHA-256.
+**Validación F41:** 14 tests en cada versión de Python 3.11 y 3.12; Ruff, formato y mypy aprobados. CI general, Security y 20 workflows de regresión upstream terminaron en éxito en el HEAD final.
+**Límite importante:** F39 es de un solo activo; el estrés de correlación es un diagnóstico matricial, no PnL multiactivo. El bootstrap remuestrea retornos observados y no elimina sesgo de selección ni look-ahead. Los tests sintéticos validan ingeniería, no rentabilidad.
 
 
 ## F42 — Paper Trading + Execution
@@ -269,25 +267,25 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F36: integrada en main mediante PR #25.
 - F37: integrada en `main` mediante [PR #26](https://github.com/Shajs23224224/CC-MATH-AI/pull/26), merge commit `f65ee22`; workflow F37, CI general, Security y regresiones upstream aprobados.
 - F38: integrada en `main` mediante [PR #27](https://github.com/Shajs23224224/CC-MATH-AI/pull/27), merge commit `f315c6e`; workflow F38, CI general, Security y regresiones upstream aprobados.
-- F39: implementada en feature/f39-backtesting-engine; workflow F39, CI general en Python 3.11/3.12, Security y regresiones upstream aprobados en el HEAD validado; PR #28 sigue abierta.
-- F40: implementación en feature/f40-walk-forward-oos, apilada sobre la rama F39; split modes, runner causal, métricas OOS, documentación y workflow específico añadidos; requiere CI final antes de cierre.
-- F41: implementación inicial de Monte Carlo, perturbaciones adversariales, estrés de correlación, tests y workflow en feature/f41-monte-carlo-adversarial; workflow específico y regresiones F39/F22–F28 aprobados en HEAD 3fed645; CI general, Security y revisión final pendientes por la dependencia de F39/F40.
-- F42–F43: alcance documentado; dependen de completar e integrar F39–F41.
-- **Siguiente fase: F41 — Monte Carlo + Adversarial Validation.**
+- F39: integrada en `main` mediante PR #28 (`ea0158a`); workflow F39, CI general Python 3.11/3.12, Security y regresiones upstream aprobados.
+- F40: integrada en `main` mediante PR #29 (`bd74f41`); workflow F40, CI general Python 3.11/3.12, Security y regresiones upstream activadas aprobados.
+- F41: integrada en `main` mediante PR #30 (`b810dee`); workflow F41, 14 tests por Python 3.11/3.12, Ruff, formato, mypy, CI general, Security y 20 workflows de regresión upstream aprobados en el HEAD final de la PR.
+- F42–F43: siguientes fases del roadmap; F42 depende de las bases de backtesting y robustez ya integradas.
+- **Siguiente fase: F42 — Paper Trading + Execution.**
 
 
 ## F39 — Backtesting Engine
-**Estado:** Implementación inicial en `feature/f39-backtesting-engine`; pendiente de CI y revisión.
+**Estado:** integrada en `main` mediante PR #28 (`ea0158a`); CI, Security y regresiones aprobados.
 **Objetivo:** simulación determinista de señales con ejecución en la apertura de la siguiente barra, contabilidad de posiciones, comisiones, slippage y métricas de cartera.
 **Alcance inicial:** OHLC validado, timestamps estrictamente crecientes, posiciones enteras con signo, fills market-style next-open, curva de equity, retorno total, drawdown máximo, Sharpe, Sortino, turnover y pruebas temporales/contables.
 **Seguridad temporal:** las señales del cierre no se ejecutan hasta la siguiente apertura; la señal de la última barra queda sin ejecutar; no se envían órdenes reales.
 **Limitaciones:** sin fills parciales, órdenes limit/stop, impacto de mercado, financiación, corporate actions ni integración automática F35–F38. Los tests sintéticos validan ingeniería, no rentabilidad de estrategias.
-**Validación:** workflow F39 y CI general en Python 3.11/3.12, Security y regresiones upstream aprobados en el HEAD `73c4e68`; PR #28 abierta y sin fusionar.
+**Validación:** workflow F39 y CI general en Python 3.11/3.12, Security y regresiones upstream aprobados antes de la fusión.
 
 ## F40 — Walk-Forward / OOS
-**Estado:** implementación en `feature/f40-walk-forward-oos`, apilada sobre F39; pendiente de CI y revisión.
+**Estado:** integrada en `main` mediante PR #29 (`bd74f41`); workflow F40, CI general en Python 3.11/3.12, Security y regresiones upstream aprobados.
 **Objetivo:** validación temporal estricta mediante ventanas OOS reproducibles.
 **Modos:** rolling (train de longitud fija), expanding (prefijo creciente desde el primer registro) y anchored (train creciente desde un índice de anclaje explícito).
 **Implementado:** contratos de configuración/splits, gap de purga opcional, ventanas de test no solapadas, ajuste por fold sólo sobre filas de entrenamiento, predicción sobre una vista temporal causal de sólo lectura, evaluación de cada ventana mediante F39, volatilidad anualizada, retorno/dispersión entre ventanas, drawdown, Sharpe/Sortino, turnover, costes, métricas por régimen opcionales, fingerprint SHA-256, tests y documentación.
 **Reglas y límites:** el predictor ve como máximo el prefijo hasta la barra actual; las señales de cierre se ejecutan en la siguiente apertura; cada ventana comienza con capital en efectivo y posición plana; la señal final no se ejecuta dentro de la ventana. Las callbacks aún son código confiable: no se puede probar automáticamente que no usen estado global, labels futuros o datos externos con leakage. Las etiquetas de régimen las suministra la aplicación.
-**Cierre requerido:** workflow F40 en Python 3.11/3.12, Ruff, mypy, CI general, Security y regresiones upstream aprobados antes de fusionar.
+**Validación:** workflow F40 en Python 3.11/3.12, Ruff, mypy, CI general, Security y regresiones upstream aprobados en el HEAD final antes de fusionar.
