@@ -532,7 +532,10 @@ class PlatformService:
                 "as_of": request.as_of.isoformat(),
                 "bar_count": len(bars),
                 "market_fingerprint": _fingerprint(frame.to_dict(orient="records")),
-                "quality": quality.model_dump(mode="json"),
+                "quality": {
+                    **quality.model_dump(mode="json"),
+                    "is_usable": quality.is_usable,
+                },
                 "features": feature_report.model_dump(mode="json"),
                 "feature_last_row": {
                     key: (None if pd.isna(value) else value.isoformat() if hasattr(value, "isoformat") else value)
