@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from hashlib import sha256
-import json
 from math import isfinite, sqrt
 from statistics import mean, median, pstdev
-from typing import Generic, TypeVar, overload
+from typing import TypeVar, overload
 
 from backtest.engine import BacktestConfig, BacktestResult, Bar, run_backtest
 from backtest.walk_forward.splits import TemporalSplit, WalkForwardConfig, make_splits
@@ -111,13 +111,13 @@ class WalkForwardResult:
 
 def _period_returns(result: BacktestResult) -> tuple[float, ...]:
     returns: list[float] = []
-    previous = result.initial_capital
-    for point in result.equity_curve:
-        if previous > 0:
-            period_return = point.equity / previous - 1.0
+    for previous, current in zip(
+        result.equity_curve, result.equity_curve[1:], strict=False
+    ):
+        if previous.equity > 0:
+            period_return = current.equity / previous.equity - 1.0
             if isfinite(period_return):
                 returns.append(period_return)
-        previous = point.equity
     return tuple(returns)
 
 
@@ -133,13 +133,16 @@ def _regime_metrics(
     timestamps: tuple[datetime, ...],
 ) -> tuple[RegimeMetrics, ...]:
     values_by_label: dict[str, list[float]] = defaultdict(list)
-    previous = result.initial_capital
-    for point, timestamp in zip(result.equity_curve, timestamps, strict=True):
-        if previous > 0:
-            period_return = point.equity / previous - 1.0
+    for previous, point, timestamp in zip(
+        result.equity_curve[:-1],
+        result.equity_curve[1:],
+        timestamps[1:],
+        strict=True,
+    ):
+        if previous.equity > 0:
+            period_return = point.equity / previous.equity - 1.0
             if isfinite(period_return):
                 values_by_label[labels[timestamp]].append(period_return)
-        previous = point.equity
 
     output: list[RegimeMetrics] = []
     for label in sorted(values_by_label):
@@ -256,18 +259,17 @@ def run_walk_forward(
         current_regime_metrics = (
             _regime_metrics(backtest, labels, test_timestamps) if labels else ()
         )
-        for item in current_regime_metrics:
-            values: list[float] = []
-            previous = backtest.initial_capital
-            for point, timestamp in zip(backtest.equity_curve, test_timestamps, strict=True):
-                if timestamp == timestamps[split.test_start]:
-                    values.clear()
-                if previous > 0 and labels[timestamp] == item.label:
-                    period_return = point.equity / previous - 1.0
+        if labels:
+            for previous, point, timestamp in zip(
+                backtest.equity_curve[:-1],
+                backtest.equity_curve[1:],
+                test_timestamps[1:],
+                strict=True,
+            ):
+                if previous.equity > 0:
+                    period_return = point.equity / previous.equity - 1.0
                     if isfinite(period_return):
-                        values.append(period_return)
-                previous = point.equity
-            all_regime_returns[item.label].extend(values)
+                        all_regime_returns[labels[timestamp]].append(period_return)
 
         result = WindowResult(
             number=number,
@@ -351,7 +353,9 @@ def run_walk_forward(
             ]
             for bar in series
         ],
-        "regime_labels": sorted((timestamp.isoformat(), label) for timestamp, label in labels.items()),
+        "regime_labels": sorted(
+            (timestamp.isoformat(), label) for timestamp, label in labels.items()
+        ),
         "windows": window_payload,
         "summary": asdict(summary),
     }
