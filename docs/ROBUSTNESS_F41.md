@@ -68,3 +68,8 @@ Returns for at least two assets must be aligned in length, finite and non-consta
     print(report.monte_carlo.probability_of_loss)
     print(report.monte_carlo.expected_shortfall)
     print(report.fragility_score, report.fingerprint)
+
+
+## Integration and release gate
+
+F41 is integrated only after the PR targets `main` and the dedicated F41 workflow, general CI, Security and relevant upstream regression workflows all pass on the final pull-request head. The integration sequence is F39, then F40, then F41; each dependent PR must be validated after retargeting. Monte Carlo and stress outputs are research diagnostics only and do not authorize execution or replace F38 risk approval.
