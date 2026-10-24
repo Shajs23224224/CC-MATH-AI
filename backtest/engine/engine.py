@@ -5,11 +5,11 @@ next bar's open. This module is a research simulator only; it never sends orders
 """
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from math import isfinite, sqrt
 from statistics import mean, pstdev
-from typing import Iterable, Mapping
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,10 +117,15 @@ def run_backtest(
     if len(series) < 2:
         raise ValueError("at least two bars are required")
     timestamps = [bar.timestamp for bar in series]
-    if any(left >= right for left, right in zip(timestamps, timestamps[1:])):
+    if any(
+        left >= right
+        for left, right in zip(timestamps, timestamps[1:], strict=False)
+    ):
         raise ValueError("bar timestamps must be strictly increasing")
-    if any(not isinstance(value, int) or isinstance(value, bool)
-           for value in target_units_by_timestamp.values()):
+    if any(
+        not isinstance(value, int) or isinstance(value, bool)
+        for value in target_units_by_timestamp.values()
+    ):
         raise ValueError("target positions must be integer units")
     known = set(timestamps)
     if any(timestamp not in known for timestamp in target_units_by_timestamp):
@@ -140,7 +145,9 @@ def run_backtest(
             delta = pending_target - units
             reference = bar.open
             direction = 1.0 if delta > 0 else -1.0
-            fill_price = reference * (1.0 + direction * settings.slippage_bps / 10_000)
+            fill_price = reference * (
+                1.0 + direction * settings.slippage_bps / 10_000
+            )
             notional = abs(delta * fill_price)
             commission = notional * settings.commission_bps / 10_000
             slip_cost = abs(delta) * abs(fill_price - reference)
@@ -149,8 +156,17 @@ def run_backtest(
             commissions += commission
             slippage_costs += slip_cost
             traded_notional += notional
-            fills.append(Fill(bar.timestamp, delta, units, reference, fill_price,
-                              commission, slip_cost))
+            fills.append(
+                Fill(
+                    bar.timestamp,
+                    delta,
+                    units,
+                    reference,
+                    fill_price,
+                    commission,
+                    slip_cost,
+                )
+            )
         equity = cash + units * bar.close
         if not isfinite(equity):
             raise ArithmeticError("non-finite equity encountered")
@@ -160,13 +176,15 @@ def run_backtest(
     values = [point.equity for point in curve]
     returns = [
         current / previous - 1.0
-        for previous, current in zip(values, values[1:])
+        for previous, current in zip(values, values[1:], strict=False)
         if previous > 0
     ]
     avg_return = mean(returns) if returns else 0.0
     volatility = pstdev(returns) if len(returns) > 1 else 0.0
     downside = [min(value, 0.0) for value in returns]
-    downside_deviation = sqrt(mean(value * value for value in downside)) if downside else 0.0
+    downside_deviation = (
+        sqrt(mean(value * value for value in downside)) if downside else 0.0
+    )
     sharpe = _ratio(avg_return, volatility) * sqrt(settings.periods_per_year)
     sortino = _ratio(avg_return, downside_deviation) * sqrt(settings.periods_per_year)
     final_equity = values[-1]
