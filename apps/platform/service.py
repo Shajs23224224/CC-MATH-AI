@@ -21,13 +21,25 @@ from backtest.robustness import ScenarioSpec, run_robustness
 from backtest.walk_forward import run_walk_forward
 from backtest.walk_forward.splits import WalkForwardConfig
 from core.contracts import FeatureDefinition
+from portfolio.optimization import (
+    PortfolioAssetInput,
+    PortfolioOptimizationRequest,
+    optimize_portfolio,
+)
+from portfolio.sizing import PositionSizingRequest, SizingAssetInput, size_positions
 from core.contracts.enums import DataQualityStatus
 from core.contracts.feature_engineering import FeatureEngineeringConfig, FeatureTransformSpec
 from data.quality import DataQualityEngine
 from execution.paper import PaperTradingEngine
 from ml.features.engineering import FeatureEngineer
 from quant.registry import AlgorithmLifecycle, builtin_algorithms, discover_algorithms
-from risk.governor import evaluate_risk_governor
+from risk.governor import (
+    GovernorAssetContext,
+    RiskGovernorRequest,
+    RiskGovernorResult,
+    evaluate_risk_governor,
+)
+from signals.decision import make_decision
 
 _LOGGER = logging.getLogger("c_math_ai.platform")
 
@@ -211,6 +223,193 @@ class PlatformService:
     def _stage(self, job_id: str, name: str, summary: dict[str, Any]) -> PlatformStageResult:
         self.store.record_event(job_id, f"STAGE_{name.upper()}_SUCCEEDED", summary)
         return PlatformStageResult(stage=name, state="SUCCEEDED", summary=summary)
+
+
+
+    def _run_portfolio_pipeline(
+        self,
+        request: PlatformRunRequest,
+        stages: list[PlatformStageResult],
+    ) -> tuple[dict[str, Any], RiskGovernorResult]:
+        """Execute the actual F35, F36, F37 and F38 engines in dependency order."""
+        pipeline = request.portfolio_pipeline
+        if pipeline is None:
+            raise ValueError("portfolio_pipeline is required")
+
+        decisions = tuple(
+            make_decision(item, pipeline.decision_config) for item in pipeline.decisions
+        )
+        for decision, source in zip(decisions, pipeline.decisions, strict=True):
+            if decision.record.asset_symbol != source.ensemble.asset_symbol.strip().upper():
+                raise PlatformExecutionError(
+                    "F35_SYMBOL_MISMATCH",
+                    "F35 emitted a decision for a different asset than the source ensemble",
+                )
+        decision_summary = {
+            "asset_count": len(decisions),
+            "decisions": [
+                {
+                    "asset_symbol": item.record.asset_symbol,
+                    "signal": item.record.signal.value,
+                    "status": item.status,
+                    "abstained": item.abstained,
+                    "expected_return": item.record.expected_return,
+                    "expected_risk": item.record.expected_risk,
+                    "decision_fingerprint": item.decision_fingerprint,
+                }
+                for item in decisions
+            ],
+            "config_id": pipeline.decision_config.config_id,
+            "config_version": pipeline.decision_config.version,
+            "probability_calibration_status": pipeline.decision_config.probability_calibration_status,
+        }
+        stages.append(self._stage(request.job_id, "decision_f35", decision_summary))
+
+        metadata = {item.asset_symbol: item for item in pipeline.assets}
+        f36_assets = tuple(
+            PortfolioAssetInput(
+                decision=decision,
+                current_weight=metadata[decision.record.asset_symbol].current_weight,
+                minimum_weight=metadata[decision.record.asset_symbol].minimum_weight,
+                maximum_weight=metadata[decision.record.asset_symbol].maximum_weight,
+                sector=metadata[decision.record.asset_symbol].sector,
+                eligible=metadata[decision.record.asset_symbol].eligible,
+            )
+            for decision in decisions
+        )
+        f36_request = PortfolioOptimizationRequest(
+            assets=f36_assets,
+            covariance=pipeline.covariance,
+            as_of=pipeline.sizing_as_of,
+            horizon=pipeline.horizon,
+            covariance_as_of=pipeline.covariance_as_of,
+            covariance_horizon=pipeline.horizon,
+            data_snapshot_id=request.dataset_id,
+            covariance_data_snapshot_id=pipeline.covariance_data_snapshot_id,
+        )
+        optimization = optimize_portfolio(f36_request, pipeline.optimization_config)
+        if optimization.status not in {"OPTIMAL", "FEASIBLE"}:
+            raise PlatformExecutionError(
+                "F36_OPTIMIZATION_FAILED",
+                f"F36 optimizer did not produce a feasible allocation: {optimization.solver_message}",
+            )
+        stages.append(
+            self._stage(
+                request.job_id,
+                "portfolio_optimization_f36",
+                {
+                    "status": optimization.status,
+                    "method": optimization.method,
+                    "expected_return": optimization.expected_return,
+                    "volatility": optimization.volatility,
+                    "turnover": optimization.turnover,
+                    "allocations": [
+                        {"asset_symbol": item.asset_symbol, "target_weight": item.target_weight}
+                        for item in optimization.allocations
+                    ],
+                    "fingerprint": optimization.optimization_fingerprint,
+                },
+            )
+        )
+
+        sizing_assets = tuple(
+            SizingAssetInput(
+                asset_symbol=decision.record.asset_symbol,
+                price=metadata[decision.record.asset_symbol].price,
+                expected_return=decision.record.expected_return,
+                volatility=metadata[decision.record.asset_symbol].volatility,
+                confidence=decision.record.model_confidence,
+                average_daily_volume=metadata[decision.record.asset_symbol].average_daily_volume,
+                lot_size=metadata[decision.record.asset_symbol].lot_size,
+                stop_loss_price=metadata[decision.record.asset_symbol].stop_loss_price,
+            )
+            for decision in decisions
+        )
+        sizing_request = PositionSizingRequest(
+            portfolio_optimization=optimization,
+            assets=sizing_assets,
+            equity=pipeline.equity,
+            base_currency=pipeline.base_currency,
+            as_of=pipeline.sizing_as_of,
+            market_data_as_of=pipeline.market_data_as_of,
+            horizon=pipeline.horizon,
+            market_data_snapshot_id=request.dataset_id,
+        )
+        sizing = size_positions(sizing_request, pipeline.sizing_config)
+        stages.append(
+            self._stage(
+                request.job_id,
+                "position_sizing_f37",
+                {
+                    "status": sizing.status,
+                    "method": sizing.method,
+                    "total_target_weight": sizing.total_target_weight,
+                    "total_target_notional": sizing.total_target_notional,
+                    "allocations": [
+                        {
+                            "asset_symbol": item.asset_symbol,
+                            "target_quantity": item.target_quantity,
+                            "target_notional": item.target_notional,
+                            "status": item.status,
+                        }
+                        for item in sizing.allocations
+                    ],
+                    "fingerprint": sizing.sizing_fingerprint,
+                },
+            )
+        )
+
+        governor_assets = tuple(
+            GovernorAssetContext(
+                asset_symbol=asset.asset_symbol,
+                sector=asset.sector,
+                lot_size=asset.lot_size,
+                average_daily_dollar_volume=asset.average_daily_dollar_volume,
+                current_notional=asset.current_notional,
+                factor_loadings=asset.factor_loadings,
+            )
+            for asset in pipeline.assets
+        )
+        risk_request = RiskGovernorRequest(
+            sizing_result=sizing,
+            assets=governor_assets,
+            pairwise_correlations=pipeline.pairwise_correlations,
+            risk_metrics=pipeline.risk_metrics,
+            market_data_as_of=pipeline.market_data_as_of,
+            risk_snapshot_as_of=pipeline.risk_snapshot_as_of,
+            as_of=request.as_of,
+            data_snapshot_id=request.dataset_id,
+            risk_snapshot_id=pipeline.risk_snapshot_id,
+            model_snapshot_id=pipeline.model_snapshot_id,
+        )
+        risk_result = evaluate_risk_governor(risk_request, request.risk_policy)
+        stages.append(
+            self._stage(
+                request.job_id,
+                "risk_governor_f38",
+                {
+                    "action": risk_result.action.value,
+                    "reason_count": len(risk_result.reasons),
+                    "triggered_constraints": risk_result.triggered_constraints,
+                    "fingerprint": risk_result.governor_fingerprint,
+                },
+            )
+        )
+        return (
+            {
+                "f35_decisions": [item.model_dump(mode="json") for item in decisions],
+                "f36_optimization": optimization.model_dump(mode="json"),
+                "f37_sizing": sizing.model_dump(mode="json"),
+                "f38_risk_decision": risk_result.model_dump(mode="json"),
+                "lineage": {
+                    "dataset_id": request.dataset_id,
+                    "covariance_snapshot_id": pipeline.covariance_data_snapshot_id,
+                    "risk_snapshot_id": pipeline.risk_snapshot_id,
+                    "model_snapshot_id": pipeline.model_snapshot_id,
+                },
+            },
+            risk_result,
+        )
 
     def _execute(self, request: PlatformRunRequest, fingerprint: str) -> dict[str, Any]:
         bars: tuple[Bar, ...] = tuple(item.to_bar() for item in request.bars)
@@ -458,8 +657,11 @@ class PlatformService:
         }
         stages.append(self._stage(request.job_id, "robustness", robustness_summary))
 
-        risk_result = None
-        if request.risk_request is not None:
+        risk_result: RiskGovernorResult | None = None
+        portfolio_summary: dict[str, Any] | None = None
+        if request.portfolio_pipeline is not None:
+            portfolio_summary, risk_result = self._run_portfolio_pipeline(request, stages)
+        elif request.risk_request is not None:
             risk_result = evaluate_risk_governor(request.risk_request, request.risk_policy)
             stages.append(
                 self._stage(
@@ -585,6 +787,7 @@ class PlatformService:
                 "scenarios": [asdict(item) for item in robustness.scenarios],
             },
             "risk_decision": None if risk_result is None else risk_result.model_dump(mode="json"),
+            "portfolio_pipeline": portfolio_summary,
             "paper": paper_result,
             "stages": [item.model_dump(mode="json") for item in stages],
             "reproducibility": {
