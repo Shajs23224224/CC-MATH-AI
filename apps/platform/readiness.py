@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import StrEnum
 import hashlib
 import json
-from typing import Iterable
+from collections.abc import Iterable
+from dataclasses import dataclass
+from enum import StrEnum
 
 
 class ReadinessStatus(StrEnum):
@@ -15,7 +15,19 @@ class ReadinessStatus(StrEnum):
     BLOCKED = "BLOCKED"
 
 
-_REQUIRED_COMPONENTS = frozenset({"data_quality", "quant_research", "model_evaluation", "decision_engine", "portfolio", "risk_governor", "backtest", "paper_execution", "audit_integrity"})
+_REQUIRED_COMPONENTS = frozenset(
+    {
+        "data_quality",
+        "quant_research",
+        "model_evaluation",
+        "decision_engine",
+        "portfolio",
+        "risk_governor",
+        "backtest",
+        "paper_execution",
+        "audit_integrity",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,8 +78,14 @@ def build_readiness(checks: Iterable[ComponentCheck]) -> PlatformReadiness:
         raise ValueError("duplicate component checks are not allowed")
 
     missing = tuple(sorted(_REQUIRED_COMPONENTS - set(names)))
-    failed_critical = tuple(check.component for check in ordered if check.critical and not check.passed)
-    failed_optional = any(not check.passed and not check.critical for check in ordered)
+    failed_critical = tuple(
+        check.component
+        for check in ordered
+        if check.critical and not check.passed
+    )
+    failed_optional = any(
+        not check.passed and not check.critical for check in ordered
+    )
     if missing or failed_critical:
         status = ReadinessStatus.BLOCKED
     elif failed_optional:
@@ -77,11 +95,25 @@ def build_readiness(checks: Iterable[ComponentCheck]) -> PlatformReadiness:
 
     payload = {
         "status": status.value,
-        "checks": [{"component": c.component, "passed": c.passed, "detail": c.detail, "evidence_id": c.evidence_id, "critical": c.critical} for c in ordered],
+        "checks": [
+            {
+                "component": check.component,
+                "passed": check.passed,
+                "detail": check.detail,
+                "evidence_id": check.evidence_id,
+                "critical": check.critical,
+            }
+            for check in ordered
+        ],
         "missing_components": list(missing),
         "failed_critical_components": list(failed_critical),
         "execution_mode": "PAPER_ONLY",
     }
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    canonical = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    )
     fingerprint = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     return PlatformReadiness(status, ordered, missing, failed_critical, fingerprint)
