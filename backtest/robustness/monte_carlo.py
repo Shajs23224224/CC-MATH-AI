@@ -17,8 +17,7 @@ def _period_returns(result: BacktestResult) -> tuple[float, ...]:
     if any(not isfinite(value) or value <= 0 for value in equity):
         raise ValueError("Monte Carlo bootstrap requires a strictly positive equity curve")
     returns = tuple(
-        current / previous - 1.0
-        for previous, current in zip(equity, equity[1:], strict=False)
+        current / previous - 1.0 for previous, current in zip(equity, equity[1:], strict=False)
     )
     if not returns or not all(isfinite(value) for value in returns):
         raise ValueError("observed equity returns must be finite and non-empty")
