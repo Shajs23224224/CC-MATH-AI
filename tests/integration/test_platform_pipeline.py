@@ -171,8 +171,6 @@ def portfolio_pipeline_input(as_of: datetime) -> PortfolioPipelineInput:
                 ),
             )
         )
-        from core.contracts import Forecast
-
         decision_requests.append(
             DecisionRequest(
                 ensemble=ensemble,
