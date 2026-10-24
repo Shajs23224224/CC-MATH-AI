@@ -172,7 +172,7 @@ class PortfolioAssetMetadata(BaseModel):
             raise ValueError("minimum_weight must not exceed maximum_weight")
         if self.stop_loss_price is not None and self.stop_loss_price >= self.price:
             raise ValueError("stop_loss_price must be below price for long-only sizing")
-        if any(not math.isfinite(value) for value in self.factor_loadings.values()):
+        if any(not isfinite(value) for value in self.factor_loadings.values()):
             raise ValueError("factor loadings must be finite")
         return self
 
