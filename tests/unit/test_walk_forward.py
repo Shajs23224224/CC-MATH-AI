@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -91,9 +92,9 @@ def test_fit_receives_training_only_and_predict_sees_causal_history() -> None:
         fitted_on.append(tuple(bar.timestamp for bar in train))
         return train[-1].timestamp
 
-    def predict(model: datetime, history: object) -> int:
+    def predict(model: datetime, history: Sequence[Bar]) -> int:
         # Use the Sequence interface without access to the underlying full series.
-        observations = tuple(history)  # type: ignore[arg-type]
+        observations = tuple(history)
         current = observations[-1]
         assert current.timestamp > model
         assert all(left.timestamp < right.timestamp for left, right in zip(
@@ -101,7 +102,7 @@ def test_fit_receives_training_only_and_predict_sees_causal_history() -> None:
         ))
         predicted_at.append(current.timestamp)
         try:
-            history[len(observations)]  # type: ignore[index]
+            history[len(observations)]
         except IndexError:
             pass
         else:
