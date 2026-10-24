@@ -134,7 +134,10 @@ def test_predict_must_return_signed_integer_units_not_boolean_or_float() -> None
 
 def test_regime_metrics_are_computed_per_label_and_require_complete_oos_coverage() -> None:
     series = bars(100, 101, 102, 103, 104, 105, 106)
-    regimes = {bar.timestamp: ("bull" if index >= 5 else "bear") for index, bar in enumerate(series)}
+    regimes = {
+        bar.timestamp: ("bull" if index >= 5 else "bear")
+        for index, bar in enumerate(series)
+    }
     result = run_walk_forward(
         series,
         WalkForwardConfig(initial_train_size=3, test_size=2),
@@ -147,7 +150,11 @@ def test_regime_metrics_are_computed_per_label_and_require_complete_oos_coverage
     assert labels == {"bear", "bull"}
     assert all(metric.observations > 0 for metric in result.summary.regime_metrics)
 
-    incomplete = {timestamp: label for timestamp, label in regimes.items() if timestamp != series[3].timestamp}
+    incomplete = {
+        timestamp: label
+        for timestamp, label in regimes.items()
+        if timestamp != series[3].timestamp
+    }
     with pytest.raises(ValueError, match="every out-of-sample timestamp"):
         run_walk_forward(
             series,
