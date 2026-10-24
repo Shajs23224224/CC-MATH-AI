@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F39 — Backtesting Engine**
+Current milestone: **F40 — Walk-Forward / Out-of-Sample Validation** (implementation in a feature branch; pending CI and pull-request review).
 
 Completed:
 - F01 — System Specification
@@ -31,8 +31,9 @@ Completed:
 - F33 — Algorithm Registry (integrated in [PR #21](https://github.com/Shajs23224224/CC-MATH-AI/pull/21), merge commit `4f400ff`): versioned metadata, deterministic discovery and compatibility checks. The 304-entry manifest distinguishes verified implementation references from planned targets; planned entries remain experimental and algorithm evidence stays `not_run` until independently tested. See [F33 technical design](docs/ALGORITHM_REGISTRY.md).
 - F34 — Quant Ensemble (integrated in [PR #22](https://github.com/Shajs23224224/CC-MATH-AI/pull/22), merge commit `26e7888`): deterministic bounded score normalization, versioned source weighting, correlation-group influence caps, agreement, uncertainty, abstention, contribution attribution and SHA-256 replay fingerprint. Validation includes Python 3.11/3.12, F29–F33 regressions, general CI and Security on the PR head. It emits auditable research evidence, not trade decisions. See [F34 technical design](docs/QUANT_ENSEMBLE.md).
 
-Implemented in `main`:
-- F39 — Deterministic Backtesting Engine: next-bar-open event loop, signed-unit position accounting, commission and adverse-slippage model, equity curve, return/drawdown/Sharpe/Sortino/turnover metrics, temporal and accounting tests. Research-only; no broker execution and no automatic F35–F38 integration yet. See [F39 backtesting documentation](docs/BACKTESTING.md).
+Risk, portfolio and backtesting milestones:
+- F39 — Deterministic Backtesting Engine (PR #28 is open and not merged): next-bar-open event loop, signed-unit position accounting, commission and adverse-slippage model, equity curve, return/drawdown/Sharpe/Sortino/turnover metrics, temporal and accounting tests. Research-only; no broker execution and no automatic F35–F38 integration yet. See [F39 backtesting documentation](docs/BACKTESTING.md).
+- F40 — Walk-Forward / Out-of-Sample Validation: rolling, expanding and anchored temporal splits; optional purging gap; no overlapping OOS windows; training-only fit callbacks and causal-prefix predictions; per-window F39 backtests, annualized volatility, cross-window return dispersion, optional regime diagnostics and SHA-256 reproducibility fingerprint. The F40 feature branch is stacked on F39 PR #28; validation is in progress. See [F40 design](docs/WALK_FORWARD_OOS.md).
 - F35 — Meta-model / Decision Engine: deterministic BUY/HOLD/SELL decisions from F34 evidence and a horizon-matched forecast, with versioned thresholds, strict abstention, calibration provenance and replay fingerprints. It never sizes positions, places orders or bypasses risk controls. F35 workflow and general CI passed on Python 3.11/3.12. See [F35 technical design](docs/DECISION_ENGINE.md).
 
 - F36 — Portfolio Optimization (integrated in [PR #25](https://github.com/Shajs23224224/CC-MATH-AI/pull/25), merge commit `b7a2628`): nine methods—equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity, inverse volatility, HRP, Black-Litterman and maximum diversification—with long-only F35 integration, point-in-time F23 covariance, asset/sector/turnover/HHI constraints, transaction-cost diagnostics, solver status, safe infeasibility handling and SHA-256 audit. F36, F33, general CI, Security and active regressions passed on Python 3.11/3.12. Synthetic tests validate code behavior, not market alpha. See [F36 technical design](docs/PORTFOLIO_OPTIMIZATION.md).
