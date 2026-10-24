@@ -109,7 +109,9 @@ class PaperTradingEngine:
             )
             reason: str | None = None
             risk_age = (request.submitted_at - risk_decision.as_of).total_seconds()
-            approved_quantity = 0.0 if approved_position is None else approved_position.approved_quantity
+            approved_quantity = (
+                0.0 if approved_position is None else approved_position.approved_quantity
+            )
             if risk_age < 0:
                 reason = "F38 risk decision timestamp is later than order submission"
             elif risk_age > self.policy.max_risk_decision_age_seconds:
@@ -127,7 +129,9 @@ class PaperTradingEngine:
             elif request.order_type == "LIMIT" and not self.policy.allow_limit_orders:
                 reason = "limit orders are disabled by the paper execution policy"
             elif request.side == "BUY":
-                held = self._positions.get(request.asset_symbol, PaperPosition(asset_symbol=request.asset_symbol))
+                held = self._positions.get(request.asset_symbol)
+                if held is None:
+                    held = PaperPosition(asset_symbol=request.asset_symbol, quantity=0.0)
                 pending_buys = sum(
                     order.request.quantity
                     for order in self._orders.values()
@@ -342,10 +346,16 @@ class PaperTradingEngine:
         else:
             current = self._positions.get(request.asset_symbol)
             if current is None or quantity > current.quantity + 1e-9:
-                self._reject_accepted_order(order, at, "insufficient paper holdings for full sell fill")
+                self._reject_accepted_order(
+                    order, at, "insufficient paper holdings for full sell fill"
+                )
                 return None
             remaining = max(0.0, current.quantity - quantity)
-            realized = current.realized_pnl + (fill_price - current.average_cost) * quantity - commission
+            realized = (
+                current.realized_pnl
+                + (fill_price - current.average_cost) * quantity
+                - commission
+            )
             self._cash += notional - commission
             mark = (quote.bid + quote.ask) / 2.0
             self._positions[request.asset_symbol] = PaperPosition(
