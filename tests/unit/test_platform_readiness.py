@@ -49,6 +49,20 @@ def test_failed_critical_check_blocks() -> None:
     assert result.failed_critical_components == ("audit_integrity",)
 
 
+def test_failed_required_check_blocks_even_when_flagged_noncritical() -> None:
+    checks = [
+        ComponentCheck(
+            check.component,
+            check.component != "risk_governor",
+            critical=check.component != "risk_governor",
+        )
+        for check in healthy_checks()
+    ]
+    result = build_readiness(checks)
+    assert result.status is ReadinessStatus.BLOCKED
+    assert result.failed_critical_components == ("risk_governor",)
+
+
 def test_failed_optional_check_degrades() -> None:
     checks = healthy_checks() + [
         ComponentCheck("dashboard", False, critical=False)
