@@ -1,0 +1,48 @@
+name: F43 Platform Readiness Validation
+
+on:
+  pull_request:
+    paths:
+      - "apps/platform/**"
+      - "tests/unit/test_platform_readiness.py"
+      - "docs/PLATFORM_F43.md"
+      - ".github/workflows/f43-validation.yml"
+      - "pyproject.toml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/platform/**"
+      - "tests/unit/test_platform_readiness.py"
+      - "docs/PLATFORM_F43.md"
+      - ".github/workflows/f43-validation.yml"
+      - "pyproject.toml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install project and development tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: Run F43 tests
+        run: python -m pytest tests/unit/test_platform_readiness.py -q
+      - name: Ruff lint
+        run: python -m ruff check apps/platform tests/unit/test_platform_readiness.py
+      - name: Ruff format
+        run: python -m ruff format --check apps/platform tests/unit/test_platform_readiness.py
+      - name: Mypy
+        run: python -m mypy apps/platform/readiness.py

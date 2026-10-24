@@ -43,6 +43,7 @@ include = [
   "risk*",
   "backtest*",
   "execution*",
+  "apps*",
   "config*",
 ]
 

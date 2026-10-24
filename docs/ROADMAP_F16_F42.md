@@ -273,8 +273,8 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 - F40: integrada en `main` mediante PR #29 (`bd74f41`); workflow F40, CI general Python 3.11/3.12, Security y regresiones upstream activadas aprobados.
 - F41: integrada en `main` mediante PR #30 (`b810dee`); workflow F41, 14 tests por Python 3.11/3.12, Ruff, formato, mypy, CI general, Security y 18 workflows de regresión upstream aprobados en el HEAD final de la PR.
 - F42: integrada en `main` mediante PR #31 (`ee03933`); ver [diseño técnico](PAPER_TRADING_F42.md).
-- F43: siguiente fase para integrar la plataforma end-to-end hasta paper trading.
-- **Siguiente fase: F43 — C-MATH-AI Platform 1.0.**
+- F43: implementada en la rama `feat/f43-platform-1-0`; validación pendiente en PR antes de declarar cierre.
+- **Siguiente fase tras F43: revisión de integración, CI/Security y definición del siguiente hito según resultados.**
 
 
 ## F39 — Backtesting Engine
@@ -292,3 +292,11 @@ Una fase no se considera lista sólo porque exista código. Debe tener implement
 **Implementado:** contratos de configuración/splits, gap de purga opcional, ventanas de test no solapadas, ajuste por fold sólo sobre filas de entrenamiento, predicción sobre una vista temporal causal de sólo lectura, evaluación de cada ventana mediante F39, volatilidad anualizada, retorno/dispersión entre ventanas, drawdown, Sharpe/Sortino, turnover, costes, métricas por régimen opcionales, fingerprint SHA-256, tests y documentación.
 **Reglas y límites:** el predictor ve como máximo el prefijo hasta la barra actual; las señales de cierre se ejecutan en la siguiente apertura; cada ventana comienza con capital en efectivo y posición plana; la señal final no se ejecuta dentro de la ventana. Las callbacks aún son código confiable: no se puede probar automáticamente que no usen estado global, labels futuros o datos externos con leakage. Las etiquetas de régimen las suministra la aplicación.
 **Validación:** workflow F40 en Python 3.11/3.12, Ruff, mypy, CI general, Security y regresiones upstream aprobados en el HEAD final antes de fusionar.
+
+
+## F43 — C-MATH-AI Platform 1.0
+**Estado:** implementación inicial preparada en la rama feat/f43-platform-1-0; no se considera cerrada hasta que el workflow y los checks requeridos pasen en la PR.
+**Objetivo:** establecer un contrato de readiness de plataforma para consolidar evidencia observada de datos, investigación cuantitativa, evaluación de modelos, decisiones, portfolio, riesgo, backtesting, paper execution y auditoría.
+**Implementado:** ComponentCheck inmutable; agregador determinista con cobertura de componentes requeridos; bloqueo fail-closed ante componentes ausentes o checks críticos fallidos; estado DEGRADED para checks opcionales fallidos; rechazo de duplicados; fingerprint SHA-256 sobre JSON canónico; límite explícito PAPER_ONLY y can_live_trade=False; tests unitarios y workflow dedicado Python 3.11/3.12.
+**Límites:** el agregador no ejecuta automáticamente probes de cada subsistema, no coloca órdenes, no crea una API/dashboard y no prueba rentabilidad. Los llamadores deben aportar resultados de checks reales y evidencia trazable. El fingerprint no es firma criptográfica ni almacenamiento duradero.
+**Criterio de cierre:** tests F43, Ruff lint/formato, mypy, CI general, Security y regresiones upstream aplicables aprobados en el HEAD final de la PR; documentación alineada y revisión de que no se ha abierto ninguna ruta de ejecución real.

@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F43 — C-MATH-AI Platform 1.0** (F42 paper trading is integrated in main via PR #31; the current execution engine is paper-only and has no live broker adapter).
+Current milestone: **F43 — C-MATH-AI Platform 1.0** (initial readiness contracts are on branch `feat/f43-platform-1-0`; PR validation is pending. F42 paper trading is integrated in main via PR #31; no live broker adapter is supported).
 
 Completed:
 - F01 — System Specification
@@ -36,6 +36,7 @@ Risk, portfolio and backtesting milestones:
 - F40 — Walk-Forward / Out-of-Sample Validation (merged in [PR #29](https://github.com/Shajs23224224/CC-MATH-AI/pull/29), merge commit `bd74f41`): rolling, expanding and anchored temporal splits; optional purging gap; non-overlapping OOS windows; training-only fit and causal-prefix predictions; per-window F39 backtests, volatility, dispersion, drawdown, costs, regime diagnostics and SHA-256 fingerprint. F40 workflow, CI, Security and relevant upstream regressions passed on the final PR head. See [F40 design](docs/WALK_FORWARD_OOS.md).
 - F41 — Monte Carlo + Adversarial Robustness (merged in [PR #30](https://github.com/Shajs23224224/CC-MATH-AI/pull/30), merge commit `b810dee`): seeded IID/moving-block bootstrap; terminal return quantiles, loss frequency, expected shortfall and drawdown distribution; price/volatility/cost/execution-delay scenarios rerun through F39; correlation-matrix stress; heuristic fragility diagnostics and SHA-256 fingerprints. On final PR HEAD, F41 ran 14 tests on each of Python 3.11/3.12; Ruff, format, mypy, general CI, Security and 18 upstream regression workflows passed. Synthetic tests do not demonstrate market alpha. See [F41 design](docs/ROBUSTNESS_F41.md).
 - F42 — Paper Trading + Execution (integrated in [PR #31](https://github.com/Shajs23224224/CC-MATH-AI/pull/31), squash commit `ee03933`): deterministic in-memory MARKET/LIMIT paper matching, F38 risk gate, idempotent orders, configurable fees/slippage, long-only accounting and PnL, SHA-256 audit chain, and Python 3.11/3.12 validation. No live adapter, credentials, or LLM-to-execution route. See [F42 design](docs/PAPER_TRADING_F42.md).
+- F43 — C-MATH-AI Platform 1.0 (initial implementation on `feat/f43-platform-1-0`, validation pending): typed readiness checks across data quality, quant research, model evaluation, decision, portfolio, risk, backtest, paper execution and audit; fail-closed readiness states; deterministic SHA-256 fingerprint; explicit PAPER_ONLY boundary. This is a readiness aggregator, not an automatic health-probe runner or evidence of investment performance. See [F43 design](docs/PLATFORM_F43.md).
 - F35 — Meta-model / Decision Engine: deterministic BUY/HOLD/SELL decisions from F34 evidence and a horizon-matched forecast, with versioned thresholds, strict abstention, calibration provenance and replay fingerprints. It never sizes positions, places orders or bypasses risk controls. F35 workflow and general CI passed on Python 3.11/3.12. See [F35 technical design](docs/DECISION_ENGINE.md).
 
 - F36 — Portfolio Optimization (integrated in [PR #25](https://github.com/Shajs23224224/CC-MATH-AI/pull/25), merge commit `b7a2628`): nine methods—equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity, inverse volatility, HRP, Black-Litterman and maximum diversification—with long-only F35 integration, point-in-time F23 covariance, asset/sector/turnover/HHI constraints, transaction-cost diagnostics, solver status, safe infeasibility handling and SHA-256 audit. F36, F33, general CI, Security and active regressions passed on Python 3.11/3.12. Synthetic tests validate code behavior, not market alpha. See [F36 technical design](docs/PORTFOLIO_OPTIMIZATION.md).
@@ -92,6 +93,7 @@ See:
 - [F38 Portfolio Risk Governor](docs/RISK_GOVERNOR.md)
 - [F41 Monte Carlo and Adversarial Robustness](docs/ROBUSTNESS_F41.md)
 - [F42 Paper Trading and Execution](docs/PAPER_TRADING_F42.md)
+- [F43 Platform 1.0](docs/PLATFORM_F43.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
