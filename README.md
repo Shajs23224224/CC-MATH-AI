@@ -4,7 +4,7 @@ Quantitative research and investment decision-support platform built around dete
 
 ## Project status
 
-Current milestone: **F40 — Walk-Forward / Out-of-Sample Validation** (implementation in a feature branch; pending CI and pull-request review).
+Current milestone: **F41 — Monte Carlo + Adversarial Robustness** (implementation in feature/f41-monte-carlo-adversarial, stacked on F40; phase and upstream PRs remain subject to CI/review).
 
 Completed:
 - F01 — System Specification
@@ -33,7 +33,8 @@ Completed:
 
 Risk, portfolio and backtesting milestones:
 - F39 — Deterministic Backtesting Engine (PR #28 is open and not merged): next-bar-open event loop, signed-unit position accounting, commission and adverse-slippage model, equity curve, return/drawdown/Sharpe/Sortino/turnover metrics, temporal and accounting tests. Research-only; no broker execution and no automatic F35–F38 integration yet. See [F39 backtesting documentation](docs/BACKTESTING.md).
-- F40 — Walk-Forward / Out-of-Sample Validation: rolling, expanding and anchored temporal splits; optional purging gap; no overlapping OOS windows; training-only fit callbacks and causal-prefix predictions; per-window F39 backtests, annualized volatility, cross-window return dispersion, optional regime diagnostics and SHA-256 reproducibility fingerprint. The F40 feature branch is stacked on F39 PR #28; validation is in progress. See [F40 design](docs/WALK_FORWARD_OOS.md).
+- F40 — Walk-Forward / Out-of-Sample Validation: rolling, expanding and anchored temporal splits; optional purging gap; no overlapping OOS windows; training-only fit callbacks and causal-prefix predictions; per-window F39 backtests, annualized volatility, cross-window return dispersion, optional regime diagnostics and SHA-256 reproducibility fingerprint. PR #29 is stacked on F39 PR #28; follow validation and merge order in the PR descriptions. See [F40 design](docs/WALK_FORWARD_OOS.md).
+- F41 — Monte Carlo + Adversarial Robustness (implementation in feature/f41-monte-carlo-adversarial): seeded IID/moving-block return bootstrap, terminal return/loss/expected-shortfall/drawdown distributions, price/volatility/cost/execution-delay scenarios rerun through F39, correlation-matrix stress for aligned multi-asset returns, fragility diagnostics and SHA-256 experiment fingerprints. Workflow and review pending; synthetic tests do not demonstrate market alpha. See [F41 design](docs/ROBUSTNESS_F41.md).
 - F35 — Meta-model / Decision Engine: deterministic BUY/HOLD/SELL decisions from F34 evidence and a horizon-matched forecast, with versioned thresholds, strict abstention, calibration provenance and replay fingerprints. It never sizes positions, places orders or bypasses risk controls. F35 workflow and general CI passed on Python 3.11/3.12. See [F35 technical design](docs/DECISION_ENGINE.md).
 
 - F36 — Portfolio Optimization (integrated in [PR #25](https://github.com/Shajs23224224/CC-MATH-AI/pull/25), merge commit `b7a2628`): nine methods—equal weight, mean-variance, minimum variance, maximum Sharpe, risk parity, inverse volatility, HRP, Black-Litterman and maximum diversification—with long-only F35 integration, point-in-time F23 covariance, asset/sector/turnover/HHI constraints, transaction-cost diagnostics, solver status, safe infeasibility handling and SHA-256 audit. F36, F33, general CI, Security and active regressions passed on Python 3.11/3.12. Synthetic tests validate code behavior, not market alpha. See [F36 technical design](docs/PORTFOLIO_OPTIMIZATION.md).
@@ -88,6 +89,7 @@ See:
 - [F36 Portfolio Optimization](docs/PORTFOLIO_OPTIMIZATION.md)
 - [F37 Position Sizing](docs/POSITION_SIZING.md)
 - [F38 Portfolio Risk Governor](docs/RISK_GOVERNOR.md)
+- [F41 Monte Carlo and Adversarial Robustness](docs/ROBUSTNESS_F41.md)
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
