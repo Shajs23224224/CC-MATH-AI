@@ -191,8 +191,15 @@ class PlatformRunRequest(BaseModel):
         ):
             raise ValueError("custom walk-forward requires at least four market bars")
         if self.walk_forward.initial_train_size is not None:
-            if self.walk_forward.initial_train_size + self.walk_forward.test_size > len(self.bars):  # type: ignore[operator]
-                raise ValueError("walk-forward train and test sizes exceed market-bar count")
+            if (
+                self.walk_forward.initial_train_size
+                + self.walk_forward.gap
+                + self.walk_forward.test_size
+                > len(self.bars)
+            ):
+                raise ValueError(
+                    "walk-forward train, gap and test sizes exceed market-bar count"
+                )
         return self
 
 
