@@ -45,6 +45,12 @@ jobs:
           python -m pytest \
             tests/unit/test_platform_store.py \
             tests/unit/test_platform_api.py \
+            tests/unit/test_decision_engine.py \
+            tests/unit/test_position_sizing.py \
+            tests/unit/test_risk_governor.py \
+            tests/unit/test_backtest_engine.py \
+            tests/unit/test_robustness.py \
+            tests/unit/test_paper_trading.py \
             tests/integration/test_platform_pipeline.py -q
       - name: Lint F43 platform
         run: |
