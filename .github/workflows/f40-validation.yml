@@ -1,0 +1,47 @@
+name: F40 Walk-Forward OOS Validation
+
+on:
+  pull_request:
+    paths:
+      - "backtest/walk_forward/**"
+      - "backtest/engine/**"
+      - "tests/unit/test_walk_forward.py"
+      - "docs/WALK_FORWARD_OOS.md"
+      - ".github/workflows/f40-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backtest/walk_forward/**"
+      - "tests/unit/test_walk_forward.py"
+      - "docs/WALK_FORWARD_OOS.md"
+      - ".github/workflows/f40-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: Run F40 tests
+        run: python -m pytest tests/unit/test_walk_forward.py -q
+      - name: Lint F40 implementation
+        run: python -m ruff check backtest/walk_forward tests/unit/test_walk_forward.py
+      - name: Check F40 formatting
+        run: python -m ruff format --check backtest/walk_forward tests/unit/test_walk_forward.py
+      - name: Type-check F40 implementation
+        run: python -m mypy backtest/walk_forward
