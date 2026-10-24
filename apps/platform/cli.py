@@ -44,7 +44,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     algorithms = commands.add_parser("algorithms", help="discover registered algorithm metadata")
     algorithms.add_argument("--category")
-    algorithms.add_argument("--lifecycle", choices=("experimental", "implemented", "validated", "deprecated"))
+    algorithms.add_argument(
+        "--lifecycle",
+        choices=("experimental", "implemented", "validated", "deprecated"),
+    )
     algorithms.add_argument("--tag")
     algorithms.add_argument("--limit", type=int, default=100)
 
