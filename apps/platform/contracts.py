@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from backtest.engine import Bar
 from backtest.robustness.contracts import MonteCarloConfig
-from execution.paper import ExecutionQuote, PaperOrderRequest, PaperExecutionPolicy
+from execution.paper import ExecutionQuote, PaperExecutionPolicy, PaperOrderRequest
 from risk.governor.contracts import RiskGovernorConfig, RiskGovernorRequest
 
 JobState = Literal["PENDING", "RUNNING", "SUCCEEDED", "FAILED"]
