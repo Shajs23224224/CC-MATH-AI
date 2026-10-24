@@ -284,9 +284,7 @@ def test_quote_updates_market_value_and_unrealized_pnl() -> None:
     before = simulator.snapshot()
     assert before.unrealized_pnl == pytest.approx(-2.5)
 
-    simulator.process_quote(
-        quote(bid=109.0, ask=111.0, timestamp=now() + timedelta(seconds=1))
-    )
+    simulator.process_quote(quote(bid=109.0, ask=111.0, timestamp=now() + timedelta(seconds=1)))
     after = simulator.snapshot()
     assert after.market_value == pytest.approx(550.0)
     assert after.unrealized_pnl == pytest.approx(50.0)
