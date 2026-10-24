@@ -226,7 +226,7 @@ class AlphaVantageMarketDataProvider:
             if request.adjusted:
                 raise DataProviderError("Alpha Vantage intraday endpoint does not provide adjusted OHLCV")
             params["function"] = "TIME_SERIES_INTRADAY"
-            params["interval"] = request.frequency.value
+            params["interval"] = {Frequency.MINUTE_1: "1min", Frequency.MINUTE_5: "5min", Frequency.MINUTE_15: "15min", Frequency.HOUR_1: "60min"}[request.frequency]
             params["outputsize"] = "full"
         else:
             raise DataProviderError(f"Alpha Vantage does not support {request.frequency.value}")
