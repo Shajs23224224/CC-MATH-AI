@@ -3,6 +3,7 @@
 Signals are observed at a bar close and become eligible for execution at the
 next bar's open. This module is a research simulator only; it never sends orders.
 """
+
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
@@ -117,10 +118,7 @@ def run_backtest(
     if len(series) < 2:
         raise ValueError("at least two bars are required")
     timestamps = [bar.timestamp for bar in series]
-    if any(
-        left >= right
-        for left, right in zip(timestamps, timestamps[1:], strict=False)
-    ):
+    if any(left >= right for left, right in zip(timestamps, timestamps[1:], strict=False)):
         raise ValueError("bar timestamps must be strictly increasing")
     if any(
         not isinstance(value, int) or isinstance(value, bool)
@@ -145,9 +143,7 @@ def run_backtest(
             delta = pending_target - units
             reference = bar.open
             direction = 1.0 if delta > 0 else -1.0
-            fill_price = reference * (
-                1.0 + direction * settings.slippage_bps / 10_000
-            )
+            fill_price = reference * (1.0 + direction * settings.slippage_bps / 10_000)
             notional = abs(delta * fill_price)
             commission = notional * settings.commission_bps / 10_000
             slip_cost = abs(delta) * abs(fill_price - reference)
@@ -182,9 +178,7 @@ def run_backtest(
     avg_return = mean(returns) if returns else 0.0
     volatility = pstdev(returns) if len(returns) > 1 else 0.0
     downside = [min(value, 0.0) for value in returns]
-    downside_deviation = (
-        sqrt(mean(value * value for value in downside)) if downside else 0.0
-    )
+    downside_deviation = sqrt(mean(value * value for value in downside)) if downside else 0.0
     sharpe = _ratio(avg_return, volatility) * sqrt(settings.periods_per_year)
     sortino = _ratio(avg_return, downside_deviation) * sqrt(settings.periods_per_year)
     final_equity = values[-1]
