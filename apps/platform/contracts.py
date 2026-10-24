@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from math import isfinite
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -23,7 +24,7 @@ from risk.governor import (
     RiskGovernorConfig,
     RiskGovernorRequest,
 )
-from signals.decision import DecisionConfig, DecisionRequest, DecisionOutput
+from signals.decision import DecisionConfig, DecisionOutput, DecisionRequest
 
 JobState = Literal["PENDING", "RUNNING", "SUCCEEDED", "FAILED"]
 StageState = Literal["SUCCEEDED", "SKIPPED", "FAILED"]
@@ -229,8 +230,6 @@ class PortfolioPipelineInput(BaseModel):
             raise ValueError("F35 decision inputs must exactly match portfolio asset order")
         if any(item.ensemble.horizon != self.horizon for item in self.decisions):
             raise ValueError("F35 ensemble horizons must match the portfolio horizon")
-        if any(item.ensemble.as_of > self.covariance_as_of for item in self.decisions):
-            raise ValueError("covariance_as_of cannot precede the F35 decision cutoff")
         if self.covariance_as_of > self.sizing_as_of:
             raise ValueError("covariance_as_of cannot be later than sizing_as_of")
         if self.market_data_as_of > self.sizing_as_of:
@@ -241,8 +240,14 @@ class PortfolioPipelineInput(BaseModel):
             raise ValueError("risk snapshot cannot precede the F35 decision cutoff")
         if self.covariance.kind != "covariance":
             raise ValueError("F36 requires a covariance matrix")
-        if any(not math.isfinite(item.price) for item in self.assets):
-            raise ValueError("asset prices must be finite")
+        if any(
+            not isfinite(item.price)
+            or not isfinite(item.volatility)
+            or not isfinite(item.average_daily_volume)
+            or not isfinite(item.average_daily_dollar_volume)
+            for item in self.assets
+        ):
+            raise ValueError("asset price and liquidity inputs must be finite")
         pair_keys = tuple(item.pair_key for item in self.pairwise_correlations)
         if len(pair_keys) != len(set(pair_keys)):
             raise ValueError("pairwise correlations must be unique")
