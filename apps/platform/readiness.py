@@ -81,10 +81,14 @@ def build_readiness(checks: Iterable[ComponentCheck]) -> PlatformReadiness:
     failed_critical = tuple(
         check.component
         for check in ordered
-        if check.critical and not check.passed
+        if (check.critical or check.component in _REQUIRED_COMPONENTS)
+        and not check.passed
     )
     failed_optional = any(
-        not check.passed and not check.critical for check in ordered
+        not check.passed
+        and not check.critical
+        and check.component not in _REQUIRED_COMPONENTS
+        for check in ordered
     )
     if missing or failed_critical:
         status = ReadinessStatus.BLOCKED
