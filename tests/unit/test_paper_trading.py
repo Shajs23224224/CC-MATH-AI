@@ -275,3 +275,19 @@ def test_pending_buy_reservations_cannot_exceed_approved_target() -> None:
     assert first.status == "ACCEPTED"
     assert second.status == "REJECTED"
     assert "pending buys" in (second.rejection_reason or "")
+
+
+def test_quote_updates_market_value_and_unrealized_pnl() -> None:
+    simulator = engine(PaperExecutionPolicy(commission_bps=0.0, market_slippage_bps=0.0))
+    simulator.submit_order(request(key="mark-order-00001"), decision())
+    simulator.process_quote(quote(bid=99.0, ask=100.0))
+    before = simulator.snapshot()
+    assert before.unrealized_pnl == pytest.approx(-2.5)
+
+    simulator.process_quote(
+        quote(bid=109.0, ask=111.0, timestamp=now() + timedelta(seconds=1))
+    )
+    after = simulator.snapshot()
+    assert after.market_value == pytest.approx(550.0)
+    assert after.unrealized_pnl == pytest.approx(50.0)
+    assert after.equity == pytest.approx(after.cash + after.market_value)
