@@ -59,10 +59,9 @@ class ScenarioSpec:
             raise ValueError("volatility_scale must be finite and in (0, 5]")
         if (
             not isfinite(self.price_shock_bps)
-            or self.price_shock_bps <= -10_000
-            or abs(self.price_shock_bps) > 10_000
+            or not -10_000 < self.price_shock_bps <= 10_000
         ):
-            raise ValueError("price_shock_bps must be finite and in [-10000, 10000)")
+            raise ValueError("price_shock_bps must be finite and in (-10000, 10000]")
         if (
             not isinstance(self.shock_start_index, int)
             or isinstance(self.shock_start_index, bool)
@@ -106,6 +105,7 @@ class ScenarioResult:
     """Backtest diagnostics for a single declared adversarial scenario."""
 
     name: str
+    spec: ScenarioSpec
     total_return: float
     max_drawdown: float
     sharpe_ratio: float
