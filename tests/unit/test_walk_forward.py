@@ -97,9 +97,10 @@ def test_fit_receives_training_only_and_predict_sees_causal_history() -> None:
         observations = tuple(history)
         current = observations[-1]
         assert current.timestamp > model
-        assert all(left.timestamp < right.timestamp for left, right in zip(
-            observations, observations[1:], strict=False
-        ))
+        assert all(
+            left.timestamp < right.timestamp
+            for left, right in zip(observations, observations[1:], strict=False)
+        )
         predicted_at.append(current.timestamp)
         try:
             history[len(observations)]
@@ -135,8 +136,7 @@ def test_predict_must_return_signed_integer_units_not_boolean_or_float() -> None
 def test_regime_metrics_are_computed_per_label_and_require_complete_oos_coverage() -> None:
     series = bars(100, 101, 102, 103, 104, 105, 106)
     regimes = {
-        bar.timestamp: ("bull" if index >= 5 else "bear")
-        for index, bar in enumerate(series)
+        bar.timestamp: ("bull" if index >= 5 else "bear") for index, bar in enumerate(series)
     }
     result = run_walk_forward(
         series,
@@ -151,9 +151,7 @@ def test_regime_metrics_are_computed_per_label_and_require_complete_oos_coverage
     assert all(metric.observations > 0 for metric in result.summary.regime_metrics)
 
     incomplete = {
-        timestamp: label
-        for timestamp, label in regimes.items()
-        if timestamp != series[3].timestamp
+        timestamp: label for timestamp, label in regimes.items() if timestamp != series[3].timestamp
     }
     with pytest.raises(ValueError, match="every out-of-sample timestamp"):
         run_walk_forward(
