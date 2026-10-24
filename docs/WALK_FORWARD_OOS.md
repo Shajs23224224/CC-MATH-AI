@@ -63,3 +63,8 @@ The callback names in this example are supplied by the application; they are not
 - Fit/predict callbacks are user code; leakage through hidden state, non-point-in-time datasets, future-derived labels or preprocessing outside fit() cannot be automatically ruled out.
 - OOS averages and dispersion are descriptive diagnostics, not statistical guarantees or investment advice.
 - F35–F38 decisions and risk approvals are not automatically wired into the strategy callback; integration must be explicit and independently tested.
+
+
+## Integration and release gate
+
+PR #29 is integrated only after its F40 workflow, general CI, Security and relevant upstream regression workflows pass on the same pull-request head after targeting `main`. If F39 was just merged, rerun these checks against the merge-base before merging. F40 remains a research-only validation layer: it does not place orders and its callback contracts cannot guarantee that external data sources are point-in-time clean.
