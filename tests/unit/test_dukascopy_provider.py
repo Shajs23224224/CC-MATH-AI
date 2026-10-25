@@ -1,6 +1,5 @@
 from datetime import UTC, datetime
 from pathlib import Path
-from subprocess import CompletedProcess
 
 import pandas as pd
 import pytest
@@ -61,7 +60,7 @@ def test_provider_reads_cached_data_without_running_cli(tmp_path: Path, monkeypa
         }
     ).to_csv(cache, index=False)
 
-    def fail_if_called(*args: object, **kwargs: object) -> CompletedProcess[str]:
+    def fail_if_called(*args: object, **kwargs: object) -> object:
         raise AssertionError("CLI must not run when the exact request is cached")
 
     monkeypatch.setattr("data.providers.dukascopy.subprocess.run", fail_if_called)
