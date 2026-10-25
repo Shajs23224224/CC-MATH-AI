@@ -16,6 +16,7 @@ from .normalization import (
 )
 from .providers import (
     CorporateActionProvider,
+    DukascopyMarketDataProvider,
     FundamentalDataProvider,
     LocalCSVCorporateActionProvider,
     LocalCSVFundamentalProvider,
@@ -30,6 +31,7 @@ __all__ = [
     "CorporateActionEngine",
     "CorporateActionProvider",
     "DataQualityEngine",
+    "DukascopyMarketDataProvider",
     "FeatureStore",
     "FundamentalDataEngine",
     "FundamentalDataProvider",
