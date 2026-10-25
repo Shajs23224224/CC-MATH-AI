@@ -107,7 +107,7 @@ def test_provider_reports_rate_limit_or_waf_without_caching(
         provider.fetch(_request())
 
     assert len(calls) == 1
-    assert not tmp_path.exists()
+    assert not list(tmp_path.glob("*.csv"))
 
 
 def test_provider_caches_valid_csv_only(tmp_path: Path, monkeypatch) -> None:
@@ -132,4 +132,4 @@ def test_provider_does_not_cache_empty_csv(tmp_path: Path, monkeypatch) -> None:
     with pytest.raises(DataProviderError, match="no usable bars"):
         provider.fetch(_request())
 
-    assert not tmp_path.exists()
+    assert not list(tmp_path.glob("*.csv"))
