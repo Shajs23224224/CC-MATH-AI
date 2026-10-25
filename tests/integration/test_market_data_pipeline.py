@@ -38,8 +38,8 @@ def test_dukascopy_provider_integrates_with_market_data_engine(
     def fake_cli(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         output_dir = Path(command[command.index("--directory") + 1])
         (output_dir / "candles.csv").write_text(
-            "timestamp,open,high,low,close,volume\\n"
-            "1704153600000,1.10,1.20,1.00,1.15,42\\n",
+            "timestamp,open,high,low,close,volume\n"
+            "1704153600000,1.10,1.20,1.00,1.15,42\n",
             encoding="utf-8",
         )
         return subprocess.CompletedProcess(
