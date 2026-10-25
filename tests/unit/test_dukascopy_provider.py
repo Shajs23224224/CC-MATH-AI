@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from pathlib import Path
+import subprocess
 
 import pandas as pd
 import pytest
@@ -18,6 +19,17 @@ def _request(**overrides: object) -> MarketDataRequest:
     }
     values.update(overrides)
     return MarketDataRequest(**values)
+
+
+def _mock_cli_csv(monkeypatch, csv_text: str, *, returncode: int = 0, stderr: str = "") -> None:
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        output_dir = Path(command[command.index("--directory") + 1])
+        (output_dir / "candles.csv").write_text(csv_text, encoding="utf-8")
+        return subprocess.CompletedProcess(
+            args=command, returncode=returncode, stdout="", stderr=stderr
+        )
+
+    monkeypatch.setattr("data.providers.dukascopy.subprocess.run", fake_run)
 
 
 def test_provider_maps_frequency_and_exposes_supported_symbols(tmp_path: Path) -> None:
@@ -68,3 +80,56 @@ def test_provider_reads_cached_data_without_running_cli(tmp_path: Path, monkeypa
     assert list(frame.columns) == ["timestamp", "open", "high", "low", "close", "volume"]
     assert len(frame) == 1
     assert frame.loc[0, "timestamp"] == pd.Timestamp("2024-01-02T00:00:00Z")
+
+
+@pytest.mark.parametrize(
+    "diagnostic",
+    [
+        "Too Many Requests (HTTP 429)",
+        "Headless browser could not acquire a WAF token (last HTTP status: 503)",
+    ],
+)
+def test_provider_reports_rate_limit_or_waf_without_caching(
+    tmp_path: Path, monkeypatch, diagnostic: str
+) -> None:
+    provider = DukascopyMarketDataProvider(cache_dir=tmp_path)
+    calls = []
+
+    def fail_download(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(command)
+        return subprocess.CompletedProcess(
+            args=command, returncode=1, stdout="", stderr=diagnostic
+        )
+
+    monkeypatch.setattr("data.providers.dukascopy.subprocess.run", fail_download)
+
+    with pytest.raises(DataProviderError, match="rate-limited or blocked"):
+        provider.fetch(_request())
+
+    assert len(calls) == 1
+    assert not tmp_path.exists()
+
+
+def test_provider_caches_valid_csv_only(tmp_path: Path, monkeypatch) -> None:
+    provider = DukascopyMarketDataProvider(cache_dir=tmp_path)
+    _mock_cli_csv(
+        monkeypatch,
+        "timestamp,open,high,low,close,volume\n"
+        "1704153600000,1.10,1.20,1.00,1.15,42\n",
+    )
+
+    frame = provider.fetch(_request())
+
+    assert len(frame) == 1
+    assert frame.iloc[0]["close"] == pytest.approx(1.15)
+    assert list(tmp_path.glob("*.csv"))
+
+
+def test_provider_does_not_cache_empty_csv(tmp_path: Path, monkeypatch) -> None:
+    provider = DukascopyMarketDataProvider(cache_dir=tmp_path)
+    _mock_cli_csv(monkeypatch, "timestamp,open,high,low,close,volume\n")
+
+    with pytest.raises(DataProviderError, match="no usable bars"):
+        provider.fetch(_request())
+
+    assert not tmp_path.exists()
