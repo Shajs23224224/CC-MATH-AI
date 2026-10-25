@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -170,7 +172,7 @@ class DukascopyMarketDataProvider:
 
 
 def _utc_timestamp(value: object) -> pd.Timestamp:
-    timestamp = pd.Timestamp(value)
+    timestamp = pd.Timestamp(cast(Any, value))
     if timestamp.tzinfo is None:
         return timestamp.tz_localize("UTC")
     return timestamp.tz_convert("UTC")
