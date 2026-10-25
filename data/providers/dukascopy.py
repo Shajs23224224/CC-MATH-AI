@@ -94,7 +94,7 @@ class DukascopyMarketDataProvider:
                 *self.command,
                 "--instrument", instrument,
                 "--date-from", start.strftime("%Y-%m-%d"),
-                "--date-to", end.strftime("%Y-%m-%d"),
+                "--date-to", (end.normalize() + pd.Timedelta(days=1)).strftime("%Y-%m-%d"),
                 "--timeframe", timeframe,
                 "--format", "csv",
                 "--directory", str(output_dir),
@@ -144,7 +144,7 @@ class DukascopyMarketDataProvider:
         frame["timestamp"] = pd.to_datetime(timestamps, unit="ms", utc=True, errors="coerce")
         for column in ("open", "high", "low", "close", "volume"):
             frame[column] = pd.to_numeric(frame[column], errors="coerce")
-        frame = frame.loc[:, _COLUMNS].dropna(subset=list(_COLUMNS))
+        frame = frame.loc[:, list(_COLUMNS)].dropna(subset=list(_COLUMNS))
         frame = frame.drop_duplicates(subset=["timestamp"]).sort_values("timestamp")
         frame = frame[(frame["timestamp"] >= start) & (frame["timestamp"] <= end)]
         if frame.empty:
