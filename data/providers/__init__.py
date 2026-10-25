@@ -3,6 +3,7 @@
 from .base import MarketDataProvider, ProviderCapabilities
 from .corporate_action_base import CorporateActionProvider
 from .corporate_action_csv import LocalCSVCorporateActionProvider
+from .dukascopy import DukascopyMarketDataProvider
 from .fundamental_base import FundamentalDataProvider
 from .fundamental_csv import LocalCSVFundamentalProvider
 from .local_csv import LocalCSVMarketDataProvider
@@ -11,6 +12,7 @@ from .macro_csv import LocalCSVMacroProvider
 
 __all__ = [
     "CorporateActionProvider",
+    "DukascopyMarketDataProvider",
     "FundamentalDataProvider",
     "LocalCSVCorporateActionProvider",
     "LocalCSVFundamentalProvider",
