@@ -82,8 +82,7 @@ class DukascopyMarketDataProvider:
         if end <= start:
             raise DataProviderError("end must be after start")
         cache_path = self.cache_dir / (
-            f"{instrument}_{timeframe}_{start:%Y%m%dT%H%M%S}_"
-            f"{end:%Y%m%dT%H%M%S}.csv"
+            f"{instrument}_{timeframe}_{start:%Y%m%dT%H%M%S}_{end:%Y%m%dT%H%M%S}.csv"
         )
         if cache_path.is_file():
             return _read_market_csv(cache_path)
@@ -92,16 +91,24 @@ class DukascopyMarketDataProvider:
             output_dir = Path(temporary_dir)
             command = [
                 *self.command,
-                "--instrument", instrument,
-                "--date-from", start.strftime("%Y-%m-%d"),
-                "--date-to", (end.normalize() + pd.Timedelta(days=1)).strftime("%Y-%m-%d"),
-                "--timeframe", timeframe,
-                "--format", "csv",
-                "--directory", str(output_dir),
+                "--instrument",
+                instrument,
+                "--date-from",
+                start.strftime("%Y-%m-%d"),
+                "--date-to",
+                (end.normalize() + pd.Timedelta(days=1)).strftime("%Y-%m-%d"),
+                "--timeframe",
+                timeframe,
+                "--format",
+                "csv",
+                "--directory",
+                str(output_dir),
                 "--volumes",
                 "--silent",
-                "--retries", "2",
-                "--retry-pause", "1000",
+                "--retries",
+                "2",
+                "--retry-pause",
+                "1000",
             ]
             try:
                 completed = subprocess.run(
@@ -132,7 +139,9 @@ class DukascopyMarketDataProvider:
                 try:
                     frames.append(pd.read_csv(path))
                 except (OSError, pd.errors.ParserError) as exc:
-                    raise DataProviderError(f"Unable to parse Dukascopy output: {path.name}") from exc
+                    raise DataProviderError(
+                        f"Unable to parse Dukascopy output: {path.name}"
+                    ) from exc
 
         frame = pd.concat(frames, ignore_index=True)
         frame.columns = [str(column).strip().lower() for column in frame.columns]
