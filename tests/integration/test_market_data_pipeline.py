@@ -1,6 +1,9 @@
+import subprocess
+from pathlib import Path
+
 from core.contracts import Asset, AssetType, Frequency, MarketDataRequest
 from data import MarketDataEngine
-from data.providers import LocalCSVMarketDataProvider
+from data.providers import DukascopyMarketDataProvider, LocalCSVMarketDataProvider
 
 
 def test_market_data_pipeline_preserves_request_frequency(tmp_path) -> None:
@@ -25,11 +28,6 @@ def test_market_data_pipeline_preserves_request_frequency(tmp_path) -> None:
 def test_dukascopy_provider_integrates_with_market_data_engine(
     tmp_path, monkeypatch
 ) -> None:
-    import subprocess
-    from pathlib import Path
-
-    from data.providers import DukascopyMarketDataProvider
-
     request = MarketDataRequest(
         asset=Asset(symbol="EURUSD", asset_type=AssetType.FX, currency="USD"),
         frequency=Frequency.MINUTE_15,
