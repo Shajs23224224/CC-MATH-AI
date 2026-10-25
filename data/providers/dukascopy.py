@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, cast
-
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any, cast
 
 import pandas as pd
 
