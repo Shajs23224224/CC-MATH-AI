@@ -37,6 +37,7 @@ class DukascopyMarketDataProvider:
 
     Requires Node.js/npm and downloads only when a matching local cache file is
     absent. Data is stored under data/cache by default, which is ignored by Git.
+    Failed downloads and invalid/empty responses are never cached.
     """
 
     name = "dukascopy"
@@ -107,9 +108,9 @@ class DukascopyMarketDataProvider:
                 "--volumes",
                 "--silent",
                 "--retries",
-                "2",
+                "1",
                 "--retry-pause",
-                "1000",
+                "5000",
             ]
             try:
                 completed = subprocess.run(
@@ -125,21 +126,36 @@ class DukascopyMarketDataProvider:
                     "network access; see https://www.dukascopy-node.app/"
                 ) from exc
 
+            detail = _combine_output(completed.stderr, completed.stdout)
             if completed.returncode != 0:
-                detail = (completed.stderr or completed.stdout or "no diagnostic output").strip()
+                if _looks_rate_limited_or_blocked(detail):
+                    raise DataProviderError(
+                        "Dukascopy rate-limited or blocked the download (HTTP 429/503 or "
+                        "WAF challenge). Stop repeated attempts and wait before retrying. "
+                        f"No cache was written. Details: {detail[-1200:]}"
+                    )
                 raise DataProviderError(
-                    f"Dukascopy download failed (exit {completed.returncode}): {detail[-1200:]}"
+                    f"Dukascopy download failed (exit {completed.returncode}): "
+                    f"{detail[-1200:]}"
                 )
 
             csv_files = sorted(output_dir.rglob("*.csv"))
             if not csv_files:
-                detail = (completed.stderr or completed.stdout or "no CSV file produced").strip()
-                raise DataProviderError(f"Dukascopy returned no CSV data: {detail[-1200:]}")
+                if _looks_rate_limited_or_blocked(detail):
+                    raise DataProviderError(
+                        "Dukascopy rate-limited or blocked the download (HTTP 429/503 or "
+                        "WAF challenge). Stop repeated attempts and wait before retrying. "
+                        f"No cache was written. Details: {detail[-1200:]}"
+                    )
+                raise DataProviderError(
+                    f"Dukascopy returned no CSV data: "
+                    f"{(detail or 'no CSV file produced')[-1200:]}"
+                )
             frames = []
             for path in csv_files:
                 try:
                     frames.append(pd.read_csv(path))
-                except (OSError, pd.errors.ParserError) as exc:
+                except (OSError, pd.errors.ParserError, UnicodeDecodeError) as exc:
                     raise DataProviderError(
                         f"Unable to parse Dukascopy output: {path.name}"
                     ) from exc
@@ -168,6 +184,28 @@ class DukascopyMarketDataProvider:
         frame.to_csv(temporary_cache, index=False)
         temporary_cache.replace(cache_path)
         return frame.reset_index(drop=True)
+
+
+def _combine_output(stderr: str | None, stdout: str | None) -> str:
+    return "\n".join(part.strip() for part in (stderr, stdout) if part and part.strip())
+
+
+def _looks_rate_limited_or_blocked(detail: str) -> bool:
+    text = detail.lower()
+    return any(
+        marker in text
+        for marker in (
+            "too many requests",
+            "http 429",
+            "status 429",
+            "http status: 429",
+            "http 503",
+            "status 503",
+            "http status: 503",
+            "waf token",
+            "waf challenge",
+        )
+    )
 
 
 def _utc_timestamp(value: object) -> pd.Timestamp:
