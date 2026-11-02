@@ -32,9 +32,7 @@ def test_task_catalogue_submit_jobs_queue_and_cancel_endpoints() -> None:
     try:
         tasks = client.get("/api/v1/tasks")
         assert tasks.status_code == 200
-        assert tasks.json() == [
-            {"task_name": "classical.ridge", "description": "Ridge regression"}
-        ]
+        assert tasks.json() == [{"task_name": "classical.ridge", "description": "Ridge regression"}]
 
         queue = client.get("/api/v1/queue")
         assert queue.status_code == 200
