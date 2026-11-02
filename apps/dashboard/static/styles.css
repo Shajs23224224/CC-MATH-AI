@@ -108,6 +108,16 @@ h1 { margin: 9px 0 7px; font-size: clamp(27px, 3vw, 36px); font-weight: 700; let
 .updated-label { display: flex; align-items: center; gap: 8px; padding-bottom: 5px; color: var(--text-dim); font-size: 10px; white-space: nowrap; }
 .updated-label strong { color: var(--text-muted); font-weight: 650; }
 .updated-indicator { width: 6px; height: 6px; }
+.heading-actions { display: flex; align-items: center; gap: 17px; }
+.primary-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 37px; padding: 0 13px; border: 1px solid rgba(101, 224, 179, .27);
+  border-radius: 9px; color: #09251d; background: linear-gradient(140deg, #8df0ce, #4acb9c);
+  box-shadow: 0 7px 20px rgba(74, 214, 163, .11); font-size: 10px; font-weight: 800; cursor: pointer;
+  transition: filter .16s ease, transform .16s ease;
+}
+.primary-button:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.primary-button:disabled { opacity: .45; filter: grayscale(.4); cursor: not-allowed; transform: none; }
 .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin-bottom: 17px; }
 .summary-card {
   min-height: 126px; padding: 17px 19px 15px;
@@ -211,6 +221,36 @@ h1 { margin: 9px 0 7px; font-size: clamp(27px, 3vw, 36px); font-weight: 700; let
 .detail-algorithm { max-width: 55%; overflow: hidden; color: var(--accent); font-size: 9px; font-weight: 750; letter-spacing: .08em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
 .detail-content h3 { margin: 12px 0 5px; font-size: 17px; letter-spacing: -.04em; overflow-wrap: anywhere; }
 .run-id { margin: 0; color: var(--text-dim); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; overflow-wrap: anywhere; }
+.run-controls { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; }
+.job-control-note { color: var(--text-dim); font-size: 8px; line-height: 1.4; }
+.cancel-job-button {
+  padding: 7px 9px; border: 1px solid rgba(255, 140, 140, .25); border-radius: 7px;
+  color: var(--red); background: rgba(255, 140, 140, .07); font-size: 8px; font-weight: 750; cursor: pointer;
+}
+.cancel-job-button:hover { background: rgba(255, 140, 140, .13); }
+.submit-dialog {
+  width: min(520px, calc(100vw - 28px)); max-height: min(88vh, 760px); overflow: auto;
+  padding: 0; border: 1px solid #304353; border-radius: 17px; color: var(--text);
+  background: #111c27; box-shadow: 0 30px 90px rgba(0, 0, 0, .55);
+}
+.submit-dialog::backdrop { background: rgba(2, 7, 12, .76); backdrop-filter: blur(5px); }
+.submit-dialog form { display: grid; gap: 15px; padding: 22px; }
+.dialog-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; padding-bottom: 5px; }
+.dialog-heading h2 { margin: 7px 0 5px; font-size: 19px; letter-spacing: -.04em; }
+.dialog-heading p:last-child { margin: 0; color: var(--text-muted); font-size: 10px; line-height: 1.5; }
+.dialog-close { width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 8px; color: var(--text-muted); background: var(--surface); font-size: 19px; cursor: pointer; }
+.dialog-field { display: grid; gap: 7px; color: var(--text-muted); font-size: 9px; font-weight: 700; }
+.dialog-field input, .dialog-field select, .dialog-field textarea {
+  width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid var(--line);
+  border-radius: 8px; color: var(--text); background: #0b141d; font-size: 10px; font-weight: 450;
+}
+.dialog-field textarea { resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; line-height: 1.5; }
+.dialog-field input::placeholder { color: var(--text-dim); }
+.dialog-field input:focus, .dialog-field select:focus, .dialog-field textarea:focus { border-color: rgba(101, 224, 179, .55); outline: none; }
+.task-catalog-empty { padding: 10px 12px; border: 1px dashed rgba(240, 196, 119, .35); border-radius: 8px; color: var(--amber); font-size: 9px; line-height: 1.5; }
+.dialog-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 3px; }
+.dialog-actions > span { color: var(--text-dim); font-size: 8px; line-height: 1.4; }
+
 .progress-section { margin-top: 22px; padding: 15px; border: 1px solid var(--line-soft); border-radius: 11px; background: rgba(8, 14, 20, .28); }
 .progress-copy, .progress-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .progress-copy { margin-bottom: 10px; color: var(--text-muted); font-size: 9px; }
@@ -274,6 +314,7 @@ h1 { margin: 9px 0 7px; font-size: clamp(27px, 3vw, 36px); font-weight: 700; let
   .main-content { width: calc(100% - 30px); padding-top: 26px; }
   .page-heading { align-items: flex-start; flex-direction: column; gap: 12px; margin-bottom: 20px; }
   .updated-label { padding: 0; }
+  .heading-actions { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
   .summary-grid { gap: 9px; margin-bottom: 12px; }
   .summary-card { min-height: 108px; padding: 13px; }
   .summary-value { margin-top: 8px; font-size: 25px; }
