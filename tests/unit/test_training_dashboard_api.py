@@ -185,6 +185,7 @@ def test_app_rejects_non_positive_heartbeat_interval() -> None:
     with pytest.raises(ValueError, match="must be positive"):
         create_app(TrainingEventRecorder(), heartbeat_interval_seconds=0)
 
+
 def test_live_sse_delivers_events_published_after_subscription() -> None:
     recorder = make_recorder()
     client = TestClient(create_app(recorder, heartbeat_interval_seconds=0.05))
