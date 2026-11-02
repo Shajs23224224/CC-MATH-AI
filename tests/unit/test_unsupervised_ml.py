@@ -22,6 +22,7 @@ def sample_features() -> tuple[tuple[float, ...], ...]:
         )
     return tuple(rows)
 
+
 def test_registry_is_explicit_and_operation_scoped() -> None:
     registry = supported_unsupervised_algorithms()
     assert set(registry) == {"clustering", "dimensionality_reduction", "anomaly_detection"}
@@ -104,6 +105,7 @@ def test_anomaly_detectors_return_finite_scores_and_binary_flags(algorithm: str)
     assert set(result.training_anomaly_flags or ()) <= {-1, 1}
     assert set(result.holdout_anomaly_flags or ()) <= {-1, 1}
 
+
 def test_holdout_changes_do_not_change_scaling_or_training_fingerprint() -> None:
     original = sample_features()
     altered = list(original)
@@ -123,6 +125,7 @@ def test_holdout_changes_do_not_change_scaling_or_training_fingerprint() -> None
     assert first.training_labels == second.training_labels
     assert first.stability_scores == second.stability_scores
 
+
 def test_rejects_bad_input_and_unsafe_resource_configuration() -> None:
     with pytest.raises(MLInputError, match="finite"):
         invalid = list(sample_features())
@@ -138,6 +141,7 @@ def test_rejects_bad_input_and_unsafe_resource_configuration() -> None:
         UnsupervisedMLModel(UnsupervisedMLConfig(algorithm="pca")).fit(
             sample_features(), ("only_one_name",)
         )
+
 
 def test_progress_callback_reports_stability_and_preserves_unsupervised_result() -> None:
     config = UnsupervisedMLConfig(
