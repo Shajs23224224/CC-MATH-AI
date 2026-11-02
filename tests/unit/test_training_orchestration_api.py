@@ -149,3 +149,24 @@ def test_http_submission_returns_429_when_bounded_queue_is_full() -> None:
     finally:
         release.set()
         orchestrator.shutdown()
+
+
+def test_app_lifespan_shuts_down_only_its_owned_scheduler() -> None:
+    owned_recorder = TrainingEventRecorder()
+    owned_app = create_app(owned_recorder)
+    owned_scheduler = owned_app.state.training_orchestrator
+
+    with TestClient(owned_app) as client:
+        assert client.get("/healthz").status_code == 200
+
+    assert owned_scheduler.queue_snapshot().closed is True
+
+    injected_recorder = TrainingEventRecorder()
+    injected_scheduler = TrainingOrchestrator(injected_recorder)
+    injected_app = create_app(injected_recorder, orchestrator=injected_scheduler)
+
+    with TestClient(injected_app) as client:
+        assert client.get("/healthz").status_code == 200
+
+    assert injected_scheduler.queue_snapshot().closed is False
+    injected_scheduler.shutdown()
