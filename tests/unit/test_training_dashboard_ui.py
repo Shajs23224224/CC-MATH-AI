@@ -36,6 +36,8 @@ def test_dashboard_serves_html_and_local_assets_from_same_origin() -> None:
     assert "text/javascript" in script.headers["content-type"]
     assert '"/api/v1"' in script.text
     assert "new EventSource" in script.text
+    assert '"stream_end"' in script.text
+    assert "after_sequence=" in script.text
 
 
 def test_dashboard_assets_are_served_without_external_frontend_cdn() -> None:
