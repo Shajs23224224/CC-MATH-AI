@@ -169,3 +169,85 @@ class TrainingRunSnapshot(BaseModel):
         ):
             raise ValueError("current_step cannot exceed total_steps")
         return self
+
+
+class TrainingTaskSubmission(BaseModel):
+    """Validated API payload for submitting one registered training task."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    task_name: str = Field(pattern=r"^[a-z][a-z0-9_.-]{0,79}$")
+    name: str = Field(min_length=1, max_length=160)
+    parameters: dict[str, object] = Field(default_factory=dict)
+    metadata: dict[str, TrainingScalar] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_submission(self) -> TrainingTaskSubmission:
+        """Reject blank labels before a run enters the queue."""
+        if not self.name.strip():
+            raise ValueError("name must not be blank")
+        if any(not key.strip() for key in self.parameters):
+            raise ValueError("parameter names must not be blank")
+        if any(not key.strip() for key in self.metadata):
+            raise ValueError("metadata names must not be blank")
+        return self
+
+
+class TrainingTaskInfo(BaseModel):
+    """Public description of one registered, allow-listed training task."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    task_name: str = Field(min_length=1, max_length=80)
+    description: str = Field(default="", max_length=500)
+
+
+class TrainingJobSnapshot(BaseModel):
+    """Scheduler state associated with one recorder-backed training run."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    run_id: str = Field(min_length=1, max_length=100)
+    task_name: str = Field(min_length=1, max_length=80)
+    status: TrainingStatus
+    submitted_at: datetime
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    cancellation_requested: bool = False
+    queue_position: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="after")
+    def validate_job_timestamps(self) -> TrainingJobSnapshot:
+        """Require timezone-aware, chronologically ordered scheduler timestamps."""
+        timestamps = (self.submitted_at, self.started_at, self.finished_at)
+        if any(value is not None and value.utcoffset() is None for value in timestamps):
+            raise ValueError("job timestamps must be timezone-aware")
+        if self.started_at is not None and self.started_at < self.submitted_at:
+            raise ValueError("started_at cannot precede submitted_at")
+        if self.finished_at is not None:
+            reference = self.started_at or self.submitted_at
+            if self.finished_at < reference:
+                raise ValueError("finished_at cannot precede job start or submission")
+        if self.status == "QUEUED" and self.started_at is not None:
+            raise ValueError("queued jobs cannot have started_at")
+        if self.status == "RUNNING" and self.started_at is None:
+            raise ValueError("running jobs require started_at")
+        if self.status in {"COMPLETED", "FAILED", "CANCELLED"} and self.finished_at is None:
+            raise ValueError("terminal jobs require finished_at")
+        if self.status != "QUEUED" and self.queue_position is not None:
+            raise ValueError("only queued jobs may have a queue position")
+        return self
+
+
+class TrainingQueueSnapshot(BaseModel):
+    """Bounded worker-pool capacity and current queue counts."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    max_workers: int = Field(ge=1)
+    max_pending: int = Field(ge=0)
+    capacity: int = Field(ge=1)
+    queued: int = Field(ge=0)
+    running: int = Field(ge=0)
+    available_slots: int = Field(ge=0)
+    closed: bool
