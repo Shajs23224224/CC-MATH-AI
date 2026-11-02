@@ -118,3 +118,36 @@ def test_http_cancel_endpoint_stops_a_queued_job() -> None:
     finally:
         release.set()
         orchestrator.shutdown()
+
+
+def test_http_submission_returns_429_when_bounded_queue_is_full() -> None:
+    recorder = TrainingEventRecorder()
+    orchestrator = TrainingOrchestrator(recorder, max_workers=1, max_pending=0)
+    started = Event()
+    release = Event()
+
+    def blocking(_parameters, _progress, token):
+        started.set()
+        release.wait(timeout=3)
+        token.raise_if_cancelled()
+
+    orchestrator.register_task("blocking", blocking)
+    client = TestClient(create_app(recorder, orchestrator=orchestrator))
+    try:
+        active = client.post(
+            "/api/v1/runs",
+            json={"task_name": "blocking", "name": "Saturating run"},
+        )
+        assert active.status_code == 202
+        assert started.wait(timeout=2)
+
+        full = client.post(
+            "/api/v1/runs",
+            json={"task_name": "blocking", "name": "Rejected run"},
+        )
+        assert full.status_code == 429
+        assert recorder.list_runs()[0].name == "Saturating run"
+        assert orchestrator.queue_snapshot().available_slots == 0
+    finally:
+        release.set()
+        orchestrator.shutdown()
