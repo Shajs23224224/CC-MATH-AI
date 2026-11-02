@@ -148,3 +148,23 @@ def test_rejects_classification_in_math_regression_coordinator() -> None:
     )
     with pytest.raises(MLInputError, match="currently handles regression"):
         AdaptiveMathEngine(small_config()).analyze(dataset)
+
+
+
+def test_candidate_progress_is_validation_only_until_final_selection() -> None:
+    dataset = make_dataset(relation="sine")
+    config = small_config(random_seed=72)
+    baseline = AdaptiveMathEngine(config).analyze(dataset)
+    progress = []
+    observed = AdaptiveMathEngine(config).analyze(dataset, progress_callback=progress.append)
+
+    assert observed.selected_candidate.candidate_id == baseline.selected_candidate.candidate_id
+    assert observed.selected_candidate.test_rmse == baseline.selected_candidate.test_rmse
+    candidate_events = [item for item in progress if item.stage == "candidate_evaluation"]
+    assert candidate_events
+    assert any(item.stage == "generation" for item in progress)
+    assert all("test_rmse" not in item.metrics for item in candidate_events)
+    assert progress[-1].stage == "completed"
+    assert progress[-1].progress_percent == 100.0
+    assert progress[-1].metrics["selected_test_rmse"] == observed.selected_candidate.test_rmse
+    assert progress[-1].attributes["test_used_for_selection"] is False
