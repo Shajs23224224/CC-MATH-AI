@@ -112,11 +112,15 @@ from .time_series import (
 from .training import (
     TrainingEvent,
     TrainingEventType,
+    TrainingJobSnapshot,
     TrainingProgress,
     TrainingProgressCallback,
+    TrainingQueueSnapshot,
     TrainingRunSnapshot,
     TrainingScalar,
     TrainingStatus,
+    TrainingTaskInfo,
+    TrainingTaskSubmission,
 )
 from .valuation import SensitivityMatrix, ValuationAssumptions, ValuationResult
 from .volatility import (
@@ -249,11 +253,15 @@ __all__ = [
     "TargetAllocation",
     "TrainingEvent",
     "TrainingEventType",
+    "TrainingJobSnapshot",
     "TrainingProgress",
     "TrainingProgressCallback",
+    "TrainingQueueSnapshot",
     "TrainingRunSnapshot",
     "TrainingScalar",
     "TrainingStatus",
+    "TrainingTaskInfo",
+    "TrainingTaskSubmission",
     "TurnoverMetrics",
     "UnitRootTestResult",
 ]
