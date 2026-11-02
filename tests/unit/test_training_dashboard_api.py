@@ -211,3 +211,20 @@ def test_live_sse_delivers_events_published_after_subscription() -> None:
         assert next(lines) == "id: 5"
         assert next(lines) == "event: progress"
         assert next(lines).startswith('data: {"event_id":')
+
+def test_persisted_only_sse_emits_stream_end_after_history_replay(tmp_path: Path) -> None:
+    store = TrainingEventStore(tmp_path / "events.jsonl")
+    make_recorder(event_sink=store.append)
+    client = TestClient(create_app(TrainingEventRecorder(), event_store=store))
+
+    with client.stream(
+        "GET",
+        "/api/v1/runs/api-run-1/events/stream",
+        headers={"Last-Event-ID": "3"},
+    ) as response:
+        lines = list(response.iter_lines())
+
+    assert "id: 4" in lines
+    assert "event: metrics" in lines
+    assert "event: stream_end" in lines
+    assert "data: {}" in lines
