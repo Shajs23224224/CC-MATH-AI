@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import re
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from concurrent.futures import CancelledError, Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -16,13 +16,11 @@ from core.contracts.training import (
     TrainingProgress,
     TrainingProgressCallback,
     TrainingQueueSnapshot,
-    TrainingRunSnapshot,
     TrainingScalar,
     TrainingTaskInfo,
 )
 from core.observability.training import (
     TrainingEventRecorder,
-    TrainingRunNotFoundError,
 )
 
 logger = logging.getLogger(__name__)
@@ -411,7 +409,11 @@ class TrainingOrchestrator:
                 state = self._jobs[run_id]
                 self._cancel_run_locked(state)
         except Exception:
-            logger.exception("training task failed (run_id=%s, task_name=%s)", run_id, handler)
+            logger.exception(
+                "training task failed (run_id=%s, task_name=%s)",
+                run_id,
+                self._jobs[run_id].task_name,
+            )
             with self._lock:
                 state = self._jobs[run_id]
                 current = self.recorder.snapshot(run_id)
