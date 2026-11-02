@@ -8,13 +8,27 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import FastAPI, Header, HTTPException, Query, Request
+from fastapi import FastAPI, Header, HTTPException, Query, Request, status
 from fastapi.responses import RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from apps.dashboard.event_store import TrainingEventStore
 from apps.dashboard.service import TrainingDashboardService
-from core.contracts.training import TrainingEvent, TrainingRunSnapshot
+from apps.dashboard.orchestrator import (
+    TrainingJobNotFoundError,
+    TrainingOrchestrator,
+    TrainingOrchestratorClosedError,
+    TrainingQueueFullError,
+    TrainingTaskNotFoundError,
+)
+from core.contracts.training import (
+    TrainingEvent,
+    TrainingJobSnapshot,
+    TrainingQueueSnapshot,
+    TrainingRunSnapshot,
+    TrainingTaskInfo,
+    TrainingTaskSubmission,
+)
 from core.observability.training import (
     TrainingEventRecorder,
     TrainingRunNotFoundError,
@@ -38,6 +52,7 @@ def create_app(
     *,
     event_store: TrainingEventStore | None = None,
     heartbeat_interval_seconds: float = _DEFAULT_HEARTBEAT_SECONDS,
+    orchestrator: TrainingOrchestrator | None = None,
 ) -> FastAPI:
     """Build an HTTP application around explicitly supplied observability services.
 
@@ -50,6 +65,10 @@ def create_app(
         raise ValueError("heartbeat_interval_seconds must be positive")
 
     service = TrainingDashboardService(recorder, event_store=event_store)
+    owns_orchestrator = orchestrator is None
+    scheduler = orchestrator or TrainingOrchestrator(recorder)
+    if scheduler.recorder is not recorder:
+        raise ValueError("orchestrator must use the same TrainingEventRecorder as the API")
     app = FastAPI(
         title="C-MATH-AI Training Dashboard API",
         version="0.4.0",
@@ -57,6 +76,9 @@ def create_app(
     )
     app.state.training_recorder = recorder
     app.state.training_dashboard_service = service
+    app.state.training_orchestrator = scheduler
+    if owns_orchestrator:
+        app.add_event_handler("shutdown", scheduler.shutdown)
 
     @app.get("/healthz", tags=["system"])
     def health() -> dict[str, str]:
@@ -71,6 +93,79 @@ def create_app(
     def list_runs() -> tuple[TrainingRunSnapshot, ...]:
         """List known in-memory and persisted runs, most recently updated first."""
         return service.list_runs()
+
+    @app.get(
+        "/api/v1/tasks",
+        response_model=list[TrainingTaskInfo],
+        tags=["orchestration"],
+    )
+    def list_training_tasks() -> tuple[TrainingTaskInfo, ...]:
+        """List the explicitly registered training tasks available for submission."""
+        return scheduler.list_tasks()
+
+    @app.get(
+        "/api/v1/queue",
+        response_model=TrainingQueueSnapshot,
+        tags=["orchestration"],
+    )
+    def get_training_queue() -> TrainingQueueSnapshot:
+        """Return bounded worker-pool capacity and active queue counts."""
+        return scheduler.queue_snapshot()
+
+    @app.post(
+        "/api/v1/runs",
+        response_model=TrainingJobSnapshot,
+        status_code=status.HTTP_202_ACCEPTED,
+        tags=["orchestration"],
+    )
+    def submit_training_run(payload: TrainingTaskSubmission) -> TrainingJobSnapshot:
+        """Submit one registered task to the bounded training worker pool."""
+        try:
+            return scheduler.submit(
+                payload.task_name,
+                name=payload.name,
+                parameters=payload.parameters,
+                metadata=payload.metadata,
+            )
+        except TrainingTaskNotFoundError as exc:
+            raise HTTPException(status_code=404, detail="Training task is not registered") from exc
+        except TrainingQueueFullError as exc:
+            raise HTTPException(status_code=429, detail=str(exc)) from exc
+        except TrainingOrchestratorClosedError as exc:
+            raise HTTPException(status_code=503, detail="Training scheduler is shut down") from exc
+
+    @app.get(
+        "/api/v1/jobs",
+        response_model=list[TrainingJobSnapshot],
+        tags=["orchestration"],
+    )
+    def list_training_jobs() -> tuple[TrainingJobSnapshot, ...]:
+        """List jobs submitted through the training orchestrator."""
+        return scheduler.list_jobs()
+
+    @app.get(
+        "/api/v1/jobs/{run_id}",
+        response_model=TrainingJobSnapshot,
+        tags=["orchestration"],
+    )
+    def get_training_job(run_id: str) -> TrainingJobSnapshot:
+        """Return queue and cancellation metadata for one job."""
+        try:
+            return scheduler.get_job(run_id)
+        except TrainingJobNotFoundError as exc:
+            raise HTTPException(status_code=404, detail="Training job not found") from exc
+
+    @app.post(
+        "/api/v1/jobs/{run_id}/cancel",
+        response_model=TrainingJobSnapshot,
+        tags=["orchestration"],
+    )
+    def cancel_training_job(run_id: str) -> TrainingJobSnapshot:
+        """Cancel a queued job or request cooperative cancellation of a running job."""
+        try:
+            return scheduler.cancel(run_id)
+        except TrainingJobNotFoundError as exc:
+            raise HTTPException(status_code=404, detail="Training job not found") from exc
 
     @app.get(
         "/api/v1/runs/{run_id}",
