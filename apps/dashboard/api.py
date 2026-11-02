@@ -9,6 +9,8 @@ from typing import Annotated
 from fastapi import FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
+from apps.dashboard.event_store import TrainingEventStore
+from apps.dashboard.service import TrainingDashboardService
 from core.contracts.training import TrainingEvent, TrainingRunSnapshot
 from core.observability.training import (
     TrainingEventRecorder,
@@ -19,26 +21,39 @@ _DEFAULT_HEARTBEAT_SECONDS = 15.0
 _MAX_EVENT_PAGE_SIZE = 1_000
 
 
+def _encode_sse(event: TrainingEvent) -> str:
+    """Serialize one event using its per-run sequence as the reconnect cursor."""
+    return (
+        f"id: {event.sequence}\n"
+        f"event: {event.event_type.lower()}\n"
+        f"data: {event.model_dump_json()}\n\n"
+    )
+
+
 def create_app(
     recorder: TrainingEventRecorder,
     *,
+    event_store: TrainingEventStore | None = None,
     heartbeat_interval_seconds: float = _DEFAULT_HEARTBEAT_SECONDS,
 ) -> FastAPI:
-    """Build an HTTP application around an explicitly supplied recorder.
+    """Build an HTTP application around explicitly supplied observability services.
 
-    The recorder is injected rather than created globally so a training process and
-    the HTTP transport can share one source of truth. Run lifecycle mutation remains
-    in the application/training layer; this API is intentionally read-only.
+    Inject the recorder shared by the training process. When an event store is
+    supplied, historical run snapshots and events remain queryable after restart.
+    Run lifecycle mutation stays in the training/application layer; this API is
+    intentionally read-only.
     """
     if heartbeat_interval_seconds <= 0:
         raise ValueError("heartbeat_interval_seconds must be positive")
 
+    service = TrainingDashboardService(recorder, event_store=event_store)
     app = FastAPI(
         title="C-MATH-AI Training Dashboard API",
         version="0.3.0",
         description="Read-only training-run observability with resumable SSE events.",
     )
     app.state.training_recorder = recorder
+    app.state.training_dashboard_service = service
 
     @app.get("/healthz", tags=["system"])
     def health() -> dict[str, str]:
@@ -51,8 +66,8 @@ def create_app(
         tags=["training"],
     )
     def list_runs() -> tuple[TrainingRunSnapshot, ...]:
-        """List known runs, most recently updated first."""
-        return recorder.list_runs()
+        """List known in-memory and persisted runs, most recently updated first."""
+        return service.list_runs()
 
     @app.get(
         "/api/v1/runs/{run_id}",
@@ -62,7 +77,7 @@ def create_app(
     def get_run(run_id: str) -> TrainingRunSnapshot:
         """Return the latest snapshot for one run."""
         try:
-            return recorder.snapshot(run_id)
+            return service.snapshot(run_id)
         except TrainingRunNotFoundError as exc:
             raise HTTPException(status_code=404, detail="Training run not found") from exc
 
@@ -78,7 +93,11 @@ def create_app(
     ) -> tuple[TrainingEvent, ...]:
         """Return events after an exclusive per-run sequence cursor."""
         try:
-            return recorder.events(run_id, after_sequence=after_sequence)[:limit]
+            return service.events(
+                run_id,
+                after_sequence=after_sequence,
+                limit=limit,
+            )
         except TrainingRunNotFoundError as exc:
             raise HTTPException(status_code=404, detail="Training run not found") from exc
 
@@ -95,7 +114,7 @@ def create_app(
     ) -> StreamingResponse:
         """Stream ordered run events and resume from the last delivered sequence."""
         try:
-            recorder.snapshot(run_id)
+            service.snapshot(run_id)
         except TrainingRunNotFoundError as exc:
             raise HTTPException(status_code=404, detail="Training run not found") from exc
 
@@ -114,8 +133,19 @@ def create_app(
                     detail="Last-Event-ID must be a non-negative sequence number",
                 )
 
+        live_run = service.is_live_run(run_id)
+
         async def event_stream() -> AsyncIterator[str]:
             nonlocal cursor
+            yield "retry: 3000\n\n"
+
+            if not live_run:
+                # Recovered runs are immutable history in this process: replay then close.
+                for event in service.events(run_id, after_sequence=cursor):
+                    cursor = event.sequence
+                    yield _encode_sse(event)
+                return
+
             loop = asyncio.get_running_loop()
             notification = asyncio.Event()
 
@@ -127,25 +157,17 @@ def create_app(
                         # The client disconnected while a producer was notifying us.
                         return
 
-            unsubscribe = recorder.subscribe(wake_listener)
+            unsubscribe = service.subscribe(wake_listener)
             try:
-                yield "retry: 3000\\n\\n"
                 while not await request.is_disconnected():
                     # Clear before reading: an event arriving during the read either
                     # appears in the read or sets the notification for the next wait.
                     notification.clear()
-                    try:
-                        pending = recorder.events(run_id, after_sequence=cursor)
-                    except TrainingRunNotFoundError:
-                        return
+                    pending = service.events(run_id, after_sequence=cursor)
 
                     for event in pending:
                         cursor = event.sequence
-                        yield (
-                            f"id: {event.sequence}\\n"
-                            f"event: {event.event_type.lower()}\\n"
-                            f"data: {event.model_dump_json()}\\n\\n"
-                        )
+                        yield _encode_sse(event)
 
                     if pending:
                         continue
@@ -156,7 +178,7 @@ def create_app(
                             timeout=heartbeat_interval_seconds,
                         )
                     except TimeoutError:
-                        yield ": keep-alive\\n\\n"
+                        yield ": keep-alive\n\n"
             finally:
                 unsubscribe()
 
