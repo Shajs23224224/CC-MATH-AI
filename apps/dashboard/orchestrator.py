@@ -239,9 +239,7 @@ class TrainingOrchestrator:
             try:
                 self._prune_terminal_jobs()
                 if len(self._jobs) >= self.max_tracked_jobs:
-                    raise TrainingQueueFullError(
-                        "scheduler job history is at its configured limit"
-                    )
+                    raise TrainingQueueFullError("scheduler job history is at its configured limit")
 
                 created = self.recorder.create_run(
                     name=name,
@@ -279,9 +277,7 @@ class TrainingOrchestrator:
                 # From this point the Future callback owns capacity release.
                 slot_transferred = True
                 future.add_done_callback(
-                    lambda completed, job_id=created.run_id: self._on_future_done(
-                        job_id, completed
-                    )
+                    lambda completed, job_id=created.run_id: self._on_future_done(job_id, completed)
                 )
                 return self._job_snapshot(state)
             except Exception:
@@ -311,10 +307,7 @@ class TrainingOrchestrator:
     def queue_snapshot(self) -> TrainingQueueSnapshot:
         """Return current bounded queue and worker-pool counts."""
         with self._lock:
-            statuses = [
-                self.recorder.snapshot(run_id).status
-                for run_id in self._jobs
-            ]
+            statuses = [self.recorder.snapshot(run_id).status for run_id in self._jobs]
             queued = statuses.count("QUEUED")
             running = statuses.count("RUNNING")
             return TrainingQueueSnapshot(
