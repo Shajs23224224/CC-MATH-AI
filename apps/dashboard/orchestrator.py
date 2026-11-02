@@ -262,7 +262,6 @@ class TrainingOrchestrator:
                         self._execute,
                         created.run_id,
                         handler,
-                        state.parameters,
                         state.token,
                     )
                 except RuntimeError as exc:
@@ -385,7 +384,6 @@ class TrainingOrchestrator:
         self,
         run_id: str,
         handler: TrainingTaskHandler,
-        parameters: Mapping[str, object],
         token: CancellationToken,
     ) -> None:
         """Run one task and translate its outcome into recorder lifecycle events."""
