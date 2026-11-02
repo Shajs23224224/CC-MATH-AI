@@ -20,9 +20,7 @@ from core.contracts.training import (
 EventSink = Callable[[TrainingEvent], None]
 EventListener = Callable[[TrainingEvent], None]
 
-_TERMINAL_STATUSES: Final[frozenset[str]] = frozenset(
-    {"COMPLETED", "FAILED", "CANCELLED"}
-)
+_TERMINAL_STATUSES: Final[frozenset[str]] = frozenset({"COMPLETED", "FAILED", "CANCELLED"})
 _ACTIVE_STATUSES: Final[frozenset[str]] = frozenset({"QUEUED", "RUNNING"})
 
 
@@ -261,8 +259,7 @@ class TrainingEventRecorder:
             run = self._get_run(run_id)
             if run.snapshot.status not in expected_statuses:
                 raise TrainingStateError(
-                    f"cannot emit {event_type} while run {run_id} is "
-                    f"{run.snapshot.status}"
+                    f"cannot emit {event_type} while run {run_id} is {run.snapshot.status}"
                 )
             event = TrainingEvent(
                 run_id=run_id,
