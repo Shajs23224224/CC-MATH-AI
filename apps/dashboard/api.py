@@ -147,6 +147,7 @@ def create_app(
                 for event in service.events(run_id, after_sequence=cursor):
                     cursor = event.sequence
                     yield _encode_sse(event)
+                yield "event: stream_end\\ndata: {}\\n\\n"
                 return
 
             loop = asyncio.get_running_loop()
