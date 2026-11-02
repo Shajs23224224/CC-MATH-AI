@@ -7,6 +7,7 @@ from datetime import datetime
 
 import pytest
 
+from core.contracts.training import TrainingProgress
 from core.observability.training import (
     TrainingEventRecorder,
     TrainingRunNotFoundError,
@@ -191,3 +192,31 @@ def test_concurrent_metric_events_keep_contiguous_sequences() -> None:
     assert [event.sequence for event in events] == list(range(1, 43))
     assert len(snapshot.latest_metrics) == 40
     assert snapshot.event_count == 42
+
+
+
+def test_recorder_progress_callback_bridges_engine_metrics() -> None:
+    recorder = TrainingEventRecorder()
+    recorder.create_run(name="Observed model", algorithm="ridge", run_id="callback-run")
+    recorder.start_run("callback-run", stage="training")
+
+    callback = recorder.progress_callback("callback-run")
+    callback(
+        TrainingProgress(
+            stage="validation",
+            step=3,
+            total_steps=10,
+            progress_percent=42.0,
+            metrics={"validation_rmse": 0.25},
+            attributes={"best_iteration": 3, "test_used_for_selection": False},
+            message="Validation iteration completed",
+        )
+    )
+
+    event = recorder.events("callback-run")[-1]
+    snapshot = recorder.snapshot("callback-run")
+    assert event.stage == "validation"
+    assert event.progress_percent == 42.0
+    assert event.metrics["validation_rmse"] == 0.25
+    assert event.attributes["best_iteration"] == 3
+    assert snapshot.latest_metrics["validation_rmse"] == 0.25
