@@ -5,8 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 from threading import RLock
 
-from pydantic import ValidationError
-
 from core.contracts.training import TrainingEvent
 
 
@@ -67,7 +65,7 @@ class TrainingEventStore:
                         continue
                     try:
                         event = TrainingEvent.model_validate_json(line)
-                    except (ValidationError, ValueError) as exc:
+                    except ValueError as exc:
                         raise CorruptTrainingEventStoreError(
                             f"invalid training event at line {line_number}"
                         ) from exc
