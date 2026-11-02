@@ -200,8 +200,7 @@ class UnsupervisedMLModel:
                         stage="cluster_stability",
                         step=repeat + 1,
                         total_steps=self.config.stability_repeats,
-                        progress_percent=55.0
-                        + 30.0 * (repeat + 1) / self.config.stability_repeats,
+                        progress_percent=55.0 + 30.0 * (repeat + 1) / self.config.stability_repeats,
                         metrics={"stability_ari": score},
                         attributes={"repeat": repeat + 1},
                         message=f"Completed cluster stability repeat {repeat + 1}",
@@ -412,8 +411,8 @@ class UnsupervisedMLModel:
             if training_labels is not None:
                 distinct_labels = set(training_labels)
                 diagnostic_metrics["cluster_count"] = float(len(distinct_labels - {-1}))
-                diagnostic_metrics["noise_fraction"] = (
-                    float(training_labels.count(-1)) / len(training_labels)
+                diagnostic_metrics["noise_fraction"] = float(training_labels.count(-1)) / len(
+                    training_labels
                 )
             if stability_mean is not None:
                 diagnostic_metrics["stability_mean_ari"] = stability_mean
@@ -423,9 +422,9 @@ class UnsupervisedMLModel:
                 diagnostic_metrics["mean_anomaly_score"] = float(
                     sum(training_scores) / len(training_scores)
                 )
-                diagnostic_metrics["training_outlier_fraction"] = (
-                    float(training_flags.count(-1)) / len(training_flags)
-                )
+                diagnostic_metrics["training_outlier_fraction"] = float(
+                    training_flags.count(-1)
+                ) / len(training_flags)
             progress_callback(
                 TrainingProgress(
                     stage="output_diagnostics",
@@ -476,9 +475,7 @@ class UnsupervisedMLModel:
                     stage="evaluation",
                     progress_percent=100.0,
                     metrics=(
-                        {"stability_mean_ari": stability_mean}
-                        if stability_mean is not None
-                        else {}
+                        {"stability_mean_ari": stability_mean} if stability_mean is not None else {}
                     ),
                     attributes={
                         "model_id": result.model_id,
