@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import math
 from collections.abc import AsyncIterator
 from typing import Annotated
 
@@ -43,7 +44,7 @@ def create_app(
     Run lifecycle mutation stays in the training/application layer; this API is
     intentionally read-only.
     """
-    if heartbeat_interval_seconds <= 0:
+    if not math.isfinite(heartbeat_interval_seconds) or heartbeat_interval_seconds <= 0:
         raise ValueError("heartbeat_interval_seconds must be positive")
 
     service = TrainingDashboardService(recorder, event_store=event_store)
