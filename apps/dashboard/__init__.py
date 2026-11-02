@@ -6,10 +6,6 @@ from apps.dashboard.event_store import (
     TrainingEventStore,
     TrainingEventStoreError,
 )
-from apps.dashboard.service import (
-    TrainingDashboardService,
-    TrainingEventHistoryError,
-)
 from apps.dashboard.orchestrator import (
     CancellationToken,
     TrainingCancelledError,
@@ -20,6 +16,10 @@ from apps.dashboard.orchestrator import (
     TrainingTaskHandler,
     TrainingTaskNotFoundError,
     TrainingTaskRegistry,
+)
+from apps.dashboard.service import (
+    TrainingDashboardService,
+    TrainingEventHistoryError,
 )
 
 __all__ = [
