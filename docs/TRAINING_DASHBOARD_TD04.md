@@ -58,7 +58,10 @@ progress display, metrics and activity timeline without a full-page reload.
 
 The browser uses the SSE event ID as its reconnect cursor. Native `EventSource` reconnection
 therefore resumes from `Last-Event-ID` as implemented by TD03. The stream is closed when
-the selected run becomes terminal or when the user selects another run.
+the selected run becomes terminal or when the user selects another run. A persisted-only
+run sends TD03's `stream_end` marker after replay, so the browser does not reconnect
+indefinitely to historical-only data. The inspector requests the most recent 200 events and
+retains a bounded in-memory activity window while the stream remains open.
 
 ## Run locally
 
