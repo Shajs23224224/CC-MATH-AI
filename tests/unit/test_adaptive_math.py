@@ -45,6 +45,7 @@ def small_config(**updates: object) -> AdaptiveMathConfig:
     values.update(updates)
     return AdaptiveMathConfig(**values)
 
+
 def test_adaptive_engine_finds_held_out_linear_relation() -> None:
     report = AdaptiveMathEngine(small_config()).analyze(make_dataset())
     assert report.selected_candidate.test_rmse is not None
@@ -58,12 +59,14 @@ def test_adaptive_engine_finds_held_out_linear_relation() -> None:
     assert report.formal_proof is False
     assert any("RMSE independently recomputed" in item for item in report.verification_checks)
 
+
 def test_adaptive_strategy_selection_detects_quadratic_structure() -> None:
     report = AdaptiveMathEngine(small_config()).analyze(make_dataset(relation="quadratic"))
     assert report.selected_candidate.test_rmse is not None
     assert report.selected_candidate.test_rmse < 1e-5
     assert report.selected_candidate.validation_rmse < 1e-5
     assert report.selected_candidate.strategy in {"polynomial", "evolutionary"}
+
 
 def test_evolutionary_candidates_are_real_bounded_and_reproducible() -> None:
     config = small_config(random_seed=72)
@@ -79,6 +82,7 @@ def test_evolutionary_candidates_are_real_bounded_and_reproducible() -> None:
         candidate.test_used_for_selection is False for candidate in first.candidate_leaderboard
     )
 
+
 def test_report_and_structured_candidate_survive_json_round_trip() -> None:
     report = AdaptiveMathEngine(small_config()).analyze(make_dataset())
     recovered = AdaptiveMathReport.model_validate_json(report.model_dump_json())
@@ -86,6 +90,7 @@ def test_report_and_structured_candidate_survive_json_round_trip() -> None:
     assert predict_adaptive_candidate(recovered.selected_candidate, ((0.0,),))[0] == pytest.approx(
         3.0, abs=1e-6
     )
+
 
 def test_experiment_store_persists_adaptive_run(tmp_path) -> None:
     store = JSONLExperimentStore(tmp_path / "adaptive" / "runs.jsonl")
@@ -96,10 +101,12 @@ def test_experiment_store_persists_adaptive_run(tmp_path) -> None:
     assert records[0].subject_id == report.selected_candidate.candidate_id
     assert records[0].results["test_used_for_selection"] is False
 
+
 def test_rejects_dataset_outside_computation_budget() -> None:
     engine = AdaptiveMathEngine(small_config(max_observations=30))
     with pytest.raises(MLInputError, match="max_observations"):
         engine.analyze(make_dataset(rows=40))
+
 
 def test_invalid_generated_division_is_rejected_at_prediction_time() -> None:
     tree = ExpressionNode(
@@ -128,6 +135,7 @@ def test_invalid_generated_division_is_rejected_at_prediction_time() -> None:
     with pytest.raises(MLInputError, match="division denominator"):
         predict_adaptive_candidate(candidate, ((1.0,), (2.0,)))
 
+
 def test_rejects_classification_in_math_regression_coordinator() -> None:
     dataset = MLDataset(
         dataset_id="synthetic-classes",
@@ -140,6 +148,7 @@ def test_rejects_classification_in_math_regression_coordinator() -> None:
     )
     with pytest.raises(MLInputError, match="currently handles regression"):
         AdaptiveMathEngine(small_config()).analyze(dataset)
+
 
 def test_candidate_progress_is_validation_only_until_final_selection() -> None:
     dataset = make_dataset(relation="sine")
