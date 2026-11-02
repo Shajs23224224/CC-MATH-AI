@@ -14,7 +14,6 @@ from core.observability.training import (
     TrainingStateError,
 )
 
-
 def test_recorder_tracks_ordered_run_lifecycle_and_metrics() -> None:
     recorder = TrainingEventRecorder()
     created = recorder.create_run(
@@ -65,7 +64,6 @@ def test_recorder_tracks_ordered_run_lifecycle_and_metrics() -> None:
     assert snapshot.ended_at is not None
     assert len(recorder.list_runs()) == 1
 
-
 def test_recorder_keeps_runs_and_event_cursors_separate() -> None:
     received: list[str] = []
     recorder = TrainingEventRecorder()
@@ -80,7 +78,6 @@ def test_recorder_keeps_runs_and_event_cursors_separate() -> None:
     assert [event.sequence for event in recorder.events("run-2")] == [1, 2]
     assert recorder.events("run-1", after_sequence=2)[0].sequence == 3
     assert set(received) == {"run-1", "run-2"}
-
 
 def test_recorder_rejects_invalid_lifecycle_operations() -> None:
     recorder = TrainingEventRecorder()
@@ -97,7 +94,6 @@ def test_recorder_rejects_invalid_lifecycle_operations() -> None:
         recorder.cancel("queued")
     with pytest.raises(TrainingRunNotFoundError):
         recorder.snapshot("missing")
-
 
 def test_recorder_failure_and_cancellation_are_terminal() -> None:
     recorder = TrainingEventRecorder()
@@ -119,7 +115,6 @@ def test_recorder_failure_and_cancellation_are_terminal() -> None:
     recorder.cancel("cancelled")
     assert recorder.snapshot("cancelled").status == "CANCELLED"
 
-
 def test_listener_failure_does_not_abort_recording() -> None:
     recorder = TrainingEventRecorder()
 
@@ -132,7 +127,6 @@ def test_listener_failure_does_not_abort_recording() -> None:
 
     assert recorder.snapshot("observed").status == "RUNNING"
 
-
 def test_event_sink_failure_does_not_advance_run_state() -> None:
     def broken_sink(_event: object) -> None:
         raise OSError("disk unavailable")
@@ -142,7 +136,6 @@ def test_event_sink_failure_does_not_advance_run_state() -> None:
         recorder.create_run(name="Not saved", algorithm="ridge", run_id="not-saved")
     with pytest.raises(TrainingRunNotFoundError):
         recorder.snapshot("not-saved")
-
 
 def test_event_contract_rejects_inconsistent_progress_and_naive_timestamp() -> None:
     from core.contracts.training import TrainingEvent
@@ -164,7 +157,6 @@ def test_event_contract_rejects_inconsistent_progress_and_naive_timestamp() -> N
             occurred_at=datetime(2026, 1, 1),
         )
 
-
 def test_event_sink_receives_a_contiguous_sequence_per_run() -> None:
     persisted = []
     recorder = TrainingEventRecorder(event_sink=persisted.append)
@@ -174,7 +166,6 @@ def test_event_sink_receives_a_contiguous_sequence_per_run() -> None:
     recorder.complete("a")
 
     assert [event.sequence for event in persisted] == [1, 2, 3, 4]
-
 
 def test_concurrent_metric_events_keep_contiguous_sequences() -> None:
     recorder = TrainingEventRecorder()
@@ -192,8 +183,6 @@ def test_concurrent_metric_events_keep_contiguous_sequences() -> None:
     assert [event.sequence for event in events] == list(range(1, 43))
     assert len(snapshot.latest_metrics) == 40
     assert snapshot.event_count == 42
-
-
 
 def test_recorder_progress_callback_bridges_engine_metrics() -> None:
     recorder = TrainingEventRecorder()
