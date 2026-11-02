@@ -25,6 +25,9 @@ def test_dashboard_serves_html_and_local_assets_from_same_origin() -> None:
     assert page.status_code == 200
     assert page.headers["content-type"].startswith("text/html")
     assert "Training overview" in page.text
+    assert "New training run" in page.text
+    assert 'id="submit-dialog"' in page.text
+    assert 'id="cancel-job-button"' in page.text
     assert 'href="/dashboard/styles.css"' in page.text
     assert 'src="/dashboard/app.js"' in page.text
 
@@ -38,6 +41,9 @@ def test_dashboard_serves_html_and_local_assets_from_same_origin() -> None:
     assert "new EventSource" in script.text
     assert '"stream_end"' in script.text
     assert "after_sequence=" in script.text
+    assert 'API + "/tasks"' in script.text
+    assert 'API + "/runs", "POST"' in script.text
+    assert '"/cancel"' in script.text
 
 
 def test_dashboard_assets_are_served_without_external_frontend_cdn() -> None:
