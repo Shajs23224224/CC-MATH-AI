@@ -212,6 +212,7 @@ def test_live_sse_delivers_events_published_after_subscription() -> None:
         assert next(lines) == "event: progress"
         assert next(lines).startswith('data: {"event_id":')
 
+
 def test_persisted_only_sse_emits_stream_end_after_history_replay(tmp_path: Path) -> None:
     store = TrainingEventStore(tmp_path / "events.jsonl")
     make_recorder(event_sink=store.append)
