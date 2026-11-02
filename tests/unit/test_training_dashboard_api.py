@@ -2,19 +2,21 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 from fastapi.testclient import TestClient
 
 from apps.dashboard.api import create_app
 from apps.dashboard.event_store import TrainingEventStore
+from core.contracts.training import TrainingEvent
 from core.observability.training import TrainingEventRecorder
 
 
 def make_recorder(
-    event_sink: object | None = None,
+    event_sink: Callable[[TrainingEvent], None] | None = None,
 ) -> TrainingEventRecorder:
-    recorder = TrainingEventRecorder(event_sink=event_sink)  # type: ignore[arg-type]
+    recorder = TrainingEventRecorder(event_sink=event_sink)
     recorder.create_run(
         name="API integration run",
         algorithm="ridge",
