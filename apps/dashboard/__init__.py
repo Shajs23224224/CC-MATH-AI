@@ -6,9 +6,15 @@ from apps.dashboard.event_store import (
     TrainingEventStore,
     TrainingEventStoreError,
 )
+from apps.dashboard.service import (
+    TrainingDashboardService,
+    TrainingEventHistoryError,
+)
 
 __all__ = [
     "CorruptTrainingEventStoreError",
+    "TrainingDashboardService",
+    "TrainingEventHistoryError",
     "TrainingEventStore",
     "TrainingEventStoreError",
     "create_app",
