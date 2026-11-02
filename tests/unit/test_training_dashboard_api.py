@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from apps.dashboard.api import create_app
+from apps.dashboard.event_store import TrainingEventStore
 from core.observability.training import TrainingEventRecorder
 
 
-def make_recorder() -> TrainingEventRecorder:
-    recorder = TrainingEventRecorder()
+def make_recorder(
+    event_sink: object | None = None,
+) -> TrainingEventRecorder:
+    recorder = TrainingEventRecorder(event_sink=event_sink)  # type: ignore[arg-type]
     recorder.create_run(
         name="API integration run",
         algorithm="ridge",
@@ -133,7 +138,47 @@ def test_sse_rejects_invalid_last_event_id() -> None:
     assert response.status_code == 400
 
 
+def test_sse_streams_persisted_history_after_recorder_restart(tmp_path: Path) -> None:
+    store = TrainingEventStore(tmp_path / "events.jsonl")
+    make_recorder(event_sink=store.append)
+
+    # A new recorder simulates a fresh API process with only the JSONL history.
+    client = TestClient(create_app(TrainingEventRecorder(), event_store=store))
+
+    runs = client.get("/api/v1/runs")
+    assert runs.status_code == 200
+    assert len(runs.json()) == 1
+    assert runs.json()[0]["run_id"] == "api-run-1"
+    assert runs.json()[0]["status"] == "RUNNING"
+    assert runs.json()[0]["event_count"] == 4
+    assert runs.json()[0]["latest_metrics"] == {
+        "train_loss": 0.42,
+        "holdout_rmse": 0.18,
+    }
+
+    events = client.get("/api/v1/runs/api-run-1/events?after_sequence=2")
+    assert [event["sequence"] for event in events.json()] == [3, 4]
+
+    with client.stream(
+        "GET",
+        "/api/v1/runs/api-run-1/events/stream",
+        headers={"Last-Event-ID": "3"},
+    ) as response:
+        lines = iter(response.iter_lines())
+        assert next(lines) == "retry: 3000"
+        assert next(lines) == ""
+        assert next(lines) == "id: 4"
+        assert next(lines) == "event: metrics"
+
+
 def test_http_api_does_not_expose_run_mutation_routes() -> None:
     client = TestClient(create_app(make_recorder()))
 
     assert client.post("/api/v1/runs/api-run-1/cancel").status_code == 404
+
+
+def test_app_rejects_non_positive_heartbeat_interval() -> None:
+    import pytest
+
+    with pytest.raises(ValueError, match="must be positive"):
+        create_app(TrainingEventRecorder(), heartbeat_interval_seconds=0)
