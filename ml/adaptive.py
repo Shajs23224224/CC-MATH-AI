@@ -511,6 +511,7 @@ class AdaptiveMathEngine:
                     message=message,
                 )
             )
+
         try:
             candidates.append(
                 _evaluate_dense_candidate(
