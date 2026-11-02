@@ -97,6 +97,7 @@ See:
 - [Training Dashboard TD01](docs/TRAINING_DASHBOARD_TD01.md)
 - [Training Dashboard TD02](docs/TRAINING_DASHBOARD_TD02.md) — progress callbacks and instrumentation for F28–F31 — event contracts, per-run observability and JSONL history foundation
 - [Training Dashboard TD03](docs/TRAINING_DASHBOARD_TD03.md) — read-only FastAPI backend, persisted-history recovery and resumable per-run SSE streaming
+- [Training Dashboard TD04](docs/TRAINING_DASHBOARD_TD04.md) — responsive same-origin browser UI, run inspector, metric cards, event timeline and live SSE updates
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
@@ -112,11 +113,13 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 
-For the Training Dashboard HTTP server, install the optional server extra:
+For the Training Dashboard HTTP server and local browser UI, install the optional server extra:
 
 ```bash
 python -m pip install -e ".[dashboard]"
 ```
+
+Use the TD03/TD04 application factory with the training process's shared recorder and open `/dashboard/`; see [TD04 setup](docs/TRAINING_DASHBOARD_TD04.md).
 ```
 
 Run checks:
