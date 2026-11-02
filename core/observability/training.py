@@ -82,6 +82,9 @@ class TrainingEventRecorder:
             occurred_at=now,
             event_type="RUN_CREATED",
             status="QUEUED",
+            run_name=name,
+            algorithm=algorithm,
+            run_metadata=dict(metadata or {}),
             message="Training run created",
         )
         with self._lock:
