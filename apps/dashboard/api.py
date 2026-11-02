@@ -71,6 +71,7 @@ def create_app(
     scheduler = orchestrator or TrainingOrchestrator(recorder)
     if scheduler.recorder is not recorder:
         raise ValueError("orchestrator must use the same TrainingEventRecorder as the API")
+
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         """Shut down an orchestrator created by this application factory."""
