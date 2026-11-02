@@ -393,10 +393,10 @@ class TrainingOrchestrator:
                 if token.cancelled:
                     self._cancel_run_locked(state)
                     return
-                state.started_at = datetime.now(UTC)
                 task_parameters = state.parameters
                 state.parameters = {}
                 self.recorder.start_run(run_id, stage="initialization")
+                state.started_at = self.recorder.snapshot(run_id).started_at
 
             recorder_callback = self.recorder.progress_callback(run_id)
 
