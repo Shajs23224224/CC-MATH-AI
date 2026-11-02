@@ -210,3 +210,21 @@ def test_resource_budget_and_non_finite_prediction_inputs_are_rejected() -> None
     invalid[-1] = (float("nan"), invalid[-1][1], invalid[-1][2])
     with pytest.raises(MLInputError, match="finite"):
         fitted.predict(tuple(invalid))
+
+
+def test_epoch_progress_reports_losses_without_changing_model_results() -> None:
+    dataset = regression_dataset()
+    config = compact_config("mlp", "forecasting")
+    baseline = DeepLearningModel(config).fit(dataset)
+    progress = []
+    observed = DeepLearningModel(config).fit(dataset, progress_callback=progress.append)
+
+    epoch_events = [item for item in progress if item.stage == "epoch"]
+    assert observed.metrics == baseline.metrics
+    assert observed.best_epoch == baseline.best_epoch
+    assert len(epoch_events) == observed.epochs_completed
+    assert all("train_loss" in item.metrics for item in epoch_events)
+    assert all("validation_loss" in item.metrics for item in epoch_events)
+    assert all(isfinite(item.metrics["train_loss"]) for item in epoch_events)
+    assert progress[-1].stage == "evaluation"
+    assert progress[-1].metrics["best_validation_loss"] == observed.best_validation_loss

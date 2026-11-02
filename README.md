@@ -94,6 +94,11 @@ See:
 - [F41 Monte Carlo and Adversarial Robustness](docs/ROBUSTNESS_F41.md)
 - [F42 Paper Trading and Execution](docs/PAPER_TRADING_F42.md)
 - [F43 Platform 1.0](docs/PLATFORM_F43.md)
+- [Training Dashboard TD01](docs/TRAINING_DASHBOARD_TD01.md)
+- [Training Dashboard TD02](docs/TRAINING_DASHBOARD_TD02.md) — progress callbacks and instrumentation for F28–F31 — event contracts, per-run observability and JSONL history foundation
+- [Training Dashboard TD03](docs/TRAINING_DASHBOARD_TD03.md) — read-only FastAPI backend, persisted-history recovery and resumable per-run SSE streaming
+- [Training Dashboard TD04](docs/TRAINING_DASHBOARD_TD04.md) — responsive same-origin browser UI, run inspector, metric cards, event timeline and live SSE updates
+- [Training Dashboard TD05](docs/TRAINING_DASHBOARD_TD05.md) — bounded task orchestration, allow-listed handlers, queue management and cooperative cancellation
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
@@ -109,6 +114,14 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
+
+For the Training Dashboard HTTP server and local browser UI, install the optional server extra:
+
+```bash
+python -m pip install -e ".[dashboard]"
+```
+
+Wire the shared recorder, registered task handlers and TD05 orchestrator into `create_app`, then open `/dashboard/`; see [TD05 setup](docs/TRAINING_DASHBOARD_TD05.md).
 
 Run checks:
 

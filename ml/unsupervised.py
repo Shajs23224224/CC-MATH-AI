@@ -19,6 +19,7 @@ from sklearn.mixture import GaussianMixture
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.preprocessing import StandardScaler
 
+from core.contracts.training import TrainingProgress, TrainingProgressCallback
 from core.contracts.unsupervised import (
     UnsupervisedAlgorithm,
     UnsupervisedMLConfig,
@@ -163,6 +164,7 @@ class UnsupervisedMLModel:
         estimator: Any,
         training_features: np.ndarray,
         training_labels: np.ndarray,
+        progress_callback: TrainingProgressCallback | None = None,
     ) -> tuple[float, ...]:
         """Compare resampled cluster assignments with full-prefix labels via adjusted Rand."""
         if self.config.stability_repeats == 0:
@@ -192,14 +194,28 @@ class UnsupervisedMLModel:
             if not math.isfinite(score):
                 raise MLTrainingError("cluster stability produced a non-finite score")
             scores.append(score)
+            if progress_callback is not None:
+                progress_callback(
+                    TrainingProgress(
+                        stage="cluster_stability",
+                        step=repeat + 1,
+                        total_steps=self.config.stability_repeats,
+                        progress_percent=55.0 + 30.0 * (repeat + 1) / self.config.stability_repeats,
+                        metrics={"stability_ari": score},
+                        attributes={"repeat": repeat + 1},
+                        message=f"Completed cluster stability repeat {repeat + 1}",
+                    )
+                )
         return tuple(scores)
 
     def fit(
         self,
         features: Sequence[Sequence[float]],
         feature_names: Sequence[str],
+        *,
+        progress_callback: TrainingProgressCallback | None = None,
     ) -> UnsupervisedMLResult:
-        """Fit on the initial prefix; only transform/score supported holdout rows."""
+        """Fit on the initial prefix and optionally emit operation-specific progress."""
         matrix = _as_matrix(features, max_observations=self.config.max_observations)
         names = tuple(feature_names)
         if len(names) != matrix.shape[1]:
@@ -215,10 +231,36 @@ class UnsupervisedMLModel:
 
         raw_train = matrix[:train_end]
         raw_holdout = matrix[train_end:]
+        if progress_callback is not None:
+            progress_callback(
+                TrainingProgress(
+                    stage="data_split",
+                    progress_percent=10.0,
+                    metrics={
+                        "training_observations": float(len(raw_train)),
+                        "holdout_observations": float(len(raw_holdout)),
+                    },
+                    attributes={
+                        "operation": _OPERATION_BY_ALGORITHM[self.config.algorithm],
+                        "holdout_used_for_fit": False,
+                    },
+                    message="Chronological training and holdout segments prepared",
+                )
+            )
         scaler = StandardScaler()
         try:
             train = scaler.fit_transform(raw_train)
             holdout = scaler.transform(raw_holdout)
+            if progress_callback is not None:
+                progress_callback(
+                    TrainingProgress(
+                        stage="preprocessing",
+                        progress_percent=25.0,
+                        metrics={"scaled_training_observations": float(len(train))},
+                        attributes={"scaler_fit_scope": "training_prefix_only"},
+                        message="Training-prefix scaling completed",
+                    )
+                )
         except (ValueError, TypeError, FloatingPointError) as exc:
             raise MLTrainingError("training-prefix scaling failed") from exc
 
@@ -226,6 +268,16 @@ class UnsupervisedMLModel:
         operation = _OPERATION_BY_ALGORITHM[self.config.algorithm]
         try:
             estimator.fit(train)
+            if progress_callback is not None:
+                progress_callback(
+                    TrainingProgress(
+                        stage="model_fit",
+                        progress_percent=55.0,
+                        metrics={"training_observations": float(len(train))},
+                        attributes={"algorithm": self.config.algorithm},
+                        message="Unsupervised estimator fitted",
+                    )
+                )
             training_labels: tuple[int, ...] | None = None
             holdout_labels: tuple[int, ...] | None = None
             training_embedding: tuple[tuple[float, ...], ...] | None = None
@@ -247,7 +299,12 @@ class UnsupervisedMLModel:
                             "clustering estimator returned misaligned holdout labels"
                         )
                     holdout_labels = tuple(int(value) for value in predicted.tolist())
-                stability_scores = self._stability(estimator, train, fitted_labels)
+                stability_scores = self._stability(
+                    estimator,
+                    train,
+                    fitted_labels,
+                    progress_callback=progress_callback,
+                )
                 if stability_scores:
                     stability_mean = float(np.mean(stability_scores))
             elif operation == "dimensionality_reduction":
@@ -344,6 +401,40 @@ class UnsupervisedMLModel:
                 "indicate more unusual rows."
             )
 
+        if progress_callback is not None:
+            diagnostic_metrics: dict[str, float] = {}
+            diagnostic_attributes: dict[str, str | int | float | bool | None] = {
+                "operation": operation,
+                "algorithm": self.config.algorithm,
+                "holdout_used_for_fit": False,
+            }
+            if training_labels is not None:
+                distinct_labels = set(training_labels)
+                diagnostic_metrics["cluster_count"] = float(len(distinct_labels - {-1}))
+                diagnostic_metrics["noise_fraction"] = float(training_labels.count(-1)) / len(
+                    training_labels
+                )
+            if stability_mean is not None:
+                diagnostic_metrics["stability_mean_ari"] = stability_mean
+            if training_embedding is not None and training_embedding:
+                diagnostic_metrics["embedding_dimensions"] = float(len(training_embedding[0]))
+            if training_scores is not None and training_flags is not None:
+                diagnostic_metrics["mean_anomaly_score"] = float(
+                    sum(training_scores) / len(training_scores)
+                )
+                diagnostic_metrics["training_outlier_fraction"] = float(
+                    training_flags.count(-1)
+                ) / len(training_flags)
+            progress_callback(
+                TrainingProgress(
+                    stage="output_diagnostics",
+                    progress_percent=90.0,
+                    metrics=diagnostic_metrics,
+                    attributes=diagnostic_attributes,
+                    message="Unsupervised diagnostics computed",
+                )
+            )
+
         result = UnsupervisedMLResult(
             model_id=f"{self.config.algorithm}:{model_hash}",
             algorithm=self.config.algorithm,
@@ -378,4 +469,20 @@ class UnsupervisedMLModel:
         self._scaler = scaler
         self._feature_names = names
         self.result = result
+        if progress_callback is not None:
+            progress_callback(
+                TrainingProgress(
+                    stage="evaluation",
+                    progress_percent=100.0,
+                    metrics=(
+                        {"stability_mean_ari": stability_mean} if stability_mean is not None else {}
+                    ),
+                    attributes={
+                        "model_id": result.model_id,
+                        "training_observations": len(raw_train),
+                        "holdout_observations": len(raw_holdout),
+                    },
+                    message="Unsupervised fit and holdout diagnostics completed",
+                )
+            )
         return result

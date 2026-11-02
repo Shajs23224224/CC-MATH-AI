@@ -41,6 +41,7 @@ from core.contracts.ml import (
     MLPrediction,
     MLTrainingConfig,
 )
+from core.contracts.training import TrainingProgress, TrainingProgressCallback
 
 from .errors import MLInputError, MLPredictionError, MLTrainingError
 
@@ -130,6 +131,7 @@ def _select_gradient_boosting_iterations(
     x_train: np.ndarray,
     y_train: np.ndarray,
     task: str,
+    progress_callback: TrainingProgressCallback | None = None,
 ) -> tuple[int, int]:
     """Select a tree count on a chronological validation suffix of the training prefix."""
     max_estimators = estimator.get_params(deep=False).get("n_estimators")
@@ -179,6 +181,24 @@ def _select_gradient_boosting_iterations(
                 stale_iterations = 0
             elif iteration >= minimum_iterations:
                 stale_iterations += 1
+            if progress_callback is not None:
+                progress_callback(
+                    TrainingProgress(
+                        stage="boosting_validation",
+                        step=iteration,
+                        total_steps=max_estimators,
+                        progress_percent=5.0 + 70.0 * iteration / max_estimators,
+                        metrics={
+                            "validation_mse": score,
+                            "best_validation_mse": best_score,
+                        },
+                        attributes={
+                            "best_iteration": best_iteration,
+                            "stale_iterations": stale_iterations,
+                        },
+                        message=f"Validated {iteration} boosting estimators",
+                    )
+                )
             if iteration >= minimum_iterations and stale_iterations >= _BOOSTING_PATIENCE:
                 break
     elif isinstance(candidate, GradientBoostingClassifier):
@@ -200,6 +220,24 @@ def _select_gradient_boosting_iterations(
                 stale_iterations = 0
             elif iteration >= minimum_iterations:
                 stale_iterations += 1
+            if progress_callback is not None:
+                progress_callback(
+                    TrainingProgress(
+                        stage="boosting_validation",
+                        step=iteration,
+                        total_steps=max_estimators,
+                        progress_percent=5.0 + 70.0 * iteration / max_estimators,
+                        metrics={
+                            "validation_log_loss": score,
+                            "best_validation_log_loss": best_score,
+                        },
+                        attributes={
+                            "best_iteration": best_iteration,
+                            "stale_iterations": stale_iterations,
+                        },
+                        message=f"Validated {iteration} boosting estimators",
+                    )
+                )
             if iteration >= minimum_iterations and stale_iterations >= _BOOSTING_PATIENCE:
                 break
     else:
@@ -219,8 +257,13 @@ class ClassicalMLModel:
         self.metadata: MLModelMetadata | None = None
         self.evaluation: MLEvaluation | None = None
 
-    def fit(self, dataset: MLDataset) -> MLEvaluation:
-        """Fit only the chronological training prefix and evaluate once on the held-out tail."""
+    def fit(
+        self,
+        dataset: MLDataset,
+        *,
+        progress_callback: TrainingProgressCallback | None = None,
+    ) -> MLEvaluation:
+        """Fit the chronological training prefix and optionally emit progress updates."""
         if dataset.task != self.config.task:
             raise MLInputError("dataset task must match model configuration")
         factories = _REGRESSORS if self.config.task == "regression" else _CLASSIFIERS
@@ -272,7 +315,11 @@ class ClassicalMLModel:
                         f"1 and {_MAX_BOOSTING_ESTIMATORS}"
                     )
                 selected_estimators, validation_samples = _select_gradient_boosting_iterations(
-                    estimator, x_train, y_train, self.config.task
+                    estimator,
+                    x_train,
+                    y_train,
+                    self.config.task,
+                    progress_callback=progress_callback,
                 )
                 estimator.set_params(n_estimators=selected_estimators, warm_start=False)
                 boosting_details = {
@@ -293,6 +340,27 @@ class ClassicalMLModel:
             steps.append(("model", estimator))
             pipeline = Pipeline(steps)
             pipeline.fit(x_train, y_train)
+            if progress_callback is not None:
+                progress_callback(
+                    TrainingProgress(
+                        stage="model_fit",
+                        progress_percent=85.0,
+                        metrics=(
+                            {
+                                "selected_n_estimators": float(
+                                    boosting_details["selected_n_estimators"]
+                                )
+                            }
+                            if "selected_n_estimators" in boosting_details
+                            else {}
+                        ),
+                        attributes={
+                            "training_samples": train_end,
+                            "algorithm": self.config.algorithm,
+                        },
+                        message="Estimator fitted on the chronological training prefix",
+                    )
+                )
             predictions = np.asarray(pipeline.predict(x_test))
         except MLInputError:
             raise
@@ -373,6 +441,20 @@ class ClassicalMLModel:
             test_end_index=total,
             metrics=metrics,
         )
+        if progress_callback is not None:
+            progress_callback(
+                TrainingProgress(
+                    stage="evaluation",
+                    progress_percent=100.0,
+                    metrics=metrics,
+                    attributes={
+                        "training_samples": train_end,
+                        "test_samples": test_size,
+                        "test_used_for_selection": False,
+                    },
+                    message="Chronological holdout evaluation completed",
+                )
+            )
         return self.evaluation
 
     def predict(self, rows: Sequence[Sequence[float]]) -> MLPrediction:

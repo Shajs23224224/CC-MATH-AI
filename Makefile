@@ -13,6 +13,6 @@ format-check:
 	ruff format --check .
 
 typecheck:
-	mypy core data quant ml signals portfolio risk backtest execution
+	mypy core data quant ml signals portfolio risk backtest execution apps/dashboard
 
 check: lint format-check typecheck test
