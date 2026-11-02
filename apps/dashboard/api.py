@@ -58,8 +58,9 @@ def create_app(
 
     Inject the recorder shared by the training process. When an event store is
     supplied, historical run snapshots and events remain queryable after restart.
-    Run lifecycle mutation stays in the training/application layer; this API is
-    intentionally read-only.
+    Training execution is available only through the injected, registry-driven
+    orchestrator. Arbitrary code and direct recorder mutation are never accepted
+    through the HTTP API.
     """
     if not math.isfinite(heartbeat_interval_seconds) or heartbeat_interval_seconds <= 0:
         raise ValueError("heartbeat_interval_seconds must be positive")
@@ -71,8 +72,8 @@ def create_app(
         raise ValueError("orchestrator must use the same TrainingEventRecorder as the API")
     app = FastAPI(
         title="C-MATH-AI Training Dashboard API",
-        version="0.4.0",
-        description="Read-only training-run observability with resumable SSE events.",
+        version="0.5.0",
+        description="Training observability and allow-listed job orchestration with resumable SSE.",
     )
     app.state.training_recorder = recorder
     app.state.training_dashboard_service = service
