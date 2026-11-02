@@ -112,6 +112,8 @@ from .time_series import (
 from .training import (
     TrainingEvent,
     TrainingEventType,
+    TrainingProgress,
+    TrainingProgressCallback,
     TrainingRunSnapshot,
     TrainingScalar,
     TrainingStatus,
@@ -247,6 +249,8 @@ __all__ = [
     "TargetAllocation",
     "TrainingEvent",
     "TrainingEventType",
+    "TrainingProgress",
+    "TrainingProgressCallback",
     "TrainingRunSnapshot",
     "TrainingScalar",
     "TrainingStatus",
