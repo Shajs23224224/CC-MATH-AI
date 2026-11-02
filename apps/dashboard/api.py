@@ -1,4 +1,4 @@
-"""Read-only HTTP API and resumable SSE transport for the Training Dashboard (TD03)."""
+"""Training Dashboard HTTP API, static interface delivery and resumable SSE transport."""
 
 from __future__ import annotations
 
