@@ -6,14 +6,14 @@ from threading import Event
 
 import pytest
 
-from core.contracts.training import TrainingProgress, TrainingTaskSubmission
-from core.observability.training import TrainingEventRecorder
 from apps.dashboard.orchestrator import (
     TrainingOrchestrator,
     TrainingQueueFullError,
     TrainingTaskNotFoundError,
     TrainingTaskRegistry,
 )
+from core.contracts.training import TrainingProgress, TrainingTaskSubmission
+from core.observability.training import TrainingEventRecorder
 
 
 def test_registry_lists_only_explicitly_registered_tasks() -> None:
