@@ -13,7 +13,6 @@ from fastapi.responses import RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from apps.dashboard.event_store import TrainingEventStore
-from apps.dashboard.service import TrainingDashboardService
 from apps.dashboard.orchestrator import (
     TrainingJobNotFoundError,
     TrainingOrchestrator,
@@ -21,6 +20,7 @@ from apps.dashboard.orchestrator import (
     TrainingQueueFullError,
     TrainingTaskNotFoundError,
 )
+from apps.dashboard.service import TrainingDashboardService
 from core.contracts.training import (
     TrainingEvent,
     TrainingJobSnapshot,
