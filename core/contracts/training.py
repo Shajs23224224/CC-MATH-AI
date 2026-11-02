@@ -54,7 +54,13 @@ class TrainingEvent(BaseModel):
         if self.step is not None and self.total_steps is not None and self.step > self.total_steps:
             raise ValueError("step cannot exceed total_steps")
         if self.event_type == "RUN_CREATED":
-            if self.status != "QUEUED" or not self.run_name or not self.algorithm:
+            if (
+                self.status != "QUEUED"
+                or self.run_name is None
+                or not self.run_name.strip()
+                or self.algorithm is None
+                or not self.algorithm.strip()
+            ):
                 raise ValueError(
                     "RUN_CREATED events require QUEUED status, run_name and algorithm"
                 )
@@ -105,13 +111,18 @@ class TrainingRunSnapshot(BaseModel):
     @model_validator(mode="after")
     def validate_snapshot_state(self) -> TrainingRunSnapshot:
         """Keep timestamps and counters coherent with the run lifecycle."""
-        if self.created_at.tzinfo is None or self.updated_at.tzinfo is None:
+        if (
+            self.created_at.utcoffset() is None
+            or self.updated_at.utcoffset() is None
+        ):
             raise ValueError("run timestamps must be timezone-aware")
         if self.updated_at < self.created_at:
             raise ValueError("updated_at cannot precede created_at")
-        if self.started_at is not None and self.started_at.tzinfo is None:
+        if not self.name.strip() or not self.algorithm.strip():
+            raise ValueError("run name and algorithm must not be blank")
+        if self.started_at is not None and self.started_at.utcoffset() is None:
             raise ValueError("started_at must be timezone-aware")
-        if self.ended_at is not None and self.ended_at.tzinfo is None:
+        if self.ended_at is not None and self.ended_at.utcoffset() is None:
             raise ValueError("ended_at must be timezone-aware")
         if self.status == "QUEUED" and self.started_at is not None:
             raise ValueError("queued runs cannot have started_at")
