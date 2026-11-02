@@ -3,19 +3,17 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Callable
 
 from apps.dashboard.event_store import TrainingEventStore
-from core.contracts.training import (
-    TrainingEvent,
-    TrainingRunSnapshot,
-    TrainingStatus,
-)
+from core.contracts.training import TrainingEvent, TrainingRunSnapshot
 from core.observability.training import (
     TrainingEventRecorder,
     TrainingRunNotFoundError,
 )
 
 _TERMINAL_STATUSES = frozenset({"COMPLETED", "FAILED", "CANCELLED"})
+EventListener = Callable[[TrainingEvent], None]
 
 
 class TrainingEventHistoryError(RuntimeError):
@@ -87,9 +85,9 @@ class TrainingDashboardService:
             return False
         return True
 
-    def subscribe(self, listener: object) -> object:
+    def subscribe(self, listener: EventListener) -> Callable[[], None]:
         """Delegate an event listener subscription to the live recorder."""
-        return self.recorder.subscribe(listener)  # type: ignore[arg-type]
+        return self.recorder.subscribe(listener)
 
     def _stored_events(self, run_id: str) -> tuple[TrainingEvent, ...]:
         if self.event_store is None:
