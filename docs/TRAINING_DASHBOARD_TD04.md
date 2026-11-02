@@ -4,7 +4,7 @@
 
 TD04 adds a responsive, same-origin browser interface for the Training Dashboard. The UI is
 served by the existing FastAPI application and consumes the TD03 read-only API and SSE
-stream. It does not introduce a separate frontend server, JavaScript build chain, npm
+stream. TD05 extends this interface with registered-task submission and cancellation controls. It does not introduce a separate frontend server, JavaScript build chain, npm
 runtime, charting library or browser-to-model execution path.
 
 ## Frontend files
