@@ -184,3 +184,29 @@ def test_app_rejects_non_positive_heartbeat_interval() -> None:
 
     with pytest.raises(ValueError, match="must be positive"):
         create_app(TrainingEventRecorder(), heartbeat_interval_seconds=0)
+
+def test_live_sse_delivers_events_published_after_subscription() -> None:
+    recorder = make_recorder()
+    client = TestClient(create_app(recorder, heartbeat_interval_seconds=0.05))
+
+    with client.stream(
+        "GET",
+        "/api/v1/runs/api-run-1/events/stream",
+        headers={"Last-Event-ID": "4"},
+    ) as response:
+        assert response.status_code == 200
+        lines = iter(response.iter_lines())
+        assert next(lines) == "retry: 3000"
+        assert next(lines) == ""
+
+        recorder.report_progress(
+            "api-run-1",
+            stage="validation",
+            step=2,
+            total_steps=3,
+            metrics={"validation_loss": 0.21},
+        )
+
+        assert next(lines) == "id: 5"
+        assert next(lines) == "event: progress"
+        assert next(lines).startswith('data: {"event_id":')
