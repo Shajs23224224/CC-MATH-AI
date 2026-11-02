@@ -83,7 +83,9 @@ The stream emits standard SSE frames with:
 - `event`: the lower-case event type, for example `progress` or `state_changed`;
 - `data`: the complete serialized `TrainingEvent`;
 - periodic comment heartbeats while a live run is idle;
-- `retry: 3000` to guide client reconnection.
+- `retry: 3000` to guide client reconnection;
+- `stream_end` after a historical-only replay, allowing browser clients to close the
+  EventSource instead of reconnecting to a stream with no live producer.
 
 Example browser client:
 
@@ -109,8 +111,8 @@ clients; `Last-Event-ID`, when supplied, takes precedence.
 A live stream subscribes before reading the next event batch, then polls the recorder's
 ordered event history after each notification. This closes the read/subscribe race and
 preserves per-run ordering even when producer threads notify concurrently. A stream for a
-run recovered only from JSONL replays the requested history and then closes: that run is
-not active in the current process.
+run recovered only from JSONL replays the requested history, emits `stream_end` and closes:
+that run is not active in the current process.
 
 The transport uses the recorder's in-process listener mechanism. Deploy one API/worker
 process per recorder unless a future phase introduces a cross-process event broker.
