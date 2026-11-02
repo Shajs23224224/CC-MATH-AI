@@ -21,10 +21,12 @@ def regression_dataset() -> MLDataset:
         task="regression",
     )
 
+
 def test_supported_models_are_task_scoped() -> None:
     registry = supported_algorithms()
     assert "ridge" in registry["regression"]
     assert "random_forest_classifier" in registry["classification"]
+
 
 def test_ridge_fits_and_reports_chronological_oos_metrics() -> None:
     model = ClassicalMLModel(MLTrainingConfig(algorithm="ridge", task="regression", random_seed=11))
@@ -39,6 +41,7 @@ def test_ridge_fits_and_reports_chronological_oos_metrics() -> None:
     assert len(prediction.predictions) == 2
     assert all(np.isfinite(float(value)) for value in prediction.predictions)
 
+
 def test_fit_is_reproducible_for_same_seed_and_data() -> None:
     config = MLTrainingConfig(
         algorithm="random_forest_regressor", task="regression", random_seed=28
@@ -50,6 +53,7 @@ def test_fit_is_reproducible_for_same_seed_and_data() -> None:
     assert result_a.metrics == result_b.metrics
     assert first.metadata is not None and second.metadata is not None
     assert first.metadata.data_fingerprint == second.metadata.data_fingerprint
+
 
 def test_classifier_returns_probabilities_and_metrics() -> None:
     features = tuple((float(index), float(index % 3)) for index in range(60))
@@ -74,6 +78,7 @@ def test_classifier_returns_probabilities_and_metrics() -> None:
     assert len(prediction.probabilities) == 2
     assert all(abs(sum(row) - 1.0) < 1e-8 for row in prediction.probabilities)
 
+
 def test_invalid_parameters_and_unfitted_prediction_fail_closed() -> None:
     with pytest.raises(ValueError, match="random_state"):
         MLTrainingConfig(algorithm="ridge", task="regression", parameters={"random_state": 4})
@@ -84,6 +89,7 @@ def test_invalid_parameters_and_unfitted_prediction_fail_closed() -> None:
         ClassicalMLModel(MLTrainingConfig(algorithm="unknown", task="regression")).fit(
             regression_dataset()
         )
+
 
 def test_rejects_misaligned_or_non_finite_dataset() -> None:
     with pytest.raises(ValueError, match="same number"):
@@ -106,6 +112,7 @@ def test_rejects_misaligned_or_non_finite_dataset() -> None:
             target=(1.0,) * 12,
             task="regression",
         )
+
 
 def test_progress_callback_does_not_change_classical_results() -> None:
     config = MLTrainingConfig(
