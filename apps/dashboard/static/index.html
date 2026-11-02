@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0b1118">
+    <meta name="description" content="C-MATH-AI training runs, model progress and experiment telemetry.">
+    <title>Training Dashboard · C-MATH-AI</title>
+    <link rel="stylesheet" href="/dashboard/styles.css">
+    <script src="/dashboard/app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/dashboard/" aria-label="C-MATH-AI Training Dashboard home">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span class="brand-copy">
+            <strong>C-MATH-AI</strong>
+            <span>RESEARCH PLATFORM</span>
+          </span>
+        </a>
+        <div class="topbar-center">
+          <span class="eyebrow">MODEL OPERATIONS</span>
+          <span class="topbar-divider" aria-hidden="true"></span>
+          <span class="topbar-context">Training observability</span>
+        </div>
+        <div class="topbar-actions">
+          <span class="connection-pill" id="api-status" role="status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="api-status-text">Connecting</span>
+          </span>
+          <button class="icon-button" id="refresh-button" type="button" title="Refresh runs" aria-label="Refresh runs">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <section class="page-heading">
+          <div>
+            <p class="eyebrow accent-eyebrow">OVERVIEW / EXPERIMENTS</p>
+            <h1>Training overview</h1>
+            <p class="page-subtitle">Monitor model execution, inspect metrics and follow training events as they happen.</p>
+          </div>
+          <div class="updated-label">
+            <span class="updated-indicator" aria-hidden="true"></span>
+            <span>Last updated <strong id="last-updated">—</strong></span>
+          </div>
+        </section>
+
+        <section class="summary-grid" aria-label="Training run summary">
+          <article class="summary-card">
+            <div class="summary-top"><span class="summary-label">Total runs</span><span class="summary-icon icon-total" aria-hidden="true">Σ</span></div>
+            <div class="summary-value" id="total-runs">—</div>
+            <div class="summary-foot">Recorded experiments</div>
+          </article>
+          <article class="summary-card">
+            <div class="summary-top"><span class="summary-label">Running now</span><span class="summary-icon icon-running" aria-hidden="true"><span></span></span></div>
+            <div class="summary-value" id="running-runs">—</div>
+            <div class="summary-foot"><span class="tiny-dot running-dot"></span> Active processes</div>
+          </article>
+          <article class="summary-card">
+            <div class="summary-top"><span class="summary-label">Completed</span><span class="summary-icon icon-complete" aria-hidden="true">✓</span></div>
+            <div class="summary-value" id="completed-runs">—</div>
+            <div class="summary-foot">Successfully finished</div>
+          </article>
+          <article class="summary-card">
+            <div class="summary-top"><span class="summary-label">Needs attention</span><span class="summary-icon icon-failed" aria-hidden="true">!</span></div>
+            <div class="summary-value" id="failed-runs">—</div>
+            <div class="summary-foot">Failed or cancelled</div>
+          </article>
+        </section>
+
+        <div class="workspace-grid">
+          <section class="panel runs-panel" aria-labelledby="runs-heading">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">EXPERIMENT MANAGEMENT</p>
+                <h2 id="runs-heading">Training runs <span class="count-chip" id="runs-count">0</span></h2>
+              </div>
+              <span class="live-caption"><span class="live-pulse"></span> Live updates</span>
+            </div>
+            <div class="toolbar">
+              <label class="search-field">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg>
+                <input id="search-input" type="search" placeholder="Search runs or algorithms" autocomplete="off" aria-label="Search runs or algorithms">
+              </label>
+              <label class="select-field">
+                <span class="visually-hidden">Filter by status</span>
+                <select id="status-filter">
+                  <option value="ALL">All statuses</option>
+                  <option value="RUNNING">Running</option>
+                  <option value="QUEUED">Queued</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="FAILED">Failed</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+              </label>
+            </div>
+            <div class="run-table" role="table" aria-label="Training runs">
+              <div class="run-table-head" role="row">
+                <span role="columnheader">RUN / ALGORITHM</span>
+                <span role="columnheader">STATUS</span>
+                <span role="columnheader">PROGRESS</span>
+                <span role="columnheader">UPDATED</span>
+              </div>
+              <div id="run-list" class="run-list" role="rowgroup">
+                <div class="loading-state"><span class="spinner"></span><span>Loading training runs…</span></div>
+              </div>
+              <div class="empty-state hidden" id="empty-runs">
+                <span class="empty-icon">⌕</span>
+                <strong>No runs found</strong>
+                <span>Try another search or status filter.</span>
+              </div>
+            </div>
+            <div class="panel-footer">
+              <span id="runs-footnote">Waiting for API data</span>
+              <button class="text-button" id="clear-filters" type="button">Clear filters</button>
+            </div>
+          </section>
+
+          <aside class="panel detail-panel" aria-labelledby="detail-heading">
+            <div class="panel-heading detail-heading">
+              <div>
+                <p class="eyebrow">RUN INSPECTOR</p>
+                <h2 id="detail-heading">Run details</h2>
+              </div>
+              <span class="detail-live hidden" id="stream-status"><span class="live-pulse"></span> Streaming</span>
+            </div>
+            <div class="detail-empty" id="detail-empty">
+              <div class="empty-graphic" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+              <strong>Select a training run</strong>
+              <p>Choose an experiment to inspect its progress, metrics and event history.</p>
+            </div>
+            <div class="detail-content hidden" id="detail-content">
+              <div class="detail-identity">
+                <div class="detail-algorithm" id="detail-algorithm">—</div>
+                <span class="status-badge" id="detail-status">UNKNOWN</span>
+              </div>
+              <h3 id="detail-name">—</h3>
+              <p class="run-id" id="detail-id">—</p>
+              <div class="progress-section">
+                <div class="progress-copy"><span>Training progress</span><strong id="detail-progress-value">—</strong></div>
+                <div class="progress-track"><div class="progress-fill" id="detail-progress-bar"></div></div>
+                <div class="progress-meta"><span id="detail-stage">Awaiting stage</span><span id="detail-step">—</span></div>
+              </div>
+              <div class="detail-meta-grid">
+                <div><span>Created</span><strong id="detail-created">—</strong></div>
+                <div><span>Duration</span><strong id="detail-duration">—</strong></div>
+                <div><span>Events</span><strong id="detail-events-count">—</strong></div>
+                <div><span>Run ID</span><strong class="metadata-run-id" id="detail-short-id">—</strong></div>
+              </div>
+              <section class="metrics-section">
+                <div class="subsection-heading"><h4>Latest metrics</h4><span id="metrics-caption">From event stream</span></div>
+                <div class="metrics-grid" id="metrics-grid"><div class="metrics-empty">No metrics reported yet.</div></div>
+              </section>
+              <section class="activity-section">
+                <div class="subsection-heading"><h4>Activity timeline</h4><span id="activity-count">0 events</span></div>
+                <div class="activity-list" id="activity-list"><div class="metrics-empty">No events to display.</div></div>
+              </section>
+            </div>
+          </aside>
+        </div>
+        <footer class="page-footer">
+          <span><span class="footer-mark">C</span> C-MATH-AI <span class="footer-separator">/</span> TRAINING OBSERVABILITY</span>
+          <span>Read-only monitor <span class="footer-separator">·</span> API v1</span>
+        </footer>
+      </main>
+    </div>
+    <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
