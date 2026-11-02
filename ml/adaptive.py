@@ -892,6 +892,30 @@ class AdaptiveMathEngine:
                 raise
             except OSError as exc:
                 raise ExperimentPersistenceError("adaptive result could not be persisted") from exc
+        if progress_callback is not None:
+            final_metrics = {
+                "selected_validation_rmse": selected.validation_rmse,
+                "candidates_evaluated": float(candidate_count),
+                "candidates_rejected": float(rejected_count),
+            }
+            if selected.test_rmse is not None:
+                final_metrics["selected_test_rmse"] = selected.test_rmse
+            if selected.test_mae is not None:
+                final_metrics["selected_test_mae"] = selected.test_mae
+            progress_callback(
+                TrainingProgress(
+                    stage="completed",
+                    progress_percent=100.0,
+                    metrics=final_metrics,
+                    attributes={
+                        "selected_candidate_id": selected.candidate_id,
+                        "selected_strategy": selected.strategy,
+                        "generations_completed": generations_completed,
+                        "test_used_for_selection": False,
+                    },
+                    message="Adaptive candidate selection and final test evaluation completed",
+                )
+            )
         return report
 
 
