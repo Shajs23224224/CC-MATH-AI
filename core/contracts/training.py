@@ -61,9 +61,7 @@ class TrainingEvent(BaseModel):
                 or self.algorithm is None
                 or not self.algorithm.strip()
             ):
-                raise ValueError(
-                    "RUN_CREATED events require QUEUED status, run_name and algorithm"
-                )
+                raise ValueError("RUN_CREATED events require QUEUED status, run_name and algorithm")
         elif self.run_name is not None or self.algorithm is not None or self.run_metadata:
             raise ValueError("run metadata is only allowed on RUN_CREATED events")
         if self.event_type == "STATE_CHANGED" and self.status is None:
@@ -111,10 +109,7 @@ class TrainingRunSnapshot(BaseModel):
     @model_validator(mode="after")
     def validate_snapshot_state(self) -> TrainingRunSnapshot:
         """Keep timestamps and counters coherent with the run lifecycle."""
-        if (
-            self.created_at.utcoffset() is None
-            or self.updated_at.utcoffset() is None
-        ):
+        if self.created_at.utcoffset() is None or self.updated_at.utcoffset() is None:
             raise ValueError("run timestamps must be timezone-aware")
         if self.updated_at < self.created_at:
             raise ValueError("updated_at cannot precede created_at")
