@@ -251,3 +251,14 @@ class TrainingQueueSnapshot(BaseModel):
     running: int = Field(ge=0)
     available_slots: int = Field(ge=0)
     closed: bool
+
+    @model_validator(mode="after")
+    def validate_capacity(self) -> TrainingQueueSnapshot:
+        """Keep queue counts within the configured bounded worker-pool capacity."""
+        if self.capacity != self.max_workers + self.max_pending:
+            raise ValueError("capacity must equal max_workers plus max_pending")
+        if self.queued + self.running > self.capacity:
+            raise ValueError("queued and running jobs cannot exceed scheduler capacity")
+        if self.available_slots != self.capacity - self.queued - self.running:
+            raise ValueError("available_slots must match unused scheduler capacity")
+        return self
