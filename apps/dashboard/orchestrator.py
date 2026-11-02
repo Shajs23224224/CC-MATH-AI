@@ -439,29 +439,41 @@ class TrainingOrchestrator:
     def _on_future_done(self, run_id: str, future: Future[object]) -> None:
         """Release bounded capacity and terminalize unexpected worker failures."""
         try:
-            error = future.exception()
-        except CancelledError:
-            error = None
-        with self._lock:
-            state = self._jobs.get(run_id)
-            if state is not None:
-                if future.cancelled():
-                    self._cancel_run_locked(state)
-                elif error is not None:
-                    current = self.recorder.snapshot(run_id)
-                    if current.status in _ACTIVE_STATUSES:
-                        try:
-                            self.recorder.fail(
-                                run_id,
-                                error_code="WORKER_ABORTED",
-                                message="Training worker stopped unexpectedly",
-                                stage=current.current_stage,
-                            )
-                        except Exception:
-                            logger.exception("could not record aborted worker (run_id=%s)", run_id)
+            try:
+                error = future.exception()
+            except CancelledError:
+                error = None
+            with self._lock:
+                state = self._jobs.get(run_id)
+                if state is not None:
+                    if future.cancelled():
+                        self._cancel_run_locked(state)
+                    elif error is not None:
+                        current = self.recorder.snapshot(run_id)
+                        if current.status in _ACTIVE_STATUSES:
+                            try:
+                                self.recorder.fail(
+                                    run_id,
+                                    error_code="WORKER_ABORTED",
+                                    message="Training worker stopped unexpectedly",
+                                    stage=current.current_stage,
+                                )
+                            except Exception:
+                                logger.exception(
+                                    "could not record aborted worker (run_id=%s)", run_id
+                                )
+                        state.finished_at = state.finished_at or datetime.now(UTC)
+                    state.future = None
+        except Exception:
+            # A persistence failure must not leak a bounded scheduler slot.
+            logger.exception("worker finalization failed (run_id=%s)", run_id)
+            with self._lock:
+                state = self._jobs.get(run_id)
+                if state is not None:
+                    state.future = None
                     state.finished_at = state.finished_at or datetime.now(UTC)
-                state.future = None
-        self._slots.release()
+        finally:
+            self._slots.release()
 
     def _job_snapshot(self, state: _JobState) -> TrainingJobSnapshot:
         """Project current recorder state and scheduler timestamps into one response."""
