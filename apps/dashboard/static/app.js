@@ -243,14 +243,15 @@
   }
 
   async function cancelSelectedJob() {
-    if (!state.selectedRunId || !state.selectedJob) return;
+    const runId = state.selectedRunId;
+    if (!runId || !state.selectedJob) return;
     els.cancelJobButton.disabled = true;
     try {
       const job = await sendJson(
-        API + "/jobs/" + encodeURIComponent(state.selectedRunId) + "/cancel",
+        API + "/jobs/" + encodeURIComponent(runId) + "/cancel",
         "POST",
       );
-      state.selectedJob = job;
+      if (state.selectedRunId === runId) state.selectedJob = job;
       if (job.status === "CANCELLED") {
         showToast("Queued training job cancelled.");
       } else if (job.cancellation_requested) {
@@ -262,8 +263,10 @@
     } catch (error) {
       showToast("Could not cancel training job: " + error.message);
     } finally {
-      els.cancelJobButton.disabled = false;
-      renderDetails();
+      if (state.selectedRunId === runId) {
+        els.cancelJobButton.disabled = false;
+        renderDetails();
+      }
     }
   }
 
