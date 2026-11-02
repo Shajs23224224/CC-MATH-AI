@@ -323,6 +323,7 @@ class TrainingOrchestrator:
                 capacity=self._capacity,
                 queued=queued,
                 running=running,
+                in_use=self._in_use,
                 available_slots=self._capacity - self._in_use,
                 closed=self._closed,
             )
