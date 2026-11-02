@@ -122,7 +122,6 @@ python -m pip install -e ".[dashboard]"
 ```
 
 Wire the shared recorder, registered task handlers and TD05 orchestrator into `create_app`, then open `/dashboard/`; see [TD05 setup](docs/TRAINING_DASHBOARD_TD05.md).
-```
 
 Run checks:
 
