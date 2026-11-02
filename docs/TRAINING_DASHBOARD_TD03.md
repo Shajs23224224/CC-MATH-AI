@@ -72,8 +72,10 @@ Event history accepts:
 - `limit`: 1–1,000 events; defaults to `200`.
 
 Unknown run IDs return HTTP 404. Invalid query values return HTTP 422. An invalid
-`Last-Event-ID` header returns HTTP 400. The backend intentionally has no POST, PUT,
-PATCH or DELETE route for run lifecycle mutation.
+`Last-Event-ID` header returns HTTP 400. These TD03 telemetry endpoints are read-only.
+TD05 later adds a narrow, allow-listed `POST /api/v1/runs` submission endpoint and
+`POST /api/v1/jobs/{run_id}/cancel`; no generic route accepts recorder state changes,
+Python source, shell commands or arbitrary callables.
 
 ## SSE behavior
 
