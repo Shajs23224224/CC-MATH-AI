@@ -20,6 +20,40 @@ TrainingEventType = Literal[
 TrainingScalar = str | int | float | bool | None
 
 
+class TrainingProgress(BaseModel):
+    """One algorithm-native progress update emitted by an instrumented training engine."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+
+    stage: str = Field(min_length=1, max_length=120)
+    progress_percent: float | None = Field(default=None, ge=0.0, le=100.0)
+    step: int | None = Field(default=None, ge=0)
+    total_steps: int | None = Field(default=None, ge=1)
+    metrics: dict[str, float] = Field(default_factory=dict)
+    attributes: dict[str, TrainingScalar] = Field(default_factory=dict)
+    message: str | None = Field(default=None, max_length=2_000)
+
+    @model_validator(mode="after")
+    def validate_progress_shape(self) -> TrainingProgress:
+        """Require meaningful progress and consistent counters."""
+        if not self.stage.strip():
+            raise ValueError("stage must not be blank")
+        if (self.step is None) != (self.total_steps is None):
+            raise ValueError("step and total_steps must be supplied together")
+        if self.step is not None and self.total_steps is not None and self.step > self.total_steps:
+            raise ValueError("step cannot exceed total_steps")
+        if self.progress_percent is None and self.step is None:
+            raise ValueError("progress requires a percentage or step counters")
+        if any(not key.strip() for key in self.metrics):
+            raise ValueError("metric names must not be blank")
+        if any(not key.strip() for key in self.attributes):
+            raise ValueError("attribute names must not be blank")
+        return self
+
+
+TrainingProgressCallback = Callable[[TrainingProgress], None]
+
+
 class TrainingEvent(BaseModel):
     """One immutable, ordered event emitted by a training run."""
 
