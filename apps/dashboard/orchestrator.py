@@ -198,6 +198,7 @@ class TrainingOrchestrator:
             thread_name_prefix="training-worker",
         )
         self._jobs: dict[str, _JobState] = {}
+        self._in_use = 0
         self._lock = RLock()
         self._closed = False
 
@@ -226,18 +227,21 @@ class TrainingOrchestrator:
     ) -> TrainingJobSnapshot:
         """Create a QUEUED run and schedule its registered handler."""
         handler = self.registry.resolve(task_name)
-        if not self._slots.acquire(blocking=False):
-            raise TrainingQueueFullError(
-                f"training capacity is full ({self._capacity} running and pending slots)"
-            )
-
-        try:
-            with self._lock:
-                if self._closed:
-                    raise TrainingOrchestratorClosedError("training orchestrator is shut down")
+        with self._lock:
+            if self._closed:
+                raise TrainingOrchestratorClosedError("training orchestrator is shut down")
+            if not self._slots.acquire(blocking=False):
+                raise TrainingQueueFullError(
+                    f"training capacity is full ({self._capacity} running and pending slots)"
+                )
+            self._in_use += 1
+            slot_transferred = False
+            try:
                 self._prune_terminal_jobs()
                 if len(self._jobs) >= self.max_tracked_jobs:
-                    raise TrainingQueueFullError("scheduler job history is at its configured limit")
+                    raise TrainingQueueFullError(
+                        "scheduler job history is at its configured limit"
+                    )
 
                 created = self.recorder.create_run(
                     name=name,
@@ -272,15 +276,19 @@ class TrainingOrchestrator:
                         "training executor is not accepting work"
                     ) from exc
                 state.future = future
+                # From this point the Future callback owns capacity release.
+                slot_transferred = True
                 future.add_done_callback(
                     lambda completed, job_id=created.run_id: self._on_future_done(
                         job_id, completed
                     )
                 )
                 return self._job_snapshot(state)
-        except Exception:
-            self._slots.release()
-            raise
+            except Exception:
+                if not slot_transferred:
+                    self._in_use -= 1
+                    self._slots.release()
+                raise
 
     def get_job(self, run_id: str) -> TrainingJobSnapshot:
         """Return scheduler details for one submitted job."""
@@ -316,7 +324,7 @@ class TrainingOrchestrator:
                 capacity=self._capacity,
                 queued=queued,
                 running=running,
-                available_slots=max(0, self._capacity - used),
+                available_slots=self._capacity - self._in_use,
                 closed=self._closed,
             )
 
@@ -438,12 +446,12 @@ class TrainingOrchestrator:
 
     def _on_future_done(self, run_id: str, future: Future[object]) -> None:
         """Release bounded capacity and terminalize unexpected worker failures."""
-        try:
+        with self._lock:
             try:
-                error = future.exception()
-            except CancelledError:
-                error = None
-            with self._lock:
+                try:
+                    error = future.exception()
+                except CancelledError:
+                    error = None
                 state = self._jobs.get(run_id)
                 if state is not None:
                     if future.cancelled():
@@ -464,16 +472,16 @@ class TrainingOrchestrator:
                                 )
                         state.finished_at = state.finished_at or datetime.now(UTC)
                     state.future = None
-        except Exception:
-            # A persistence failure must not leak a bounded scheduler slot.
-            logger.exception("worker finalization failed (run_id=%s)", run_id)
-            with self._lock:
+            except Exception:
+                # A persistence failure must not leak a bounded scheduler slot.
+                logger.exception("worker finalization failed (run_id=%s)", run_id)
                 state = self._jobs.get(run_id)
                 if state is not None:
                     state.future = None
                     state.finished_at = state.finished_at or datetime.now(UTC)
-        finally:
-            self._slots.release()
+            finally:
+                self._in_use -= 1
+                self._slots.release()
 
     def _job_snapshot(self, state: _JobState) -> TrainingJobSnapshot:
         """Project current recorder state and scheduler timestamps into one response."""
