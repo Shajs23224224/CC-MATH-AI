@@ -96,6 +96,7 @@ See:
 - [F43 Platform 1.0](docs/PLATFORM_F43.md)
 - [Training Dashboard TD01](docs/TRAINING_DASHBOARD_TD01.md)
 - [Training Dashboard TD02](docs/TRAINING_DASHBOARD_TD02.md) — progress callbacks and instrumentation for F28–F31 — event contracts, per-run observability and JSONL history foundation
+- [Training Dashboard TD03](docs/TRAINING_DASHBOARD_TD03.md) — read-only FastAPI backend, persisted-history recovery and resumable per-run SSE streaming
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
@@ -110,6 +111,12 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
+
+For the Training Dashboard HTTP server, install the optional server extra:
+
+```bash
+python -m pip install -e ".[dashboard]"
+```
 ```
 
 Run checks:
