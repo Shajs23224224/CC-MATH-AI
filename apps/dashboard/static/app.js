@@ -12,6 +12,8 @@
     eventSource: null,
     refreshInFlight: false,
     lastUpdated: null,
+    taskCatalog: [],
+    selectedJob: null,
   };
 
   const $ = (id) => document.getElementById(id);
@@ -19,6 +21,18 @@
     apiStatus: $("api-status"),
     apiStatusText: $("api-status-text"),
     refresh: $("refresh-button"),
+    openSubmitDialog: $("open-submit-dialog"),
+    submitDialog: $("submit-dialog"),
+    closeSubmitDialog: $("close-submit-dialog"),
+    submitForm: $("submit-form"),
+    taskSelect: $("task-select"),
+    runName: $("run-name"),
+    taskParameters: $("task-parameters"),
+    taskMetadata: $("task-metadata"),
+    submitJobButton: $("submit-job-button"),
+    taskCatalogEmpty: $("task-catalog-empty"),
+    cancelJobButton: $("cancel-job-button"),
+    jobControlNote: $("job-control-note"),
     lastUpdated: $("last-updated"),
     total: $("total-runs"),
     running: $("running-runs"),
@@ -136,6 +150,121 @@
     els.toast.classList.remove("hidden");
     window.clearTimeout(toastTimer);
     toastTimer = window.setTimeout(() => els.toast.classList.add("hidden"), 4200);
+  }
+
+  async function loadTaskCatalog() {
+    try {
+      const tasks = await requestJson(API + "/tasks");
+      state.taskCatalog = Array.isArray(tasks) ? tasks : [];
+      const fragment = document.createDocumentFragment();
+      for (const task of state.taskCatalog) {
+        const option = document.createElement("option");
+        option.value = task.task_name;
+        option.textContent = task.description
+          ? task.task_name + " — " + task.description
+          : task.task_name;
+        fragment.append(option);
+      }
+      els.taskSelect.replaceChildren(fragment);
+      if (!state.taskCatalog.length) {
+        const empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = "No registered tasks";
+        els.taskSelect.append(empty);
+      }
+      els.taskCatalogEmpty.classList.toggle("hidden", state.taskCatalog.length !== 0);
+      els.submitJobButton.disabled = state.taskCatalog.length === 0;
+    } catch (error) {
+      state.taskCatalog = [];
+      els.taskSelect.replaceChildren();
+      const unavailable = document.createElement("option");
+      unavailable.value = "";
+      unavailable.textContent = "Task registry unavailable";
+      els.taskSelect.append(unavailable);
+      els.taskCatalogEmpty.classList.remove("hidden");
+      els.taskCatalogEmpty.textContent = "Could not load registered tasks: " + error.message;
+      els.submitJobButton.disabled = true;
+    }
+  }
+
+  function parseJsonObject(value, label) {
+    let parsed;
+    try {
+      parsed = JSON.parse(value || "{}");
+    } catch (error) {
+      throw new Error(label + " must contain valid JSON: " + error.message);
+    }
+    if (parsed === null || Array.isArray(parsed) || typeof parsed !== "object") {
+      throw new Error(label + " must be a JSON object.");
+    }
+    return parsed;
+  }
+
+  async function sendJson(path, method, payload) {
+    const response = await fetch(path, {
+      method,
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      cache: "no-store",
+      body: payload === undefined ? undefined : JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      let detail = response.statusText;
+      try {
+        const body = await response.json();
+        detail = body.detail || detail;
+      } catch (_) {
+        // Keep the HTTP status as the fallback error message.
+      }
+      throw new Error("HTTP " + response.status + ": " + detail);
+    }
+    return response.json();
+  }
+
+  async function submitTrainingJob(event) {
+    event.preventDefault();
+    try {
+      const parameters = parseJsonObject(els.taskParameters.value, "Task parameters");
+      const metadata = parseJsonObject(els.taskMetadata.value, "Run metadata");
+      const taskName = els.taskSelect.value;
+      if (!taskName) throw new Error("Select a registered training task.");
+      const job = await sendJson(API + "/runs", "POST", {
+        task_name: taskName,
+        name: els.runName.value.trim(),
+        parameters,
+        metadata,
+      });
+      els.submitDialog.close();
+      showToast("Training job accepted: " + job.run_id);
+      await refreshRuns();
+      await selectRun(job.run_id);
+    } catch (error) {
+      showToast("Could not submit training job: " + error.message);
+    }
+  }
+
+  async function cancelSelectedJob() {
+    if (!state.selectedRunId || !state.selectedJob) return;
+    els.cancelJobButton.disabled = true;
+    try {
+      const job = await sendJson(
+        API + "/jobs/" + encodeURIComponent(state.selectedRunId) + "/cancel",
+        "POST",
+      );
+      state.selectedJob = job;
+      if (job.status === "CANCELLED") {
+        showToast("Queued training job cancelled.");
+      } else if (job.cancellation_requested) {
+        showToast("Cancellation requested. The worker will stop at its next safe checkpoint.");
+      } else {
+        showToast("Training job is already terminal.");
+      }
+      await refreshRuns({ reloadSelected: true });
+    } catch (error) {
+      showToast("Could not cancel training job: " + error.message);
+    } finally {
+      els.cancelJobButton.disabled = false;
+      renderDetails();
+    }
   }
 
   function currentFilters() {
@@ -320,7 +449,32 @@
     els.detailEmpty.classList.toggle("hidden", Boolean(run));
     els.detailContent.classList.toggle("hidden", !run);
     els.streamStatus.classList.toggle("hidden", !run || run.status !== "RUNNING");
-    if (!run) return;
+    if (!run) {
+      els.cancelJobButton.classList.add("hidden");
+      setText(els.jobControlNote, "Select a run to inspect its execution controls.");
+      return;
+    }
+
+    const cancellable = state.selectedJob &&
+      (state.selectedJob.status === "QUEUED" || state.selectedJob.status === "RUNNING");
+    els.cancelJobButton.classList.toggle("hidden", !cancellable);
+    els.cancelJobButton.disabled = Boolean(state.selectedJob && state.selectedJob.cancellation_requested);
+    setText(
+      els.cancelJobButton,
+      state.selectedJob && state.selectedJob.cancellation_requested
+        ? "Cancellation requested"
+        : "Request cancellation",
+    );
+    if (cancellable) {
+      setText(
+        els.jobControlNote,
+        state.selectedJob.status === "QUEUED"
+          ? "Queued · position " + (state.selectedJob.queue_position || "—")
+          : "Running · cancellation is cooperative",
+      );
+    } else {
+      setText(els.jobControlNote, "No active scheduler job for this run.");
+    }
 
     setText(els.detailAlgorithm, run.algorithm);
     els.detailStatus.replaceWith(makeStatusBadge(run.status));
@@ -387,6 +541,9 @@
       state.selectedRun = updated;
       state.runs = state.runs.map((run) => run.run_id === updated.run_id ? updated : run);
       state.runs.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+      if (state.selectedJob && event.status) {
+        state.selectedJob = { ...state.selectedJob, status: event.status };
+      }
       if (TERMINAL.has(updated.status)) closeEventStream();
     }
 
@@ -447,12 +604,16 @@
     try {
       const run = await requestJson(API + "/runs/" + encodeURIComponent(runId));
       const afterSequence = Math.max(0, Number(run.event_count || 0) - 200);
-      const events = await requestJson(
-        API + "/runs/" + encodeURIComponent(runId) +
-        "/events?after_sequence=" + afterSequence + "&limit=200"
-      );
+      const [events, job] = await Promise.all([
+        requestJson(
+          API + "/runs/" + encodeURIComponent(runId) +
+          "/events?after_sequence=" + afterSequence + "&limit=200"
+        ),
+        requestJson(API + "/jobs/" + encodeURIComponent(runId)).catch(() => null),
+      ]);
       if (state.selectedRunId !== runId) return;
       state.selectedRun = run;
+      state.selectedJob = job;
       state.events = events;
       renderDetails();
       renderRuns();
@@ -487,6 +648,7 @@
         if (!selected) {
           state.selectedRunId = null;
           state.selectedRun = null;
+          state.selectedJob = null;
           state.events = [];
           closeEventStream();
           renderDetails();
@@ -494,6 +656,9 @@
           await selectRun(state.selectedRunId);
         } else {
           state.selectedRun = selected;
+          state.selectedJob = await requestJson(
+            API + "/jobs/" + encodeURIComponent(state.selectedRunId)
+          ).catch(() => null);
           renderDetails();
         }
       }
@@ -508,6 +673,13 @@
   }
 
   els.refresh.addEventListener("click", () => refreshRuns({ showToast: true, reloadSelected: true }));
+  els.openSubmitDialog.addEventListener("click", async () => {
+    await loadTaskCatalog();
+    els.submitDialog.showModal();
+  });
+  els.closeSubmitDialog.addEventListener("click", () => els.submitDialog.close());
+  els.submitForm.addEventListener("submit", submitTrainingJob);
+  els.cancelJobButton.addEventListener("click", cancelSelectedJob);
   els.search.addEventListener("input", renderRuns);
   els.filter.addEventListener("change", renderRuns);
   els.clearFilters.addEventListener("click", () => {
@@ -516,6 +688,7 @@
     renderRuns();
   });
 
+  loadTaskCatalog();
   refreshRuns();
   window.setInterval(() => refreshRuns(), 30000);
 })();
