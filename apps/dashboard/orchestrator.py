@@ -317,7 +317,6 @@ class TrainingOrchestrator:
             ]
             queued = statuses.count("QUEUED")
             running = statuses.count("RUNNING")
-            used = queued + running
             return TrainingQueueSnapshot(
                 max_workers=self.max_workers,
                 max_pending=self.max_pending,
