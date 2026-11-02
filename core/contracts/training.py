@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 import json
+from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Literal
 from uuid import uuid4
