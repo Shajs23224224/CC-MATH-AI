@@ -74,3 +74,6 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 module = ["sklearn", "sklearn.*"]
 ignore_missing_imports = true
+
+[tool.setuptools.package-data]
+"apps.dashboard" = ["static/*.html", "static/*.css", "static/*.js"]
