@@ -6,7 +6,7 @@ from threading import Event
 
 import pytest
 
-from core.contracts.training import TrainingProgress
+from core.contracts.training import TrainingProgress, TrainingTaskSubmission
 from core.observability.training import TrainingEventRecorder
 from apps.dashboard.orchestrator import (
     TrainingOrchestrator,
@@ -208,3 +208,35 @@ def test_shutdown_rejects_new_submissions() -> None:
 
     with pytest.raises(TrainingOrchestratorClosedError):
         orchestrator.submit("known", name="After shutdown")
+
+
+def test_task_submission_rejects_oversized_and_non_finite_parameters() -> None:
+    with pytest.raises(ValueError, match="64 KiB"):
+        TrainingTaskSubmission(
+            task_name="classical.fit",
+            name="Large input",
+            parameters={"payload": "x" * (65 * 1024)},
+        )
+
+    with pytest.raises(ValueError, match="finite JSON"):
+        TrainingTaskSubmission(
+            task_name="classical.fit",
+            name="Non-finite input",
+            parameters={"threshold": float("nan")},
+        )
+
+
+def test_task_submission_bounds_metadata_and_parameter_count() -> None:
+    with pytest.raises(ValueError, match="metadata string values"):
+        TrainingTaskSubmission(
+            task_name="classical.fit",
+            name="Large metadata",
+            metadata={"description": "x" * 513},
+        )
+
+    with pytest.raises(ValueError, match="64 task parameters"):
+        TrainingTaskSubmission(
+            task_name="classical.fit",
+            name="Too many parameters",
+            parameters={f"parameter_{index}": index for index in range(65)},
+        )
