@@ -157,7 +157,8 @@ def test_running_job_cancels_at_next_progress_checkpoint() -> None:
         finished = orchestrator.wait(submitted.run_id, timeout=3)
         assert finished.status == "CANCELLED"
         assert recorder.snapshot(submitted.run_id).status == "CANCELLED"
-        assert [event.event_type for event in recorder.events(submitted.run_id)][-1] == "STATE_CHANGED"
+        final_event = recorder.events(submitted.run_id)[-1]
+        assert final_event.event_type == "STATE_CHANGED"
     finally:
         release.set()
         orchestrator.shutdown()
