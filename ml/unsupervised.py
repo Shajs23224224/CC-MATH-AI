@@ -200,9 +200,7 @@ class UnsupervisedMLModel:
                         stage="cluster_stability",
                         step=repeat + 1,
                         total_steps=self.config.stability_repeats,
-                        progress_percent=(
-                            55.0 + 30.0 * (repeat + 1) / self.config.stability_repeats
-                        ),
+                        progress_percent=55.0 + 30.0 * (repeat + 1) / self.config.stability_repeats,
                         metrics={"stability_ari": score},
                         attributes={"repeat": repeat + 1},
                         message=f"Completed cluster stability repeat {repeat + 1}",
