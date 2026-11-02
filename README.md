@@ -98,6 +98,7 @@ See:
 - [Training Dashboard TD02](docs/TRAINING_DASHBOARD_TD02.md) — progress callbacks and instrumentation for F28–F31 — event contracts, per-run observability and JSONL history foundation
 - [Training Dashboard TD03](docs/TRAINING_DASHBOARD_TD03.md) — read-only FastAPI backend, persisted-history recovery and resumable per-run SSE streaming
 - [Training Dashboard TD04](docs/TRAINING_DASHBOARD_TD04.md) — responsive same-origin browser UI, run inspector, metric cards, event timeline and live SSE updates
+- [Training Dashboard TD05](docs/TRAINING_DASHBOARD_TD05.md) — bounded task orchestration, allow-listed handlers, queue management and cooperative cancellation
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
@@ -119,7 +120,7 @@ For the Training Dashboard HTTP server and local browser UI, install the optiona
 python -m pip install -e ".[dashboard]"
 ```
 
-Use the TD03/TD04 application factory with the training process's shared recorder and open `/dashboard/`; see [TD04 setup](docs/TRAINING_DASHBOARD_TD04.md).
+Wire the shared recorder, registered task handlers and TD05 orchestrator into `create_app`, then open `/dashboard/`; see [TD05 setup](docs/TRAINING_DASHBOARD_TD05.md).
 ```
 
 Run checks:
