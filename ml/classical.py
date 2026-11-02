@@ -346,7 +346,11 @@ class ClassicalMLModel:
                         stage="model_fit",
                         progress_percent=85.0,
                         metrics=(
-                            {"selected_n_estimators": float(boosting_details["selected_n_estimators"])}
+                            {
+                                "selected_n_estimators": float(
+                                    boosting_details["selected_n_estimators"]
+                                )
+                            }
                             if "selected_n_estimators" in boosting_details
                             else {}
                         ),
