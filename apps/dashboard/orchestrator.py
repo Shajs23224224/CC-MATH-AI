@@ -276,6 +276,7 @@ class TrainingOrchestrator:
                 state.future = future
                 # From this point the Future callback owns capacity release.
                 slot_transferred = True
+
                 def on_done(completed: Future[None]) -> None:
                     self._on_future_done(created.run_id, completed)
 
