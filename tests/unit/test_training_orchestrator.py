@@ -240,3 +240,28 @@ def test_task_submission_bounds_metadata_and_parameter_count() -> None:
             name="Too many parameters",
             parameters={f"parameter_{index}": index for index in range(65)},
         )
+
+
+def test_task_submission_rejects_non_finite_metadata() -> None:
+    with pytest.raises(ValueError):
+        TrainingTaskSubmission(
+            task_name="classical.fit",
+            name="Non-finite metadata",
+            metadata={"score": float("inf")},
+        )
+
+
+@pytest.mark.parametrize(
+    ("max_workers", "max_pending"),
+    [(0, 1), (33, 0), (1, -1), (1, 513)],
+)
+def test_orchestrator_rejects_out_of_range_pool_sizes(
+    max_workers: int,
+    max_pending: int,
+) -> None:
+    with pytest.raises(ValueError):
+        TrainingOrchestrator(
+            TrainingEventRecorder(),
+            max_workers=max_workers,
+            max_pending=max_pending,
+        )
