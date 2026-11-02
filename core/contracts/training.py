@@ -175,7 +175,7 @@ class TrainingRunSnapshot(BaseModel):
 class TrainingTaskSubmission(BaseModel):
     """Validated API payload for submitting one registered training task."""
 
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     task_name: str = Field(pattern=r"^[a-z][a-z0-9_.-]{0,79}$")
     name: str = Field(min_length=1, max_length=160)
