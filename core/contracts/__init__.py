@@ -102,19 +102,19 @@ from .risk import (
 from .statistics import StatisticalSummary
 from .tail_risk import StressScenario, StressTestResult, TailRiskEstimate
 from .technical import TechnicalIndicatorSeries
-from .training import (
-    TrainingEvent,
-    TrainingEventType,
-    TrainingRunSnapshot,
-    TrainingScalar,
-    TrainingStatus,
-)
 from .time_series import (
     ResidualDiagnostics,
     TemporalSplit,
     TimeSeriesFamily,
     TimeSeriesFitSummary,
     TimeSeriesForecast,
+)
+from .training import (
+    TrainingEvent,
+    TrainingEventType,
+    TrainingRunSnapshot,
+    TrainingScalar,
+    TrainingStatus,
 )
 from .valuation import SensitivityMatrix, ValuationAssumptions, ValuationResult
 from .volatility import (
