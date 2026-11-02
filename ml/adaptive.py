@@ -26,6 +26,7 @@ from core.contracts.adaptive_math import (
     AdaptiveMathReport,
 )
 from core.contracts.ml import ExperimentRecord, MLDataset, PatternRecord
+from core.contracts.training import TrainingProgress, TrainingProgressCallback
 
 from .errors import ExperimentPersistenceError, MLInputError, MLTrainingError
 from .evolution import (
@@ -423,6 +424,7 @@ class AdaptiveMathEngine:
         dataset: MLDataset,
         *,
         store: JSONLExperimentStore | None = None,
+        progress_callback: TrainingProgressCallback | None = None,
     ) -> AdaptiveMathReport:
         if dataset.task != "regression":
             raise MLInputError(
@@ -457,9 +459,58 @@ class AdaptiveMathEngine:
         )
         rng = np.random.default_rng(self.config.random_seed)
 
+        if progress_callback is not None:
+            progress_callback(
+                TrainingProgress(
+                    stage="data_split",
+                    progress_percent=5.0,
+                    metrics={
+                        "training_samples": float(train_end),
+                        "validation_samples": float(validation_size),
+                        "test_samples": float(test_size),
+                    },
+                    attributes={"test_used_for_selection": False},
+                    message="Chronological train/validation/test split prepared",
+                )
+            )
+
         candidates: list[_ScoredCandidate] = []
         candidate_count = 0
         rejected_count = 0
+
+        def emit_search_progress(
+            stage: str,
+            *,
+            metrics: dict[str, float] | None = None,
+            attributes: dict[str, str | int | float | bool | None] | None = None,
+            message: str,
+        ) -> None:
+            if progress_callback is None:
+                return
+            current_best = min(
+                (candidate.selection_score for candidate in candidates),
+                default=None,
+            )
+            event_metrics = dict(metrics or {})
+            if current_best is not None:
+                event_metrics["best_validation_selection_score"] = current_best
+            progress_callback(
+                TrainingProgress(
+                    stage=stage,
+                    step=min(candidate_count, self.config.max_evaluations),
+                    total_steps=self.config.max_evaluations,
+                    progress_percent=min(
+                        85.0, 85.0 * candidate_count / self.config.max_evaluations
+                    ),
+                    metrics=event_metrics,
+                    attributes={
+                        "candidates_evaluated": candidate_count,
+                        "candidates_rejected": rejected_count,
+                        **(attributes or {}),
+                    },
+                    message=message,
+                )
+            )
         try:
             candidates.append(
                 _evaluate_dense_candidate(
@@ -475,6 +526,19 @@ class AdaptiveMathEngine:
                 )
             )
             candidate_count += 1
+            emit_search_progress(
+                "candidate_evaluation",
+                metrics={
+                    "candidate_validation_rmse": candidates[-1].validation_rmse,
+                    "candidate_selection_score": candidates[-1].selection_score,
+                },
+                attributes={
+                    "candidate_id": candidates[-1].candidate_id,
+                    "strategy": "linear",
+                    "candidate_status": "accepted",
+                },
+                message="Linear baseline evaluated on the validation segment",
+            )
         except (ValueError, FloatingPointError, np.linalg.LinAlgError) as exc:
             candidate_count += 1
             rejected_count += 1
@@ -485,6 +549,15 @@ class AdaptiveMathEngine:
             term_count = math.comb(width + degree, degree) - 1
             if term_count > self.config.max_terms:
                 rejected_count += 1
+                emit_search_progress(
+                    "candidate_evaluation",
+                    attributes={
+                        "strategy": "polynomial",
+                        "degree": degree,
+                        "candidate_status": "rejected",
+                    },
+                    message="Polynomial candidate exceeded the configured term budget",
+                )
                 continue
             try:
                 candidates.append(
@@ -500,8 +573,31 @@ class AdaptiveMathEngine:
                         self.config,
                     )
                 )
+                emit_search_progress(
+                    "candidate_evaluation",
+                    metrics={
+                        "candidate_validation_rmse": candidates[-1].validation_rmse,
+                        "candidate_selection_score": candidates[-1].selection_score,
+                    },
+                    attributes={
+                        "candidate_id": candidates[-1].candidate_id,
+                        "strategy": "polynomial",
+                        "degree": degree,
+                        "candidate_status": "accepted",
+                    },
+                    message=f"Polynomial degree {degree} evaluated on validation data",
+                )
             except (ValueError, FloatingPointError, np.linalg.LinAlgError, MLTrainingError):
                 rejected_count += 1
+                emit_search_progress(
+                    "candidate_evaluation",
+                    attributes={
+                        "strategy": "polynomial",
+                        "degree": degree,
+                        "candidate_status": "rejected",
+                    },
+                    message=f"Polynomial degree {degree} could not be evaluated",
+                )
 
         available_evaluations = self.config.max_evaluations - candidate_count
         generations_to_run = min(
@@ -534,7 +630,40 @@ class AdaptiveMathEngine:
                     scored_population.append((tree, scored))
                 except (InvalidExpression, ValueError, FloatingPointError, np.linalg.LinAlgError):
                     rejected_count += 1
+                    emit_search_progress(
+                        "candidate_evaluation",
+                        attributes={
+                            "strategy": "evolutionary",
+                            "generation": generations_completed + 1,
+                            "candidate_status": "rejected",
+                        },
+                        message="Evolutionary candidate failed validation or domain checks",
+                    )
+                else:
+                    emit_search_progress(
+                        "candidate_evaluation",
+                        metrics={
+                            "candidate_validation_rmse": scored.validation_rmse,
+                            "candidate_selection_score": scored.selection_score,
+                        },
+                        attributes={
+                            "candidate_id": scored.candidate_id,
+                            "strategy": "evolutionary",
+                            "generation": generations_completed + 1,
+                            "complexity": scored.complexity,
+                            "candidate_status": "accepted",
+                        },
+                        message="Evolutionary candidate evaluated on validation data",
+                    )
             generations_completed += 1
+            emit_search_progress(
+                "generation",
+                attributes={
+                    "generation": generations_completed,
+                    "generations_requested": generations_to_run,
+                },
+                message=f"Completed evolutionary generation {generations_completed}",
+            )
             if len(scored_population) < 2:
                 population = [
                     random_tree(rng, width, self.config.max_depth, self.config.max_nodes)
@@ -608,9 +737,42 @@ class AdaptiveMathEngine:
             except (InvalidExpression, MLTrainingError, ValueError, FloatingPointError):
                 # Safety/domain validity is a hard constraint, not a test-performance score.
                 final_safety_rejections += 1
+                if progress_callback is not None:
+                    progress_callback(
+                        TrainingProgress(
+                            stage="final_candidate_verification",
+                            progress_percent=90.0,
+                            metrics={
+                                "candidate_validation_rmse": candidate.validation_rmse,
+                            },
+                            attributes={
+                                "candidate_id": candidate.candidate_id,
+                                "candidate_status": "rejected",
+                                "final_safety_rejections": final_safety_rejections,
+                                "test_used_for_selection": False,
+                            },
+                            message="Candidate failed final domain or numerical safety checks",
+                        )
+                    )
                 continue
             winner = candidate
             selected = final_candidate
+            if progress_callback is not None:
+                progress_callback(
+                    TrainingProgress(
+                        stage="final_candidate_verification",
+                        progress_percent=95.0,
+                        metrics={
+                            "candidate_validation_rmse": candidate.validation_rmse,
+                        },
+                        attributes={
+                            "candidate_id": candidate.candidate_id,
+                            "candidate_status": "selected",
+                            "test_used_for_selection": False,
+                        },
+                        message="Validation-ranked candidate passed final safety checks",
+                    )
+                )
             break
         if winner is None or selected is None:
             raise MLTrainingError("every candidate failed final domain or numerical safety checks")
