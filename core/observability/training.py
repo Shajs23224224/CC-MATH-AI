@@ -140,6 +140,7 @@ class TrainingEventRecorder:
 
         The run must already exist and be RUNNING before the callback is invoked.
         """
+
         def report(progress: TrainingProgress) -> None:
             self.report_progress(
                 run_id,
