@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+import json
 from datetime import UTC, datetime
 from typing import Literal
 from uuid import uuid4
@@ -186,10 +187,26 @@ class TrainingTaskSubmission(BaseModel):
         """Reject blank labels before a run enters the queue."""
         if not self.name.strip():
             raise ValueError("name must not be blank")
-        if any(not key.strip() for key in self.parameters):
-            raise ValueError("parameter names must not be blank")
-        if any(not key.strip() for key in self.metadata):
-            raise ValueError("metadata names must not be blank")
+        if len(self.parameters) > 64:
+            raise ValueError("at most 64 task parameters are allowed")
+        if len(self.metadata) > 32:
+            raise ValueError("at most 32 metadata fields are allowed")
+        if any(not key.strip() or len(key) > 120 for key in self.parameters):
+            raise ValueError("parameter names must contain 1 to 120 non-blank characters")
+        if any(not key.strip() or len(key) > 120 for key in self.metadata):
+            raise ValueError("metadata names must contain 1 to 120 non-blank characters")
+        if any(isinstance(value, str) and len(value) > 512 for value in self.metadata.values()):
+            raise ValueError("metadata string values cannot exceed 512 characters")
+        try:
+            serialized_parameters = json.dumps(
+                self.parameters,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+        except (TypeError, ValueError) as exc:
+            raise ValueError("task parameters must contain finite JSON values") from exc
+        if len(serialized_parameters.encode("utf-8")) > 64 * 1024:
+            raise ValueError("task parameters cannot exceed 64 KiB")
         return self
 
 
