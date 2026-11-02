@@ -29,6 +29,9 @@ class TrainingEvent(BaseModel):
     schema_version: Literal["1.0"] = "1.0"
     run_id: str = Field(min_length=1, max_length=100)
     sequence: int = Field(ge=1)
+    run_name: str | None = Field(default=None, max_length=160)
+    algorithm: str | None = Field(default=None, max_length=120)
+    run_metadata: dict[str, TrainingScalar] = Field(default_factory=dict)
     occurred_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     event_type: TrainingEventType
     status: TrainingStatus | None = None
@@ -50,8 +53,13 @@ class TrainingEvent(BaseModel):
             raise ValueError("step and total_steps must be supplied together")
         if self.step is not None and self.total_steps is not None and self.step > self.total_steps:
             raise ValueError("step cannot exceed total_steps")
-        if self.event_type == "RUN_CREATED" and self.status != "QUEUED":
-            raise ValueError("RUN_CREATED events must have QUEUED status")
+        if self.event_type == "RUN_CREATED":
+            if self.status != "QUEUED" or not self.run_name or not self.algorithm:
+                raise ValueError(
+                    "RUN_CREATED events require QUEUED status, run_name and algorithm"
+                )
+        elif self.run_name is not None or self.algorithm is not None or self.run_metadata:
+            raise ValueError("run metadata is only allowed on RUN_CREATED events")
         if self.event_type == "STATE_CHANGED" and self.status is None:
             raise ValueError("STATE_CHANGED events require a status")
         if self.event_type == "PROGRESS":
