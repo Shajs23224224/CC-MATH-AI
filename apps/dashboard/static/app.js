@@ -306,14 +306,20 @@
       }
     }
     els.activity.replaceChildren(fragment);
-    setText(els.activityCount, state.events.length + " events");
+    const totalEvents = state.selectedRun ? state.selectedRun.event_count || state.events.length : state.events.length;
+    setText(
+      els.activityCount,
+      state.events.length < totalEvents
+        ? state.events.length + " recent / " + totalEvents + " total"
+        : state.events.length + " events",
+    );
   }
 
   function renderDetails() {
     const run = state.selectedRun;
     els.detailEmpty.classList.toggle("hidden", Boolean(run));
     els.detailContent.classList.toggle("hidden", !run);
-    els.streamStatus.classList.toggle("hidden", !run);
+    els.streamStatus.classList.toggle("hidden", !run || run.status !== "RUNNING");
     if (!run) return;
 
     setText(els.detailAlgorithm, run.algorithm);
@@ -356,6 +362,7 @@
     if (state.events.some((item) => item.sequence === event.sequence)) return;
     state.events.push(event);
     state.events.sort((a, b) => a.sequence - b.sequence);
+    if (state.events.length > 500) state.events = state.events.slice(-500);
 
     const current = state.selectedRun;
     if (current && current.run_id === event.run_id) {
@@ -421,6 +428,12 @@
         }
       });
     }
+    source.addEventListener("stream_end", () => {
+      if (state.eventSource !== source || state.selectedRunId !== runId) return;
+      source.close();
+      state.eventSource = null;
+      setText(els.streamStatus, "History replayed");
+    });
   }
 
   async function selectRun(runId) {
@@ -432,17 +445,22 @@
     renderDetails();
 
     try {
-      const [run, events] = await Promise.all([
-        requestJson(API + "/runs/" + encodeURIComponent(runId)),
-        requestJson(API + "/runs/" + encodeURIComponent(runId) + "/events?limit=200"),
-      ]);
+      const run = await requestJson(API + "/runs/" + encodeURIComponent(runId));
+      const afterSequence = Math.max(0, Number(run.event_count || 0) - 200);
+      const events = await requestJson(
+        API + "/runs/" + encodeURIComponent(runId) +
+        "/events?after_sequence=" + afterSequence + "&limit=200"
+      );
       if (state.selectedRunId !== runId) return;
       state.selectedRun = run;
       state.events = events;
       renderDetails();
       renderRuns();
       if (run.status === "RUNNING") {
-        const latestSequence = events.reduce((maximum, event) => Math.max(maximum, event.sequence), 0);
+        const latestSequence = events.reduce(
+          (maximum, event) => Math.max(maximum, event.sequence),
+          Number(run.event_count || 0) - 200,
+        );
         openEventStream(runId, latestSequence);
       }
     } catch (error) {
