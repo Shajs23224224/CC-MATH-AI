@@ -22,6 +22,7 @@ from sklearn.preprocessing import StandardScaler
 
 from core.contracts.deep_learning import DeepLearningConfig, DeepLearningResult
 from core.contracts.ml import MLDataset, MLPrediction
+from core.contracts.training import TrainingProgress, TrainingProgressCallback
 
 from .errors import MLInputError, MLPredictionError, MLTrainingError
 
@@ -337,8 +338,13 @@ class DeepLearningModel:
             return torch.nn.functional.cross_entropy(prediction, target)
         return torch.nn.functional.mse_loss(prediction, target)
 
-    def fit(self, dataset: MLDataset) -> DeepLearningResult:
-        """Fit only on the chronological training segment; use validation for early stopping."""
+    def fit(
+        self,
+        dataset: MLDataset,
+        *,
+        progress_callback: TrainingProgressCallback | None = None,
+    ) -> DeepLearningResult:
+        """Fit on chronological splits and optionally emit per-epoch progress events."""
         torch = _load_torch()
         matrix = _as_matrix(
             dataset.features,
@@ -474,6 +480,8 @@ class DeepLearningModel:
 
         for epoch in range(1, self.config.epochs + 1):
             network.train()
+            epoch_loss_sum = 0.0
+            epoch_sample_count = 0
             for batch_features, batch_target in loader:
                 optimizer.zero_grad(set_to_none=True)
                 raw_output = network(batch_features)
@@ -481,9 +489,16 @@ class DeepLearningModel:
                 loss_value = float(loss.detach().cpu().item())
                 if not math.isfinite(loss_value):
                     raise MLTrainingError("deep-learning training loss became non-finite")
+                batch_sample_count = int(batch_features.shape[0])
+                epoch_loss_sum += loss_value * batch_sample_count
+                epoch_sample_count += batch_sample_count
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(network.parameters(), max_norm=1.0)
                 optimizer.step()
+
+            if epoch_sample_count == 0:
+                raise MLTrainingError("deep-learning epoch processed no training samples")
+            training_loss = epoch_loss_sum / epoch_sample_count
 
             network.eval()
             with torch.no_grad():
@@ -501,7 +516,36 @@ class DeepLearningModel:
                 stale_epochs = 0
             else:
                 stale_epochs += 1
-            if stale_epochs >= self.config.patience:
+            stopped_early = stale_epochs >= self.config.patience
+            if progress_callback is not None:
+                progress_callback(
+                    TrainingProgress(
+                        stage="epoch",
+                        step=epoch,
+                        total_steps=self.config.epochs,
+                        progress_percent=(
+                            100.0
+                            if stopped_early or epoch == self.config.epochs
+                            else 100.0 * epoch / self.config.epochs
+                        ),
+                        metrics={
+                            "train_loss": training_loss,
+                            "validation_loss": validation_loss,
+                            "best_validation_loss": best_loss,
+                        },
+                        attributes={
+                            "best_epoch": best_epoch,
+                            "stale_epochs": stale_epochs,
+                            "early_stopped": stopped_early,
+                        },
+                        message=(
+                            "Early stopping patience reached"
+                            if stopped_early
+                            else f"Completed epoch {epoch}"
+                        ),
+                    )
+                )
+            if stopped_early:
                 break
 
         if best_state is None:
@@ -645,6 +689,24 @@ class DeepLearningModel:
         self._torch = torch
         self._device = device
         self.result = result
+        if progress_callback is not None:
+            progress_callback(
+                TrainingProgress(
+                    stage="evaluation",
+                    progress_percent=100.0,
+                    metrics={
+                        **metrics,
+                        "best_validation_loss": best_loss,
+                    },
+                    attributes={
+                        "best_epoch": best_epoch,
+                        "epochs_completed": epochs_completed,
+                        "epochs_requested": self.config.epochs,
+                        "early_stopped": epochs_completed < self.config.epochs,
+                    },
+                    message="Final chronological test evaluation completed",
+                )
+            )
         return result
 
     def predict(self, features: Sequence[Sequence[float]]) -> MLPrediction:

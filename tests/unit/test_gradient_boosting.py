@@ -129,3 +129,26 @@ def test_gradient_boosting_rejects_unbounded_tree_budget() -> None:
     )
     with pytest.raises(MLInputError, match="between 1 and 1000"):
         model.fit(regression_dataset())
+
+
+def test_gradient_boosting_reports_validation_iterations_without_changing_metrics() -> None:
+    config = MLTrainingConfig(
+        algorithm="gradient_boosting_regressor",
+        task="regression",
+        random_seed=29,
+        test_fraction=0.2,
+        parameters={"n_estimators": 40, "max_depth": 2},
+    )
+    baseline = ClassicalMLModel(config).fit(regression_dataset())
+    progress = []
+    observed = ClassicalMLModel(config).fit(
+        regression_dataset(),
+        progress_callback=progress.append,
+    )
+
+    iteration_events = [item for item in progress if item.stage == "boosting_validation"]
+    assert iteration_events
+    assert all(item.step is not None and item.total_steps == 40 for item in iteration_events)
+    assert all("validation_mse" in item.metrics for item in iteration_events)
+    assert progress[-1].stage == "evaluation"
+    assert observed == baseline

@@ -16,9 +16,13 @@ dependencies = [
   "statsmodels>=0.14,<1",
   "arch>=7,<9",
   "scikit-learn>=1.7,<2",
+  "fastapi>=0.115,<1",
 ]
 
 [project.optional-dependencies]
+dashboard = [
+  "uvicorn>=0.30,<1",
+]
 deep-learning = [
   "torch>=2.4,<3",
 ]
@@ -30,6 +34,7 @@ dev = [
   "pandas-stubs>=2.2,<3",
   "scipy-stubs>=1.17,<1.18",
   "pip-audit>=2.7,<3",
+  "httpx>=0.27,<1",
 ]
 
 [tool.setuptools.packages.find]
