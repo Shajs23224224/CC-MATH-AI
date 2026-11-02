@@ -249,6 +249,7 @@ class TrainingQueueSnapshot(BaseModel):
     capacity: int = Field(ge=1)
     queued: int = Field(ge=0)
     running: int = Field(ge=0)
+    in_use: int = Field(ge=0)
     available_slots: int = Field(ge=0)
     closed: bool
 
@@ -257,8 +258,10 @@ class TrainingQueueSnapshot(BaseModel):
         """Keep queue counts within the configured bounded worker-pool capacity."""
         if self.capacity != self.max_workers + self.max_pending:
             raise ValueError("capacity must equal max_workers plus max_pending")
-        if self.queued + self.running > self.capacity:
-            raise ValueError("queued and running jobs cannot exceed scheduler capacity")
-        if self.available_slots != self.capacity - self.queued - self.running:
-            raise ValueError("available_slots must match unused scheduler capacity")
+        if self.in_use > self.capacity:
+            raise ValueError("in_use cannot exceed scheduler capacity")
+        if self.queued + self.running > self.in_use:
+            raise ValueError("queued and running jobs cannot exceed reserved capacity")
+        if self.available_slots != self.capacity - self.in_use:
+            raise ValueError("available_slots must match unreserved scheduler capacity")
         return self
