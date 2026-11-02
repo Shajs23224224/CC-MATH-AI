@@ -42,9 +42,7 @@ class TrainingDashboardService:
             for run_id, events in grouped.items():
                 if run_id not in snapshots:
                     snapshots[run_id] = self._snapshot_from_events(tuple(events))
-        return tuple(
-            sorted(snapshots.values(), key=lambda item: item.updated_at, reverse=True)
-        )
+        return tuple(sorted(snapshots.values(), key=lambda item: item.updated_at, reverse=True))
 
     def snapshot(self, run_id: str) -> TrainingRunSnapshot:
         """Return live state when available, otherwise project persisted history."""
