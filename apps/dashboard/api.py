@@ -5,10 +5,12 @@ from __future__ import annotations
 import asyncio
 import math
 from collections.abc import AsyncIterator
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import FastAPI, Header, HTTPException, Query, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 from apps.dashboard.event_store import TrainingEventStore
 from apps.dashboard.service import TrainingDashboardService
@@ -50,7 +52,7 @@ def create_app(
     service = TrainingDashboardService(recorder, event_store=event_store)
     app = FastAPI(
         title="C-MATH-AI Training Dashboard API",
-        version="0.3.0",
+        version="0.4.0",
         description="Read-only training-run observability with resumable SSE events.",
     )
     app.state.training_recorder = recorder
@@ -192,6 +194,18 @@ def create_app(
                 "X-Accel-Buffering": "no",
             },
         )
+
+    @app.get("/", include_in_schema=False)
+    def dashboard_redirect() -> RedirectResponse:
+        """Send the service root to the local dashboard interface."""
+        return RedirectResponse(url="/dashboard/", status_code=307)
+
+    static_directory = Path(__file__).with_name("static")
+    app.mount(
+        "/dashboard",
+        StaticFiles(directory=static_directory, html=True),
+        name="training-dashboard",
+    )
 
     return app
 
