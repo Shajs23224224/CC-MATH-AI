@@ -109,6 +109,13 @@ from .time_series import (
     TimeSeriesFitSummary,
     TimeSeriesForecast,
 )
+from .training import (
+    TrainingEvent,
+    TrainingEventType,
+    TrainingRunSnapshot,
+    TrainingScalar,
+    TrainingStatus,
+)
 from .valuation import SensitivityMatrix, ValuationAssumptions, ValuationResult
 from .volatility import (
     DynamicCorrelationForecast,
@@ -238,6 +245,11 @@ __all__ = [
     "SignalType",
     "SizingResult",
     "TargetAllocation",
+    "TrainingEvent",
+    "TrainingEventType",
+    "TrainingRunSnapshot",
+    "TrainingScalar",
+    "TrainingStatus",
     "TurnoverMetrics",
     "UnitRootTestResult",
 ]
