@@ -34,12 +34,10 @@ def classification_dataset() -> MLDataset:
         task="classification",
     )
 
-
 def test_gradient_boosting_algorithms_are_registered_by_task() -> None:
     registry = supported_algorithms()
     assert "gradient_boosting_regressor" in registry["regression"]
     assert "gradient_boosting_classifier" in registry["classification"]
-
 
 def test_regressor_selects_tree_count_on_temporal_validation_and_predicts() -> None:
     model = ClassicalMLModel(
@@ -70,7 +68,6 @@ def test_regressor_selects_tree_count_on_temporal_validation_and_predicts() -> N
     assert len(prediction.predictions) == 2
     assert all(isinstance(value, float) for value in prediction.predictions)
 
-
 def test_classifier_returns_normalized_probabilities_and_audits_stopping() -> None:
     model = ClassicalMLModel(
         MLTrainingConfig(
@@ -91,7 +88,6 @@ def test_classifier_returns_normalized_probabilities_and_audits_stopping() -> No
     assert model.metadata is not None
     assert model.metadata.parameters["temporal_early_stopping"] is True
     assert model.metadata.parameters["requested_max_estimators"] == 30
-
 
 def test_test_tail_targets_cannot_change_selected_tree_count() -> None:
     original = regression_dataset()
@@ -118,7 +114,6 @@ def test_test_tail_targets_cannot_change_selected_tree_count() -> None:
     )
     assert original_model.metadata.data_fingerprint == altered_model.metadata.data_fingerprint
 
-
 def test_gradient_boosting_rejects_unbounded_tree_budget() -> None:
     model = ClassicalMLModel(
         MLTrainingConfig(
@@ -129,8 +124,6 @@ def test_gradient_boosting_rejects_unbounded_tree_budget() -> None:
     )
     with pytest.raises(MLInputError, match="between 1 and 1000"):
         model.fit(regression_dataset())
-
-
 
 def test_gradient_boosting_reports_validation_iterations_without_changing_metrics() -> None:
     config = MLTrainingConfig(
