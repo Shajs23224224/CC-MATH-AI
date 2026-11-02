@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import math
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
 
@@ -70,16 +71,24 @@ def create_app(
     scheduler = orchestrator or TrainingOrchestrator(recorder)
     if scheduler.recorder is not recorder:
         raise ValueError("orchestrator must use the same TrainingEventRecorder as the API")
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        """Shut down an orchestrator created by this application factory."""
+        try:
+            yield
+        finally:
+            if owns_orchestrator:
+                scheduler.shutdown()
+
     app = FastAPI(
         title="C-MATH-AI Training Dashboard API",
         version="0.5.0",
         description="Training observability and allow-listed job orchestration with resumable SSE.",
+        lifespan=lifespan,
     )
     app.state.training_recorder = recorder
     app.state.training_dashboard_service = service
     app.state.training_orchestrator = scheduler
-    if owns_orchestrator:
-        app.add_event_handler("shutdown", scheduler.shutdown)
 
     @app.get("/healthz", tags=["system"])
     def health() -> dict[str, str]:
