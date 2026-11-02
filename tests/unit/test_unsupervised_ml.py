@@ -141,3 +141,26 @@ def test_rejects_bad_input_and_unsafe_resource_configuration() -> None:
         UnsupervisedMLModel(UnsupervisedMLConfig(algorithm="pca")).fit(
             sample_features(), ("only_one_name",)
         )
+
+
+def test_progress_callback_reports_stability_and_preserves_unsupervised_result() -> None:
+    config = UnsupervisedMLConfig(
+        algorithm="kmeans",
+        random_seed=30,
+        stability_repeats=2,
+        parameters={"n_clusters": 2},
+    )
+    baseline = UnsupervisedMLModel(config).fit(sample_features(), ("x", "y", "z"))
+    progress = []
+    observed = UnsupervisedMLModel(config).fit(
+        sample_features(),
+        ("x", "y", "z"),
+        progress_callback=progress.append,
+    )
+
+    assert observed == baseline
+    stability_events = [item for item in progress if item.stage == "cluster_stability"]
+    assert [item.step for item in stability_events] == [1, 2]
+    assert all("stability_ari" in item.metrics for item in stability_events)
+    assert progress[-1].stage == "evaluation"
+    assert progress[-1].progress_percent == 100.0

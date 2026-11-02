@@ -112,3 +112,22 @@ def test_rejects_misaligned_or_non_finite_dataset() -> None:
             target=(1.0,) * 12,
             task="regression",
         )
+
+
+def test_progress_callback_does_not_change_classical_results() -> None:
+    config = MLTrainingConfig(
+        algorithm="ridge",
+        task="regression",
+        random_seed=11,
+    )
+    baseline = ClassicalMLModel(config).fit(regression_dataset())
+    progress = []
+    observed = ClassicalMLModel(config).fit(
+        regression_dataset(),
+        progress_callback=progress.append,
+    )
+
+    assert observed == baseline
+    assert [item.stage for item in progress] == ["model_fit", "evaluation"]
+    assert progress[-1].progress_percent == 100.0
+    assert progress[-1].metrics == observed.metrics

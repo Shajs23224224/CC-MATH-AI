@@ -94,6 +94,8 @@ See:
 - [F41 Monte Carlo and Adversarial Robustness](docs/ROBUSTNESS_F41.md)
 - [F42 Paper Trading and Execution](docs/PAPER_TRADING_F42.md)
 - [F43 Platform 1.0](docs/PLATFORM_F43.md)
+- [Training Dashboard TD01](docs/TRAINING_DASHBOARD_TD01.md)
+- [Training Dashboard TD02](docs/TRAINING_DASHBOARD_TD02.md) — progress callbacks and instrumentation for F28–F31 — event contracts, per-run observability and JSONL history foundation
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
