@@ -497,7 +497,11 @@ class TrainingOrchestrator:
                 key=lambda item: item.submitted_at,
             )
             queue_position = next(
-                (index for index, item in enumerate(queued, start=1) if item.run_id == state.run_id),
+                (
+                    index
+                    for index, item in enumerate(queued, start=1)
+                    if item.run_id == state.run_id
+                ),
                 None,
             )
         finished_at = state.finished_at
