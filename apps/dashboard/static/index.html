@@ -43,9 +43,14 @@
             <h1>Training overview</h1>
             <p class="page-subtitle">Monitor model execution, inspect metrics and follow training events as they happen.</p>
           </div>
-          <div class="updated-label">
-            <span class="updated-indicator" aria-hidden="true"></span>
-            <span>Last updated <strong id="last-updated">—</strong></span>
+          <div class="heading-actions">
+            <button class="primary-button" id="open-submit-dialog" type="button">
+              <span aria-hidden="true">＋</span> New training run
+            </button>
+            <div class="updated-label">
+              <span class="updated-indicator" aria-hidden="true"></span>
+              <span>Last updated <strong id="last-updated">—</strong></span>
+            </div>
           </div>
         </section>
 
@@ -141,6 +146,10 @@
               </div>
               <h3 id="detail-name">—</h3>
               <p class="run-id" id="detail-id">—</p>
+              <div class="run-controls">
+                <span class="job-control-note" id="job-control-note">Execution managed by task registry</span>
+                <button class="cancel-job-button hidden" id="cancel-job-button" type="button">Request cancellation</button>
+              </div>
               <div class="progress-section">
                 <div class="progress-copy"><span>Training progress</span><strong id="detail-progress-value">—</strong></div>
                 <div class="progress-track"><div class="progress-fill" id="detail-progress-bar"></div></div>
@@ -169,6 +178,43 @@
         </footer>
       </main>
     </div>
+    <dialog class="submit-dialog" id="submit-dialog" aria-labelledby="submit-dialog-title">
+      <form id="submit-form">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow accent-eyebrow">TASK ORCHESTRATION</p>
+            <h2 id="submit-dialog-title">Submit training run</h2>
+            <p>Choose a registered task and provide its JSON parameters.</p>
+          </div>
+          <button class="dialog-close" id="close-submit-dialog" type="button" aria-label="Close dialog">×</button>
+        </div>
+        <label class="dialog-field">
+          <span>Registered task</span>
+          <select id="task-select" required>
+            <option value="">Loading registered tasks…</option>
+          </select>
+        </label>
+        <label class="dialog-field">
+          <span>Run name</span>
+          <input id="run-name" type="text" maxlength="160" placeholder="e.g. Ridge validation experiment" required>
+        </label>
+        <label class="dialog-field">
+          <span>Task parameters · JSON</span>
+          <textarea id="task-parameters" rows="5" spellcheck="false">{}</textarea>
+        </label>
+        <label class="dialog-field">
+          <span>Run metadata · JSON (optional)</span>
+          <textarea id="task-metadata" rows="3" spellcheck="false">{}</textarea>
+        </label>
+        <div class="task-catalog-empty hidden" id="task-catalog-empty">
+          No training tasks are registered. Register approved handlers when creating the application.
+        </div>
+        <div class="dialog-actions">
+          <span id="submit-hint">Tasks are allow-listed by the server.</span>
+          <button class="primary-button" id="submit-job-button" type="submit">Submit job</button>
+        </div>
+      </form>
+    </dialog>
     <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
   </body>
 </html>
