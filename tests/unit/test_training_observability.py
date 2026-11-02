@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import pytest
@@ -172,3 +173,21 @@ def test_event_sink_receives_a_contiguous_sequence_per_run() -> None:
     recorder.complete("a")
 
     assert [event.sequence for event in persisted] == [1, 2, 3, 4]
+
+
+def test_concurrent_metric_events_keep_contiguous_sequences() -> None:
+    recorder = TrainingEventRecorder()
+    recorder.create_run(name="Concurrent", algorithm="ridge", run_id="concurrent")
+    recorder.start_run("concurrent")
+
+    def record(index: int) -> None:
+        recorder.record_metrics("concurrent", {f"metric_{index}": float(index)})
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        tuple(executor.map(record, range(40)))
+
+    events = recorder.events("concurrent")
+    snapshot = recorder.snapshot("concurrent")
+    assert [event.sequence for event in events] == list(range(1, 43))
+    assert len(snapshot.latest_metrics) == 40
+    assert snapshot.event_count == 42
