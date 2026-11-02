@@ -41,7 +41,7 @@ jobs:
         run: ruff format --check .
 
       - name: Mypy
-        run: mypy core data quant ml signals portfolio risk backtest execution
+        run: mypy core data quant ml signals portfolio risk backtest execution apps/dashboard
 
       - name: Unit and integration tests
         run: pytest -q
