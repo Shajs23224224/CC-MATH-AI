@@ -179,10 +179,10 @@ class TrainingOrchestrator:
         max_pending: int = 8,
         max_tracked_jobs: int = 10_000,
     ) -> None:
-        if max_workers < 1:
-            raise ValueError("max_workers must be at least 1")
-        if max_pending < 0:
-            raise ValueError("max_pending cannot be negative")
+        if max_workers < 1 or max_workers > 32:
+            raise ValueError("max_workers must be between 1 and 32")
+        if max_pending < 0 or max_pending > 512:
+            raise ValueError("max_pending must be between 0 and 512")
         if max_tracked_jobs < max_workers + max_pending:
             raise ValueError("max_tracked_jobs must cover the full scheduler capacity")
 
@@ -266,6 +266,7 @@ class TrainingOrchestrator:
                         state.token,
                     )
                 except RuntimeError as exc:
+                    state.parameters = {}
                     self.recorder.fail(
                         created.run_id,
                         error_code="SCHEDULER_UNAVAILABLE",
@@ -395,6 +396,8 @@ class TrainingOrchestrator:
                     self._cancel_run_locked(state)
                     return
                 state.started_at = datetime.now(UTC)
+                task_parameters = state.parameters
+                state.parameters = {}
                 self.recorder.start_run(run_id, stage="initialization")
 
             recorder_callback = self.recorder.progress_callback(run_id)
@@ -404,7 +407,7 @@ class TrainingOrchestrator:
                 recorder_callback(progress)
 
             token.raise_if_cancelled()
-            handler(parameters, report_progress, token)
+            handler(task_parameters, report_progress, token)
             with self._lock:
                 state = self._jobs[run_id]
                 if token.cancelled:
@@ -442,6 +445,7 @@ class TrainingOrchestrator:
         current = self.recorder.snapshot(state.run_id)
         if current.status in _ACTIVE_STATUSES:
             self.recorder.cancel(state.run_id)
+        state.parameters = {}
         state.finished_at = datetime.now(UTC)
 
     def _on_future_done(self, run_id: str, future: Future[object]) -> None:
