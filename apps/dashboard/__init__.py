@@ -10,12 +10,32 @@ from apps.dashboard.service import (
     TrainingDashboardService,
     TrainingEventHistoryError,
 )
+from apps.dashboard.orchestrator import (
+    CancellationToken,
+    TrainingCancelledError,
+    TrainingJobNotFoundError,
+    TrainingOrchestrator,
+    TrainingOrchestratorClosedError,
+    TrainingQueueFullError,
+    TrainingTaskHandler,
+    TrainingTaskNotFoundError,
+    TrainingTaskRegistry,
+)
 
 __all__ = [
+    "CancellationToken",
     "CorruptTrainingEventStoreError",
+    "TrainingCancelledError",
     "TrainingDashboardService",
+    "TrainingJobNotFoundError",
     "TrainingEventHistoryError",
     "TrainingEventStore",
     "TrainingEventStoreError",
+    "TrainingOrchestrator",
+    "TrainingOrchestratorClosedError",
+    "TrainingQueueFullError",
+    "TrainingTaskHandler",
+    "TrainingTaskNotFoundError",
+    "TrainingTaskRegistry",
     "create_app",
 ]
