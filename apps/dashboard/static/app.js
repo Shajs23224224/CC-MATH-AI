@@ -660,6 +660,15 @@
             API + "/jobs/" + encodeURIComponent(state.selectedRunId)
           ).catch(() => null);
           renderDetails();
+          if (selected.status === "RUNNING" && !state.eventSource) {
+            const latestSequence = state.events.reduce(
+              (maximum, event) => Math.max(maximum, event.sequence),
+              0,
+            );
+            openEventStream(state.selectedRunId, latestSequence);
+          } else if (selected.status !== "RUNNING" && state.eventSource) {
+            closeEventStream();
+          }
         }
       }
       if (options.showToast) showToast("Training runs refreshed.");
