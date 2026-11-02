@@ -102,7 +102,7 @@ class _JobState:
     submitted_at: datetime
     token: CancellationToken
     parameters: dict[str, object]
-    future: Future[object] | None = None
+    future: Future[None] | None = None
     started_at: datetime | None = None
     finished_at: datetime | None = None
     cancellation_requested: bool = False
