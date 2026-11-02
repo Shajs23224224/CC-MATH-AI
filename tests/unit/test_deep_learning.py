@@ -71,7 +71,6 @@ def compact_config(algorithm: str, task: str) -> DeepLearningConfig:
         max_parameters=200_000,
     )
 
-
 def test_registry_is_explicit_and_task_scoped() -> None:
     registry = supported_deep_learning_algorithms()
     assert set(registry) == {"supervised", "reconstruction"}
@@ -123,7 +122,6 @@ def test_supervised_architecture_fits_temporal_splits_and_predicts(algorithm: st
     assert len(prediction.predictions) == 8 - model.config.sequence_length + 1
     assert all(isinstance(value, float) for value in prediction.predictions)
 
-
 def test_classification_returns_classes_and_normalized_probabilities() -> None:
     dataset = classification_dataset()
     model = DeepLearningModel(compact_config("mlp", "classification"))
@@ -158,7 +156,6 @@ def test_reconstruction_architectures_return_finite_test_error_and_windows(
     with pytest.raises(MLPredictionError, match="reconstruct"):
         model.predict(dataset.features[-8:])
 
-
 def test_test_target_changes_do_not_change_training_fingerprint_or_selected_epoch() -> None:
     original = regression_dataset()
     altered_target = list(original.target)
@@ -177,7 +174,6 @@ def test_test_target_changes_do_not_change_training_fingerprint_or_selected_epoc
     assert first_result.test_predictions == second_result.test_predictions
     assert first_result.metrics != second_result.metrics
 
-
 def test_configuration_rejects_incompatible_architecture_and_head_dimensions() -> None:
     with pytest.raises(ValueError, match="autoencoder and vae require reconstruction"):
         DeepLearningConfig(algorithm="vae", task="forecasting")
@@ -188,7 +184,6 @@ def test_configuration_rejects_incompatible_architecture_and_head_dimensions() -
             hidden_dim=10,
             num_heads=3,
         )
-
 
 def test_resource_budget_and_non_finite_prediction_inputs_are_rejected() -> None:
     dataset = regression_dataset()
@@ -210,8 +205,6 @@ def test_resource_budget_and_non_finite_prediction_inputs_are_rejected() -> None
     invalid[-1] = (float("nan"), invalid[-1][1], invalid[-1][2])
     with pytest.raises(MLInputError, match="finite"):
         fitted.predict(tuple(invalid))
-
-
 
 def test_epoch_progress_reports_losses_without_changing_model_results() -> None:
     dataset = regression_dataset()
