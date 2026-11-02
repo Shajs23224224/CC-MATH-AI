@@ -12,6 +12,8 @@ from uuid import uuid4
 from core.contracts.training import (
     TrainingEvent,
     TrainingEventType,
+    TrainingProgress,
+    TrainingProgressCallback,
     TrainingRunSnapshot,
     TrainingScalar,
     TrainingStatus,
@@ -114,6 +116,7 @@ class TrainingEventRecorder:
         step: int | None = None,
         total_steps: int | None = None,
         metrics: Mapping[str, float] | None = None,
+        attributes: Mapping[str, TrainingScalar] | None = None,
         message: str | None = None,
     ) -> TrainingEvent:
         """Report stage progress and optional metrics from the active computation."""
@@ -128,8 +131,28 @@ class TrainingEventRecorder:
             step=step,
             total_steps=total_steps,
             metrics=dict(metrics or {}),
+            attributes=dict(attributes or {}),
             message=message,
         )
+
+    def progress_callback(self, run_id: str) -> TrainingProgressCallback:
+        """Return a callback that forwards algorithm progress into this recorder.
+
+        The run must already exist and be RUNNING before the callback is invoked.
+        """
+        def report(progress: TrainingProgress) -> None:
+            self.report_progress(
+                run_id,
+                stage=progress.stage,
+                progress_percent=progress.progress_percent,
+                step=progress.step,
+                total_steps=progress.total_steps,
+                metrics=progress.metrics,
+                attributes=progress.attributes,
+                message=progress.message,
+            )
+
+        return report
 
     def record_metrics(
         self,
