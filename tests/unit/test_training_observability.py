@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
 
 import pytest
 
@@ -25,6 +25,10 @@ def test_recorder_tracks_ordered_run_lifecycle_and_metrics() -> None:
     assert created.status == "QUEUED"
     assert created.event_count == 1
     assert created.metadata["dataset_id"] == "prices-v1"
+    created_event = recorder.events("run-lstm-001")[0]
+    assert created_event.run_name == "LSTM experiment"
+    assert created_event.algorithm == "lstm"
+    assert created_event.run_metadata["seed"] == 31
 
     recorder.start_run("run-lstm-001", stage="training")
     progress = recorder.report_progress(
