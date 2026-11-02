@@ -276,9 +276,10 @@ class TrainingOrchestrator:
                 state.future = future
                 # From this point the Future callback owns capacity release.
                 slot_transferred = True
-                future.add_done_callback(
-                    lambda completed, job_id=created.run_id: self._on_future_done(job_id, completed)
-                )
+                def on_done(completed: Future[None]) -> None:
+                    self._on_future_done(created.run_id, completed)
+
+                future.add_done_callback(on_done)
                 return self._job_snapshot(state)
             except Exception:
                 if not slot_transferred:
@@ -439,7 +440,7 @@ class TrainingOrchestrator:
         state.parameters = {}
         state.finished_at = datetime.now(UTC)
 
-    def _on_future_done(self, run_id: str, future: Future[object]) -> None:
+    def _on_future_done(self, run_id: str, future: Future[None]) -> None:
         """Release bounded capacity and terminalize unexpected worker failures."""
         with self._lock:
             try:
