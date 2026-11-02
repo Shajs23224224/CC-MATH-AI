@@ -49,4 +49,4 @@ jobs:
         run: python -m pip install "bandit>=1.7,<2"
 
       - name: Bandit scan
-        run: bandit -r core data quant ml signals portfolio risk backtest execution -ll
+        run: bandit -r core data quant ml signals portfolio risk backtest execution apps/dashboard -ll
