@@ -201,9 +201,10 @@ def test_unknown_task_is_rejected_before_a_run_is_created() -> None:
 def test_shutdown_rejects_new_submissions() -> None:
     recorder = TrainingEventRecorder()
     orchestrator = TrainingOrchestrator(recorder)
+    orchestrator.register_task("known", lambda *_args: None)
     orchestrator.shutdown()
 
     from apps.dashboard.orchestrator import TrainingOrchestratorClosedError
 
     with pytest.raises(TrainingOrchestratorClosedError):
-        orchestrator.submit("unknown", name="After shutdown")
+        orchestrator.submit("known", name="After shutdown")
