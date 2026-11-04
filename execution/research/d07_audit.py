@@ -148,15 +148,10 @@ def _classification_metrics(
         metrics[f"{prefix}_{name}_f1"] = float(f1[index])
         metrics[f"{prefix}_{name}_support"] = float(support[index])
         metrics[f"{prefix}_{name}_predicted_count"] = float(predicted_count)
-        metrics[f"{prefix}_{name}_predicted_share"] = float(
-            predicted_count / len(actual)
-        )
+        metrics[f"{prefix}_{name}_predicted_share"] = float(predicted_count / len(actual))
     for actual_index, actual_label in enumerate(EXPECTED_CLASSES):
         for predicted_index, predicted_label in enumerate(EXPECTED_CLASSES):
-            key = (
-                f"{prefix}_confusion_{actual_label.lower()}_"
-                f"predicted_{predicted_label.lower()}"
-            )
+            key = f"{prefix}_confusion_{actual_label.lower()}_predicted_{predicted_label.lower()}"
             metrics[key] = float(matrix[actual_index, predicted_index])
     return metrics
 
@@ -200,9 +195,11 @@ def _verify_d04_dataset(
     _require(not date_index.has_duplicates, "D04 feature dates contain duplicates")
     _require(date_index.is_monotonic_increasing, "D04 feature dates are not chronological")
 
-    execution = frame[
-        ["entry_open", "exit_close", "target_execution_return"]
-    ].apply(pd.to_numeric, errors="coerce").to_numpy(dtype=np.float64)
+    execution = (
+        frame[["entry_open", "exit_close", "target_execution_return"]]
+        .apply(pd.to_numeric, errors="coerce")
+        .to_numpy(dtype=np.float64)
+    )
     _require(np.all(np.isfinite(execution)), "D04 prices/returns contain non-finite values")
     _require(np.all(execution[:, :2] > 0.0), "D04 prices must be positive")
     calculated = execution[:, 1] / execution[:, 0] - 1.0
@@ -339,8 +336,7 @@ def _verify_aggregate_metrics(
                 _close(row[name], value, f"aggregate {algorithm}/{metric}/{name}")
             verified += 1
     observed_rows = {
-        (str(row.algorithm), str(row.metric))
-        for row in aggregates.itertuples(index=False)
+        (str(row.algorithm), str(row.metric)) for row in aggregates.itertuples(index=False)
     }
     _require(
         observed_rows == expected_rows,
@@ -485,9 +481,7 @@ def audit_decision_policy_run(
     _require((predictions["row_index"] >= 0).all(), "D06 row indexes must be non-negative")
 
     for column in ("test_used_for_selection", "calibration_test_used_for_selection"):
-        folds[column] = folds[column].map(
-            lambda value, field=column: _as_bool(value, field)
-        )
+        folds[column] = folds[column].map(lambda value, field=column: _as_bool(value, field))
     _require(not folds["test_used_for_selection"].any(), "outer test used for threshold selection")
     _require(
         folds["calibration_test_used_for_selection"].all(),
@@ -592,10 +586,7 @@ def audit_decision_policy_run(
                 f"{algorithm} fold {fold_row.fold} feature dates are misaligned",
             )
             actual = (
-                frame["target_execution_direction"]
-                .iloc[expected_indices]
-                .astype(str)
-                .to_numpy()
+                frame["target_execution_direction"].iloc[expected_indices].astype(str).to_numpy()
             )
             stored_actual = selected["actual"].astype(str).to_numpy()
             _require(
@@ -608,10 +599,14 @@ def audit_decision_policy_run(
                 "probability_neutral",
                 "probability_up",
             ]
-            probabilities = selected[probability_columns].apply(
-                pd.to_numeric,
-                errors="coerce",
-            ).to_numpy(dtype=np.float64)
+            probabilities = (
+                selected[probability_columns]
+                .apply(
+                    pd.to_numeric,
+                    errors="coerce",
+                )
+                .to_numpy(dtype=np.float64)
+            )
             _require(
                 np.all(np.isfinite(probabilities))
                 and np.all(probabilities >= 0.0)
@@ -732,9 +727,11 @@ def audit_decision_policy_run(
         ),
     )
 
-    audited = pd.concat(enriched_groups, ignore_index=True).sort_values(
-        ["algorithm", "fold", "row_index"]
-    ).reset_index(drop=True)
+    audited = (
+        pd.concat(enriched_groups, ignore_index=True)
+        .sort_values(["algorithm", "fold", "row_index"])
+        .reset_index(drop=True)
+    )
     ticker = str(d04_manifest.get("experiment", {}).get("ticker", "UNKNOWN"))
     safe_ticker = re.sub(r"[^A-Za-z0-9_-]+", "_", ticker).lower()
     run_id = str(d06_summary.get("run_id", policy_run_dir.name))
