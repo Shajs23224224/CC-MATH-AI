@@ -158,13 +158,12 @@ def _validate_probability_matrix(
     matrix = np.asarray(probabilities, dtype=np.float64)
     if matrix.shape != (expected_rows, len(EXPECTED_CLASSES)):
         raise ValueError("probability matrix has invalid dimensions")
-    if (
-        not np.all(np.isfinite(matrix))
-        or np.any(matrix < 0.0)
-        or np.any(matrix > 1.0)
-        or not np.allclose(matrix.sum(axis=1), 1.0, atol=1e-6, rtol=0.0)
-    ):
-        raise ValueError("classifier returned invalid probabilities")
+    if not np.all(np.isfinite(matrix)):
+        raise ValueError("classifier probabilities must be finite")
+    if np.any(matrix < 0.0) or np.any(matrix > 1.0):
+        raise ValueError("classifier probabilities must be between zero and one")
+    if not np.allclose(matrix.sum(axis=1), 1.0, atol=1e-6, rtol=0.0):
+        raise ValueError("classifier probability rows must sum to one")
     return matrix
 
 
