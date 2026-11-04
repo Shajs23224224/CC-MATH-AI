@@ -164,9 +164,7 @@ def test_simulator_compares_argmax_and_neutral_policy_with_round_trip_costs(
     assert len(flat_rows) == 2
     assert (flat_rows["transaction_cost_pnl"] == 0.0).all()
 
-    manifest = json.loads(
-        (output_dir / "simulation_manifest.json").read_text(encoding="utf-8")
-    )
+    manifest = json.loads((output_dir / "simulation_manifest.json").read_text(encoding="utf-8"))
     for filename, entry in manifest["outputs"].items():
         path = output_dir / filename
         assert path.is_file()
@@ -230,9 +228,7 @@ def test_simulator_stops_opening_positions_after_bankruptcy(tmp_path):
     )
     output_dir = tmp_path / "simulations" / summary["simulation_id"]
     decisions = pd.read_csv(output_dir / "simulated_decisions.csv")
-    argmax = decisions.loc[decisions["strategy"] == "argmax"].sort_values(
-        "row_index"
-    )
+    argmax = decisions.loc[decisions["strategy"] == "argmax"].sort_values("row_index")
 
     assert argmax.iloc[0]["execution_status"] == "PORTFOLIO_BROKE"
     assert argmax.iloc[0]["portfolio_equity_after"] < 0.0
