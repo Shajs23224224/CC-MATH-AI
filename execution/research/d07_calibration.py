@@ -556,8 +556,9 @@ def audit_calibration_reliability(
     _require(
         d06_summary.get("status") == "COMPLETED"
         and d06_summary.get("failed_model_folds") == 0
-        and d06_summary.get("completed_model_folds") == len(algorithms) * fold_count,
-        "D06 run is not fully completed",
+        and d06_summary.get("completed_model_folds") == len(algorithms) * fold_count
+        and d06_summary.get("outer_test_used_for_selection") is False,
+        "D06 run is not fully completed or declares outer-test selection",
     )
     test_fraction = _as_finite(
         configuration.get("test_fraction"),
@@ -653,7 +654,7 @@ def audit_calibration_reliability(
         "calibration_fraction",
     )
     _require(
-        0.05 < calibration_fraction < 0.5
+        0.05 <= calibration_fraction <= 0.5
         and np.isclose(
             _as_finite(configuration.get("calibration_fraction"), "manifest calibration_fraction"),
             calibration_fraction,

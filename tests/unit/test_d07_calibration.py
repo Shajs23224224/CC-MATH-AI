@@ -67,9 +67,9 @@ def _build_d06_3_artifacts(root: Path) -> dict[str, Path | float]:
             "fold": 1,
             "algorithm": "test_classifier",
             "row_index": calibration_indices,
-            "feature_date": dataset.loc[
-                calibration_indices, "feature_date"
-            ].astype(str).to_numpy(),
+            "feature_date": pd.to_datetime(
+                dataset.loc[calibration_indices, "feature_date"]
+            ).dt.strftime("%Y-%m-%dT%H:%M:%S").to_numpy(),
             "actual": calibration_actual,
             "raw_probability_down": raw_calibration[:, 0],
             "raw_probability_neutral": raw_calibration[:, 1],
