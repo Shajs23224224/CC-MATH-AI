@@ -745,6 +745,10 @@ def simulate_execution_decisions(
         "audit_directory": audit_dir.name,
         "audit_manifest_sha256": _sha256_file(audit_dir / "audit_manifest.json"),
         "audited_predictions_sha256": _sha256_file(audit_dir / "audited_predictions.csv"),
+        "provenance_integrity": (
+            "SHA-256 verifies consistency with the supplied audit manifest; manifests "
+            "are unsigned and do not provide cryptographic authenticity."
+        ),
         "decision_policy_run_id": audit_summary.get("decision_policy_run_id"),
         "execution_dataset_sha256": audit_summary.get("execution_dataset_sha256"),
         "algorithm_count": len(algorithms),
