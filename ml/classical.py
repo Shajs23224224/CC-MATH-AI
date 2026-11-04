@@ -428,7 +428,7 @@ class ClassicalMLModel:
                 "rmse_skill_vs_baseline": _relative_error_skill(model_rmse, baseline_rmse),
             }
 
-            evaluation_parameters = {
+            evaluation_parameters: dict[str, int | float | str | bool | None] = {
                 "training_mean_baseline": training_mean,
             }
 
@@ -493,7 +493,7 @@ class ClassicalMLModel:
                 "prediction_collapse": float(unique_predictions == 1),
             }
 
-            used_slugs = set()
+            used_slugs: set[str] = set()
             class_slugs = [
                 _class_metric_slug(label, index, used_slugs) for index, label in enumerate(classes)
             ]
