@@ -14,9 +14,7 @@ def _parse_cost_scenarios(value: str) -> tuple[float, ...]:
     try:
         scenarios = tuple(float(item.strip()) for item in value.split(",") if item.strip())
     except ValueError as exc:
-        raise argparse.ArgumentTypeError(
-            "cost scenarios must be comma-separated numbers"
-        ) from exc
+        raise argparse.ArgumentTypeError("cost scenarios must be comma-separated numbers") from exc
     if not scenarios:
         raise argparse.ArgumentTypeError("at least one cost scenario is required")
     return scenarios
