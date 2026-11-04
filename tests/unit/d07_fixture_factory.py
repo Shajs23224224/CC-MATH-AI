@@ -103,6 +103,13 @@ def build_d04_d06_artifacts(root: Path) -> dict[str, Path]:
             "classification_name": "target_execution_direction",
             "classes": ["DOWN", "NEUTRAL", "UP"],
         },
+        "execution_assumption": {
+            "signal_available_after": "feature session close",
+            "entry": "next observed session open",
+            "exit": "same next session close",
+            "return_formula": "next_session_close / next_session_open - 1",
+            "return_type": "gross, before commissions, spread and slippage",
+        },
         "dataset": {
             "rows": len(dataset),
             "feature_names": ["feature_a", "feature_b"],
