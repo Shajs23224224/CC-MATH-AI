@@ -37,10 +37,22 @@ def _refresh_policy_output_hash(run_dir, filename):
 
 def create_audit_fixture(tmp_path):
     dates = pd.bdate_range("2024-01-02", periods=12)
-    execution_returns = np.asarray([
-        -0.020, 0.003, 0.005, 0.015, -0.010, 0.0004,
-        -0.020, 0.005, 0.0001, -0.020, 0.020, 0.0005,
-    ])
+    execution_returns = np.asarray(
+        [
+            -0.020,
+            0.003,
+            0.005,
+            0.015,
+            -0.010,
+            0.0004,
+            -0.020,
+            0.005,
+            0.0001,
+            -0.020,
+            0.020,
+            0.0005,
+        ]
+    )
     threshold = 0.001
     labels = np.where(
         execution_returns > threshold,
@@ -94,14 +106,16 @@ def create_audit_fixture(tmp_path):
     run_dir.mkdir()
 
     actual = labels[6:12].astype(str)
-    probabilities = np.asarray([
-        [0.75, 0.15, 0.10],
-        [0.65, 0.15, 0.20],
-        [0.20, 0.55, 0.25],
-        [0.60, 0.25, 0.15],
-        [0.20, 0.35, 0.45],
-        [0.20, 0.45, 0.35],
-    ])
+    probabilities = np.asarray(
+        [
+            [0.75, 0.15, 0.10],
+            [0.65, 0.15, 0.20],
+            [0.20, 0.55, 0.25],
+            [0.60, 0.25, 0.15],
+            [0.20, 0.35, 0.45],
+            [0.20, 0.45, 0.35],
+        ]
+    )
     threshold_selected = 0.40
     argmax = np.asarray(("DOWN", "DOWN", "NEUTRAL", "DOWN", "UP", "NEUTRAL"))
     policy = _apply_neutral_threshold(probabilities, threshold_selected)
@@ -328,11 +342,13 @@ def test_audit_rejects_probability_rows_that_do_not_sum_to_one(tmp_path):
 
 
 def test_neutral_threshold_policy_is_deterministic():
-    probabilities = np.asarray([
-        [0.70, 0.20, 0.10],
-        [0.20, 0.50, 0.30],
-        [0.10, 0.20, 0.70],
-    ])
+    probabilities = np.asarray(
+        [
+            [0.70, 0.20, 0.10],
+            [0.20, 0.50, 0.30],
+            [0.10, 0.20, 0.70],
+        ]
+    )
 
     assert _apply_neutral_threshold(
         probabilities,
