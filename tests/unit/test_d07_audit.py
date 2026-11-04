@@ -169,6 +169,27 @@ def test_audit_reconstructs_d06_fold_geometry_from_manifest(tmp_path):
         )
 
 
+def test_audit_reconstructs_exact_d06_calibration_suffix(tmp_path):
+    artifacts = build_d04_d06_artifacts(tmp_path)
+    folds = pd.read_csv(artifacts["fold_metrics_path"])
+    folds.loc[0, "calibration_start_index"] = 8
+    folds.loc[0, "calibration_samples"] = 4
+    folds.to_csv(
+        artifacts["fold_metrics_path"],
+        index=False,
+        float_format="%.17g",
+        lineterminator="\n",
+    )
+    _refresh_d06_manifest(artifacts["policy_dir"], "fold_metrics.csv")
+
+    with pytest.raises(ValueError, match="calibration window differs from D06 configuration"):
+        audit_decision_policy_run(
+            artifacts["policy_dir"],
+            artifacts["dataset_path"],
+            output_root=tmp_path / "audits",
+        )
+
+
 def test_audit_rejects_changed_d04_dataset(tmp_path):
     artifacts = build_d04_d06_artifacts(tmp_path)
     dataset = pd.read_csv(artifacts["dataset_path"])
