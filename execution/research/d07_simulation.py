@@ -179,6 +179,8 @@ def _validate_audited_rows(
         "test_end_index",
         "test_samples",
         "selected_neutral_threshold",
+        "first_feature_date",
+        "last_feature_date",
     }
     _require(
         required_fold.issubset(fold_audit.columns),
@@ -399,6 +401,13 @@ def _validate_audited_rows(
                     expected_indices,
                 ),
                 f"{algorithm} fold {audit_row.fold} row coverage mismatch",
+            )
+            _require(
+                str(audit_row.first_feature_date)
+                == str(selected_fold["feature_date"].iloc[0])
+                and str(audit_row.last_feature_date)
+                == str(selected_fold["feature_date"].iloc[-1]),
+                f"{algorithm} fold {audit_row.fold} feature-date boundaries mismatch",
             )
             _require(
                 selected_fold["selected_neutral_threshold"].nunique(dropna=False) == 1
