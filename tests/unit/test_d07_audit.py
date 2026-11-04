@@ -154,6 +154,26 @@ def test_audit_recomputes_aggregate_metrics(tmp_path):
         )
 
 
+def test_audit_rejects_aggregate_task_mismatch(tmp_path):
+    artifacts = build_d04_d06_artifacts(tmp_path)
+    aggregates = pd.read_csv(artifacts["aggregate_metrics_path"])
+    aggregates.loc[0, "task"] = "regression"
+    aggregates.to_csv(
+        artifacts["aggregate_metrics_path"],
+        index=False,
+        float_format="%.17g",
+        lineterminator="\n",
+    )
+    _refresh_d06_manifest(artifacts["policy_dir"], "aggregate_metrics.csv")
+
+    with pytest.raises(ValueError, match="aggregate task must be classification"):
+        audit_decision_policy_run(
+            artifacts["policy_dir"],
+            artifacts["dataset_path"],
+            output_root=tmp_path / "audits",
+        )
+
+
 def test_audit_reconstructs_d06_fold_geometry_from_manifest(tmp_path):
     artifacts = build_d04_d06_artifacts(tmp_path)
     manifest_path = artifacts["policy_dir"] / "decision_policy_manifest.json"
