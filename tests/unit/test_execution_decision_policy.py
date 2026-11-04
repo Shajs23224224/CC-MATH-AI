@@ -25,8 +25,7 @@ def digest(path: Path) -> str:
 
 def classification_dataset(size=120):
     features = tuple(
-        (float(index), float(index % 3), float((index % 7) / 7.0))
-        for index in range(size)
+        (float(index), float(index % 3), float((index % 7) / 7.0)) for index in range(size)
     )
     labels = tuple(("DOWN", "NEUTRAL", "UP")[index % 3] for index in range(size))
     return MLDataset(
@@ -69,9 +68,7 @@ def create_d04_dataset(tmp_path, size=180):
     )
     snapshot.index.name = "date"
     snapshot["target_next_return"] = (
-        raw["close"].shift(-1).iloc[:-1].to_numpy()
-        / raw["close"].iloc[:-1].to_numpy()
-        - 1.0
+        raw["close"].shift(-1).iloc[:-1].to_numpy() / raw["close"].iloc[:-1].to_numpy() - 1.0
     )
     snapshot["target_next_direction"] = np.where(
         snapshot["target_next_return"] > 0.0,
@@ -140,9 +137,7 @@ def test_neutral_threshold_policy_changes_decisions_not_probability_inputs():
 
 
 def test_threshold_selection_is_deterministic_and_uses_three_classes():
-    actual = np.asarray(
-        ["DOWN", "DOWN", "NEUTRAL", "NEUTRAL", "UP", "UP"]
-    )
+    actual = np.asarray(["DOWN", "DOWN", "NEUTRAL", "NEUTRAL", "UP", "UP"])
     probabilities = np.asarray(
         [
             [0.70, 0.10, 0.20],
@@ -219,12 +214,9 @@ def test_nested_policy_keeps_outer_test_out_of_threshold_selection():
     for row in predictions:
         assert row["feature_date"] in dates[72:84]
         assert row["policy_prediction"] in {"DOWN", "NEUTRAL", "UP"}
-        assert (
-            row["probability_down"]
-            + row["probability_neutral"]
-            + row["probability_up"]
-            == pytest.approx(1.0)
-        )
+        assert row["probability_down"] + row["probability_neutral"] + row[
+            "probability_up"
+        ] == pytest.approx(1.0)
     assert "policy_neutral_recall" in record
     assert "argmax_neutral_recall" in record
     assert "multiclass_log_loss" in record
