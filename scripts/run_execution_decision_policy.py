@@ -648,7 +648,10 @@ def _load_validated_d04_input(
     artifact = manifest.get("artifact")
     source = manifest.get("source")
     dataset_info = manifest.get("dataset")
-    if not all(isinstance(value, dict) for value in (experiment, target, artifact, source, dataset_info)):
+    if not all(
+        isinstance(value, dict)
+        for value in (experiment, target, artifact, source, dataset_info)
+    ):
         raise ValueError("D04 manifest is missing required metadata objects")
 
     threshold_bps = experiment.get("threshold_bps")
@@ -926,10 +929,13 @@ def run_decision_policy(
             "it does not calibrate the probability estimates."
         ),
         "limitations": [
-            "Threshold selection uses the inner suffix; its selection metrics are not unbiased OOS estimates.",
-            "Classifier probabilities are model estimates and are not post-hoc calibrated probabilities.",
+            "Threshold selection uses the inner suffix; its selection metrics "
+            "are not unbiased OOS estimates.",
+            "Classifier probabilities are model estimates and are not "
+            "post-hoc calibrated probabilities.",
             "Outer test windows are used only for final descriptive evaluation.",
-            "Historical folds may have been inspected during development and are not a prospective test.",
+            "Historical folds may have been inspected during development "
+            "and are not a prospective test.",
             "D06 does not model transaction costs or execute orders.",
         ],
         "output_directory": str(run_dir),
