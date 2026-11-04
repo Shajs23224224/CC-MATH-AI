@@ -493,21 +493,22 @@ def _strategy_metrics(
     equity = frame["portfolio_equity_after"].to_numpy(dtype=np.float64)
     equity_with_start = np.concatenate(([initial_capital], equity))
     high_water = np.maximum.accumulate(equity_with_start)[1:]
-    drawdowns = np.divide(
-        equity,
-        high_water,
-        out=np.full_like(equity, np.nan, dtype=np.float64),
-        where=high_water > 0.0,
-    ) - 1.0
+    drawdowns = (
+        np.divide(
+            equity,
+            high_water,
+            out=np.full_like(equity, np.nan, dtype=np.float64),
+            where=high_water > 0.0,
+        )
+        - 1.0
+    )
 
     net_pnl = float(pnl.sum())
     final_equity = float(equity[-1])
     sessions = len(frame)
     trades = int(traded.sum())
     total_notional = float(frame["active_notional"].sum())
-    skipped_sessions = int(
-        (frame["execution_status"] == "SKIPPED_BANKRUPTCY").sum()
-    )
+    skipped_sessions = int((frame["execution_status"] == "SKIPPED_BANKRUPTCY").sum())
     neutral_signals = int((frame["requested_action"] == "NEUTRAL").sum())
 
     return {
@@ -537,9 +538,7 @@ def _strategy_metrics(
             float(np.mean(daily_returns)) * math.sqrt(trading_days_per_year),
             downside_deviation,
         ),
-        "maximum_drawdown": (
-            float(np.nanmin(drawdowns)) if np.isfinite(drawdowns).any() else None
-        ),
+        "maximum_drawdown": (float(np.nanmin(drawdowns)) if np.isfinite(drawdowns).any() else None),
         "winning_trades": int(len(wins)),
         "losing_trades": int(len(losses)),
         "breakeven_trades": int(trades - len(wins) - len(losses)),
@@ -582,9 +581,7 @@ def _fold_metrics(
                 "trades": int(trade_mask.sum()),
                 "long_trades": int(np.sum(directions == 1)),
                 "short_trades": int(np.sum(directions == -1)),
-                "no_trade_sessions": int(
-                    (group["execution_status"] == "NO_TRADE").sum()
-                ),
+                "no_trade_sessions": int((group["execution_status"] == "NO_TRADE").sum()),
                 "neutral_signals": int((group["requested_action"] == "NEUTRAL").sum()),
                 "skipped_bankruptcy_sessions": int(
                     (group["execution_status"] == "SKIPPED_BANKRUPTCY").sum()
@@ -597,9 +594,7 @@ def _fold_metrics(
                     float(np.sum(trade_pnl > 0.0)),
                     float(len(trade_pnl)),
                 ),
-                "bankrupt_at_or_before_fold_end": bool(
-                    group["bankrupt_after_session"].any()
-                ),
+                "bankrupt_at_or_before_fold_end": bool(group["bankrupt_after_session"].any()),
             }
         )
     return pd.DataFrame.from_records(records)
@@ -637,9 +632,7 @@ def simulate_execution_decisions(
 
     all_frames: list[pd.DataFrame] = []
     for algorithm in algorithms:
-        algorithm_rows = predictions.loc[
-            predictions["algorithm"].astype(str) == algorithm
-        ]
+        algorithm_rows = predictions.loc[predictions["algorithm"].astype(str) == algorithm]
         for strategy, prediction_column in _STRATEGIES.items():
             all_frames.append(
                 _simulate_strategy(
@@ -654,9 +647,9 @@ def simulate_execution_decisions(
             )
 
     decisions = pd.concat(all_frames, ignore_index=True)
-    decisions = decisions.sort_values(
-        ["algorithm", "strategy", "fold", "row_index"]
-    ).reset_index(drop=True)
+    decisions = decisions.sort_values(["algorithm", "strategy", "fold", "row_index"]).reset_index(
+        drop=True
+    )
 
     metric_records: list[dict[str, Any]] = []
     for (algorithm, strategy), group in decisions.groupby(
@@ -741,9 +734,7 @@ def simulate_execution_decisions(
         "ticker": ticker,
         "audit_directory": audit_dir.name,
         "audit_manifest_sha256": _sha256_file(audit_dir / "audit_manifest.json"),
-        "audited_predictions_sha256": _sha256_file(
-            audit_dir / "audited_predictions.csv"
-        ),
+        "audited_predictions_sha256": _sha256_file(audit_dir / "audited_predictions.csv"),
         "decision_policy_run_id": audit_summary.get("decision_policy_run_id"),
         "execution_dataset_sha256": audit_summary.get("execution_dataset_sha256"),
         "algorithm_count": len(algorithms),
@@ -797,12 +788,8 @@ def simulate_execution_decisions(
         "created_at": datetime.now(UTC).isoformat(),
         "input": {
             "audit_directory": audit_dir.name,
-            "audit_manifest_sha256": _sha256_file(
-                audit_dir / "audit_manifest.json"
-            ),
-            "audited_predictions_sha256": _sha256_file(
-                audit_dir / "audited_predictions.csv"
-            ),
+            "audit_manifest_sha256": _sha256_file(audit_dir / "audit_manifest.json"),
+            "audited_predictions_sha256": _sha256_file(audit_dir / "audited_predictions.csv"),
         },
         "configuration": {
             "initial_capital": float(initial_capital),
