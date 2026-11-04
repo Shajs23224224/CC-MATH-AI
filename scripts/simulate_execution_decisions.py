@@ -152,7 +152,9 @@ def _verify_audit_directory(
     if checks_passed < 1 or checks_passed != checks_total:
         raise ValueError("D07.1 audit contains failed or incomplete checks")
 
-    input_manifest = manifest.get("input", {})
+    input_manifest = manifest.get("input")
+    if not isinstance(input_manifest, dict):
+        raise ValueError("D07.1 audit manifest input must be an object")
     if (
         input_manifest.get("decision_policy_run_id")
         != summary.get("decision_policy_run_id")
@@ -271,6 +273,7 @@ def _validate_audited_predictions(
     expected_folds = set(range(1, fold_count + 1))
     canonical_indices: np.ndarray | None = None
     canonical_dates: list[tuple[int, int]] | None = None
+    canonical_execution: np.ndarray | None = None
 
     for algorithm in algorithms:
         selected = predictions.loc[
@@ -295,6 +298,9 @@ def _validate_audited_predictions(
                 raise ValueError(f"D07.1 fold row ranges overlap for {algorithm}")
 
         row_indices = selected["row_index"].to_numpy(dtype=np.int64)
+        execution_values = selected[
+            ["entry_open", "exit_close", "actual_execution_return"]
+        ].to_numpy(dtype=np.float64)
         dates = list(
             zip(
                 selected["_feature_date_parsed"].astype("int64").tolist(),
@@ -305,11 +311,21 @@ def _validate_audited_predictions(
         if canonical_indices is None:
             canonical_indices = row_indices
             canonical_dates = dates
+            canonical_execution = execution_values
         else:
             if not np.array_equal(row_indices, canonical_indices):
                 raise ValueError("D07.1 algorithms do not share identical OOS row indexes")
             if dates != canonical_dates:
                 raise ValueError("D07.1 algorithms do not share identical OOS dates")
+            if not np.allclose(
+                execution_values,
+                canonical_execution,
+                rtol=1e-10,
+                atol=1e-12,
+            ):
+                raise ValueError(
+                    "D07.1 algorithms do not share identical execution outcomes"
+                )
 
         if not selected["_feature_date_parsed"].is_monotonic_increasing:
             raise ValueError(f"D07.1 feature dates are not chronological for {algorithm}")
@@ -343,6 +359,7 @@ def _simulate_strategy(
     ordered = frame.sort_values(["fold", "row_index"]).reset_index(drop=True)
     equity = float(initial_capital)
     bankrupt = False
+    peak_equity = float(initial_capital)
     cost_fraction = 2.0 * cost_bps_per_side / 10000.0
     records: list[dict[str, Any]] = []
 
@@ -384,17 +401,7 @@ def _simulate_strategy(
                 bankrupt = True
                 execution_status = "PORTFOLIO_BROKE"
 
-        peak_equity = max(
-            float(initial_capital),
-            max(
-                (
-                    item["portfolio_equity_after"]
-                    for item in records
-                ),
-                default=float(initial_capital),
-            ),
-            equity,
-        )
+        peak_equity = max(peak_equity, equity)
         drawdown = equity / peak_equity - 1.0
 
         records.append(
@@ -488,13 +495,19 @@ def _strategy_metrics(
     sessions = len(frame)
     trades = int(traded.sum())
     total_notional = float(frame["active_notional"].sum())
+    skipped_sessions = int(
+        (frame["execution_status"] == "SKIPPED_BANKRUPTCY").sum()
+    )
+    neutral_signals = int((frame["requested_action"] == "NEUTRAL").sum())
 
     return {
         "sessions": sessions,
         "trades": trades,
         "long_trades": int(np.sum(directions == 1)),
         "short_trades": int(np.sum(directions == -1)),
-        "no_trade_sessions": int(np.sum(directions == 0)),
+        "no_trade_sessions": int((frame["execution_status"] == "NO_TRADE").sum()),
+        "neutral_signals": neutral_signals,
+        "skipped_bankruptcy_sessions": skipped_sessions,
         "exposure_ratio": float(trades / sessions),
         "initial_capital": float(initial_capital),
         "final_equity": final_equity,
@@ -559,7 +572,13 @@ def _fold_metrics(
                 "trades": int(trade_mask.sum()),
                 "long_trades": int(np.sum(directions == 1)),
                 "short_trades": int(np.sum(directions == -1)),
-                "no_trade_sessions": int(np.sum(directions == 0)),
+                "no_trade_sessions": int(
+                    (group["execution_status"] == "NO_TRADE").sum()
+                ),
+                "neutral_signals": int((group["requested_action"] == "NEUTRAL").sum()),
+                "skipped_bankruptcy_sessions": int(
+                    (group["execution_status"] == "SKIPPED_BANKRUPTCY").sum()
+                ),
                 "gross_pnl": float(group["gross_pnl"].sum()),
                 "transaction_costs": float(group["transaction_cost_pnl"].sum()),
                 "net_pnl": float(pnl.sum()),
