@@ -54,6 +54,8 @@ D07.1 creates a new timestamped directory below `artifacts/execution_policy_audi
 - `audit_manifest.json`: SHA-256 hashes and byte counts for the D07.1 output files.
 
 Writes use temporary files followed by atomic replacement. Existing run directories are never overwritten.
+The SHA-256 manifest detects accidental or unaccompanied output changes; it is not a
+digital signature and cannot prove who created the manifest or artifacts.
 
 ## Interpretation boundaries
 
