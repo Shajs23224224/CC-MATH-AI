@@ -100,6 +100,7 @@ See:
 - [Training Dashboard TD04](docs/TRAINING_DASHBOARD_TD04.md) — responsive same-origin browser UI, run inspector, metric cards, event timeline and live SSE updates
 - [Training Dashboard TD05](docs/TRAINING_DASHBOARD_TD05.md) — bounded task orchestration, allow-listed handlers, queue management and cooperative cancellation
 - [D07.1 execution decision-policy audit](docs/D07_EXECUTION_DECISION_AUDIT.md) — integrity checks and reconciliation of D06 OOS predictions with D04 execution outcomes (experimental feature branch; not merged into `main`).
+- [D07.2 execution decision simulation](docs/D07_2_EXECUTION_DECISION_SIMULATION.md) — cost-aware long/short/flat simulation comparing argmax with the D06 neutral-threshold policy; no broker orders or claims of profitability.
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
