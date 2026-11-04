@@ -61,6 +61,8 @@ D07.1 is an integrity audit, not a backtest and not a trading strategy evaluatio
 
 The historical walk-forward windows were already inspected in D03–D06; they are not an untouched prospective test. Integrity checks and metric reproduction do not establish market alpha, profitability, or future predictive performance.
 
+After D07.1 completes successfully, its output directory is the only accepted input to [D07.2 — Cost-aware execution decision simulation](D07_2_EXECUTION_DECISION_SIMULATION.md). D07.2 applies a transparent cost and notional model to compare the original argmax predictions with the D06 neutral-threshold policy.
+
 ## Tests
 
 ```bash
