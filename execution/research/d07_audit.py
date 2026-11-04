@@ -597,7 +597,10 @@ def audit_decision_policy_run(
             _require(
                 calibration_start == expected_calibration_start
                 and calibration_samples == expected_calibration_samples,
-                f"{algorithm} fold {fold_row.fold} calibration window differs from D06 configuration",
+                (
+                    f"{algorithm} fold {fold_row.fold} calibration window differs "
+                    "from D06 configuration"
+                ),
             )
             _require(
                 train_start == 0
