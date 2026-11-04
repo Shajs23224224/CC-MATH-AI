@@ -67,9 +67,9 @@ def _build_d06_3_artifacts(root: Path) -> dict[str, Path | float]:
             "fold": 1,
             "algorithm": "test_classifier",
             "row_index": calibration_indices,
-            "feature_date": pd.to_datetime(
-                dataset.loc[calibration_indices, "feature_date"]
-            ).dt.strftime("%Y-%m-%dT%H:%M:%S").to_numpy(),
+            "feature_date": pd.to_datetime(dataset.loc[calibration_indices, "feature_date"])
+            .dt.strftime("%Y-%m-%dT%H:%M:%S")
+            .to_numpy(),
             "actual": calibration_actual,
             "raw_probability_down": raw_calibration[:, 0],
             "raw_probability_neutral": raw_calibration[:, 1],
@@ -84,9 +84,9 @@ def _build_d06_3_artifacts(root: Path) -> dict[str, Path | float]:
 
     predictions_path = artifacts["predictions_path"]
     predictions = pd.read_csv(predictions_path)
-    raw_oos = predictions[
-        ["probability_down", "probability_neutral", "probability_up"]
-    ].to_numpy(dtype=np.float64)
+    raw_oos = predictions[["probability_down", "probability_neutral", "probability_up"]].to_numpy(
+        dtype=np.float64
+    )
     scaled_oos = _apply_temperature(raw_oos, temperature)
     actual_oos = predictions["actual"].astype(str).to_numpy()
     predictions["raw_probability_down"] = raw_oos[:, 0]
@@ -95,9 +95,9 @@ def _build_d06_3_artifacts(root: Path) -> dict[str, Path | float]:
     predictions["probability_down"] = scaled_oos[:, 0]
     predictions["probability_neutral"] = scaled_oos[:, 1]
     predictions["probability_up"] = scaled_oos[:, 2]
-    predictions["argmax_prediction"] = np.asarray(
-        ["DOWN", "NEUTRAL", "UP"], dtype=str
-    )[np.argmax(scaled_oos, axis=1)]
+    predictions["argmax_prediction"] = np.asarray(["DOWN", "NEUTRAL", "UP"], dtype=str)[
+        np.argmax(scaled_oos, axis=1)
+    ]
     predictions["policy_prediction"] = _neutral_decisions(
         scaled_oos,
         threshold_result["selected_neutral_threshold"],
@@ -168,9 +168,7 @@ def _build_d06_3_artifacts(root: Path) -> dict[str, Path | float]:
             "reliability_bins": reliability_rows,
         }
     )
-    summary["outputs"]["calibration_predictions"] = (
-        calibration_predictions_path.name
-    )
+    summary["outputs"]["calibration_predictions"] = calibration_predictions_path.name
     _write_json(summary_path, summary)
 
     manifest_path = policy_dir / "decision_policy_manifest.json"
@@ -239,9 +237,7 @@ def test_audit_reproduces_temperature_threshold_and_reliability_bins(tmp_path):
     assert bins_audit["passed"].all()
 
     manifest = json.loads(
-        (audit_dir / "calibration_audit_manifest.json").read_text(
-            encoding="utf-8"
-        )
+        (audit_dir / "calibration_audit_manifest.json").read_text(encoding="utf-8")
     )
     for filename, entry in manifest["outputs"].items():
         path = audit_dir / filename

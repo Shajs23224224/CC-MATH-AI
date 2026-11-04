@@ -118,10 +118,14 @@ def _probability_matrix(
     field: str,
 ) -> np.ndarray:
     _require(set(columns).issubset(frame.columns), f"{field} probability schema is incomplete")
-    matrix = frame.loc[:, list(columns)].apply(
-        pd.to_numeric,
-        errors="coerce",
-    ).to_numpy(dtype=np.float64)
+    matrix = (
+        frame.loc[:, list(columns)]
+        .apply(
+            pd.to_numeric,
+            errors="coerce",
+        )
+        .to_numpy(dtype=np.float64)
+    )
     _require(
         matrix.ndim == 2
         and matrix.shape[1] == len(EXPECTED_CLASSES)
@@ -174,9 +178,7 @@ def _log_loss(actual: np.ndarray, probabilities: np.ndarray) -> float:
 
 def _brier_score(actual: np.ndarray, probabilities: np.ndarray) -> float:
     labels = np.asarray(actual, dtype=str)
-    one_hot = np.column_stack([labels == label for label in EXPECTED_CLASSES]).astype(
-        np.float64
-    )
+    one_hot = np.column_stack([labels == label for label in EXPECTED_CLASSES]).astype(np.float64)
     return float(np.mean(np.sum((probabilities - one_hot) ** 2, axis=1)))
 
 
@@ -481,8 +483,7 @@ def _verify_aggregate_metrics(
                 dtype=np.float64,
             )
             _require(
-                _as_integer(row["successful_folds"], "aggregate successful_folds")
-                == len(values),
+                _as_integer(row["successful_folds"], "aggregate successful_folds") == len(values),
                 f"aggregate fold count mismatch for {algorithm}/{metric}",
             )
             expected = {
@@ -584,10 +585,8 @@ def audit_calibration_reliability(
         "D06 class ordering differs from the canonical class contract",
     )
     _require(
-        d06_summary.get("probability_calibration_method")
-        == "multiclass_temperature_scaling"
-        and configuration.get("probability_calibration_method")
-        == "multiclass_temperature_scaling",
+        d06_summary.get("probability_calibration_method") == "multiclass_temperature_scaling"
+        and configuration.get("probability_calibration_method") == "multiclass_temperature_scaling",
         "D06 calibration method is not recognized",
     )
     bounds_raw = configuration.get("probability_calibration_temperature_bounds")
@@ -748,9 +747,21 @@ def audit_calibration_reliability(
     oos = oos.copy()
     calibration = calibration.copy()
     for frame, columns, label in (
-        (folds, ("fold", "train_start_index", "train_end_index", "test_start_index",
-                 "test_end_index", "calibration_start_index", "calibration_end_index",
-                 "calibration_samples", "test_samples"), "fold metrics"),
+        (
+            folds,
+            (
+                "fold",
+                "train_start_index",
+                "train_end_index",
+                "test_start_index",
+                "test_end_index",
+                "calibration_start_index",
+                "calibration_end_index",
+                "calibration_samples",
+                "test_samples",
+            ),
+            "fold metrics",
+        ),
         (oos, ("fold", "row_index"), "OOS predictions"),
         (calibration, ("fold", "row_index"), "calibration predictions"),
     ):
@@ -769,8 +780,7 @@ def audit_calibration_reliability(
     for algorithm in algorithms:
         for fold_id in range(1, fold_count + 1):
             fold_selected = folds.loc[
-                (folds["algorithm"].astype(str) == algorithm)
-                & (folds["fold"] == fold_id)
+                (folds["algorithm"].astype(str) == algorithm) & (folds["fold"] == fold_id)
             ]
             _require(len(fold_selected) == 1, f"{algorithm} fold {fold_id} metrics row is missing")
             fold_row = fold_selected.iloc[0]
@@ -826,16 +836,12 @@ def audit_calibration_reliability(
                 ),
                 f"{algorithm} fold {fold_id} calibration row coverage is incomplete",
             )
-            calibration_actual = np.asarray(dataset.target, dtype=str)[
-                expected_calibration_indices
-            ]
+            calibration_actual = np.asarray(dataset.target, dtype=str)[expected_calibration_indices]
             _require(
                 np.array_equal(cal_rows["actual"].astype(str).to_numpy(), calibration_actual),
                 f"{algorithm} fold {fold_id} calibration labels differ from D04",
             )
-            expected_calibration_dates = np.asarray(dates, dtype=str)[
-                expected_calibration_indices
-            ]
+            expected_calibration_dates = np.asarray(dates, dtype=str)[expected_calibration_indices]
             _require(
                 np.array_equal(
                     cal_rows["feature_date"].astype(str).to_numpy(),
@@ -887,8 +893,7 @@ def audit_calibration_reliability(
 
             expected_oos_indices = np.arange(test_start, test_end, dtype=np.int64)
             oos_rows = oos.loc[
-                (oos["algorithm"].astype(str) == algorithm)
-                & (oos["fold"] == fold_id)
+                (oos["algorithm"].astype(str) == algorithm) & (oos["fold"] == fold_id)
             ].sort_values("row_index")
             _require(
                 np.array_equal(
@@ -925,9 +930,7 @@ def audit_calibration_reliability(
                     "the independently applied temperature"
                 ),
             )
-            argmax = np.asarray(EXPECTED_CLASSES, dtype=str)[
-                np.argmax(recomputed_oos, axis=1)
-            ]
+            argmax = np.asarray(EXPECTED_CLASSES, dtype=str)[np.argmax(recomputed_oos, axis=1)]
             policy = _neutral_decisions(
                 recomputed_oos,
                 selected["selected_neutral_threshold"],
@@ -1041,8 +1044,7 @@ def audit_calibration_reliability(
             "name": "threshold_selection_reproduction",
             "passed": True,
             "detail": (
-                "Macro-F1 threshold selection and deterministic tie breaks "
-                "independently reproduced"
+                "Macro-F1 threshold selection and deterministic tie breaks independently reproduced"
             ),
         },
         {
