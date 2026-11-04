@@ -26,6 +26,7 @@ from execution.research.artifacts import (
     verify_manifest_outputs,
 )
 from scripts.run_execution_ml_walk_forward import EXPECTED_CLASSES, load_execution_dataset
+from scripts.run_ml_walk_forward import build_expanding_folds
 
 _D06_OUTPUTS = (
     "fold_metrics.csv",
@@ -558,6 +559,19 @@ def audit_calibration_reliability(
         and d06_summary.get("completed_model_folds") == len(algorithms) * fold_count,
         "D06 run is not fully completed",
     )
+    test_fraction = _as_finite(
+        configuration.get("test_fraction"),
+        "manifest test_fraction",
+    )
+    _require(
+        0.0 < test_fraction < 0.5,
+        "D06 test_fraction is outside its supported range",
+    )
+    expected_folds = build_expanding_folds(
+        len(dataset.features),
+        n_folds=fold_count,
+        test_fraction=test_fraction,
+    )
     _require(
         configuration.get("algorithms") == algorithms
         and _as_integer(configuration.get("fold_count"), "manifest fold_count") == fold_count,
@@ -592,9 +606,16 @@ def audit_calibration_reliability(
         and np.allclose(np.asarray(summary_bounds, dtype=float), bounds, rtol=0.0, atol=1e-12),
         "D06 manifest and summary temperature bounds differ",
     )
-    n_bins = _as_integer(configuration.get("reliability_bin_count"), "reliability_bin_count")
+    n_bins = _as_integer(
+        configuration.get("reliability_bin_count"),
+        "reliability_bin_count",
+    )
+    summary_bin_count = _as_integer(
+        d06_summary.get("reliability_bin_count"),
+        "summary reliability_bin_count",
+    )
     _require(
-        n_bins >= 2 and _as_integer(d06_summary.get("reliability_bin_count"), "summary reliability_bin_count") == n_bins,
+        n_bins >= 2 and summary_bin_count == n_bins,
         "D06 reliability bin count is invalid or inconsistent",
     )
     grid_raw = configuration.get("threshold_grid")
@@ -608,14 +629,24 @@ def audit_calibration_reliability(
     summary_grid = d06_summary.get("threshold_grid")
     _require(
         isinstance(summary_grid, list)
-        and np.allclose(np.asarray(summary_grid, dtype=float), np.asarray(threshold_grid), rtol=0.0, atol=1e-12),
+        and np.allclose(
+            np.asarray(summary_grid, dtype=float),
+            np.asarray(threshold_grid),
+            rtol=0.0,
+            atol=1e-12,
+        ),
         "D06 manifest and summary threshold grids differ",
     )
     _require(
-        configuration.get("selection_objective") == d06_summary.get("threshold_selection_objective") == "macro_f1",
+        configuration.get("selection_objective")
+        == d06_summary.get("threshold_selection_objective")
+        == "macro_f1",
         "D06 threshold-selection objective is not recognized",
     )
-    calibration_fraction = _as_finite(d06_summary.get("calibration_fraction"), "calibration_fraction")
+    calibration_fraction = _as_finite(
+        d06_summary.get("calibration_fraction"),
+        "calibration_fraction",
+    )
     _require(
         0.05 < calibration_fraction < 0.5
         and np.isclose(
@@ -663,7 +694,14 @@ def audit_calibration_reliability(
         "D06 algorithms differ across fold and probability artifacts",
     )
     _require(
-        {"fold", "algorithm", "row_index", "feature_date", "actual", *_RAW_COLUMNS}.issubset(calibration.columns),
+        {
+            "fold",
+            "algorithm",
+            "row_index",
+            "feature_date",
+            "actual",
+            *_RAW_COLUMNS,
+        }.issubset(calibration.columns),
         "D06 calibration prediction schema is incomplete",
     )
     _require(
@@ -682,10 +720,22 @@ def audit_calibration_reliability(
         "D06 OOS prediction schema is incomplete for D07.3",
     )
     _require(
-        {"fold", "algorithm", "status", "task", "train_start_index", "train_end_index",
-         "test_start_index", "test_end_index", "calibration_start_index",
-         "calibration_end_index", "calibration_samples", "test_samples",
-         "probability_calibration_temperature", "selected_neutral_threshold"}.issubset(folds.columns),
+        {
+            "fold",
+            "algorithm",
+            "status",
+            "task",
+            "train_start_index",
+            "train_end_index",
+            "test_start_index",
+            "test_end_index",
+            "calibration_start_index",
+            "calibration_end_index",
+            "calibration_samples",
+            "test_samples",
+            "probability_calibration_temperature",
+            "selected_neutral_threshold",
+        }.issubset(folds.columns),
         "D06 fold metrics are missing D07.3 calibration fields",
     )
     folds = folds.copy()
@@ -727,6 +777,17 @@ def audit_calibration_reliability(
             train_end = int(fold_row["train_end_index"])
             test_start = int(fold_row["test_start_index"])
             test_end = int(fold_row["test_end_index"])
+            expected_fold = expected_folds[fold_id - 1]
+            _require(
+                (train_start, train_end, test_start, test_end)
+                == (
+                    expected_fold.train_start,
+                    expected_fold.train_end,
+                    expected_fold.test_start,
+                    expected_fold.test_end,
+                ),
+                f"{algorithm} fold {fold_id} differs from the declared expanding-fold geometry",
+            )
             calibration_start = int(fold_row["calibration_start_index"])
             calibration_end = int(fold_row["calibration_end_index"])
             calibration_count = int(fold_row["calibration_samples"])
@@ -759,12 +820,16 @@ def audit_calibration_reliability(
                 ),
                 f"{algorithm} fold {fold_id} calibration row coverage is incomplete",
             )
-            calibration_actual = np.asarray(dataset.target, dtype=str)[expected_calibration_indices]
+            calibration_actual = np.asarray(dataset.target, dtype=str)[
+                expected_calibration_indices
+            ]
             _require(
                 np.array_equal(cal_rows["actual"].astype(str).to_numpy(), calibration_actual),
                 f"{algorithm} fold {fold_id} calibration labels differ from D04",
             )
-            expected_calibration_dates = np.asarray(dates, dtype=str)[expected_calibration_indices]
+            expected_calibration_dates = np.asarray(dates, dtype=str)[
+                expected_calibration_indices
+            ]
             _require(
                 np.array_equal(cal_rows["feature_date"].astype(str).to_numpy(), expected_calibration_dates),
                 f"{algorithm} fold {fold_id} calibration feature dates differ from D04",
@@ -833,7 +898,11 @@ def audit_calibration_reliability(
                 np.array_equal(oos_rows["feature_date"].astype(str).to_numpy(), expected_oos_dates),
                 f"{algorithm} fold {fold_id} OOS feature dates differ from D04",
             )
-            raw_oos = _probability_matrix(oos_rows, _RAW_COLUMNS, f"{algorithm} fold {fold_id} raw OOS")
+            raw_oos = _probability_matrix(
+                oos_rows,
+                _RAW_COLUMNS,
+                f"{algorithm} fold {fold_id} raw OOS",
+            )
             recomputed_oos = _apply_temperature(raw_oos, temperature)
             published_oos = _probability_matrix(
                 oos_rows,
@@ -842,20 +911,31 @@ def audit_calibration_reliability(
             )
             _require(
                 np.allclose(recomputed_oos, published_oos, rtol=1e-7, atol=1e-9),
-                f"{algorithm} fold {fold_id} OOS probabilities do not match the independently applied temperature",
+                (
+                    f"{algorithm} fold {fold_id} OOS probabilities do not match "
+                    "the independently applied temperature"
+                ),
             )
-            argmax = np.asarray(EXPECTED_CLASSES, dtype=str)[np.argmax(recomputed_oos, axis=1)]
+            argmax = np.asarray(EXPECTED_CLASSES, dtype=str)[
+                np.argmax(recomputed_oos, axis=1)
+            ]
             policy = _neutral_decisions(
                 recomputed_oos,
                 selected["selected_neutral_threshold"],
             )
             _require(
                 np.array_equal(oos_rows["argmax_prediction"].astype(str).to_numpy(), argmax),
-                f"{algorithm} fold {fold_id} argmax predictions do not match calibrated probabilities",
+                (
+                    f"{algorithm} fold {fold_id} argmax predictions do not match "
+                    "calibrated probabilities"
+                ),
             )
             _require(
                 np.array_equal(oos_rows["policy_prediction"].astype(str).to_numpy(), policy),
-                f"{algorithm} fold {fold_id} neutral-policy predictions do not match the independently selected threshold",
+                (
+                    f"{algorithm} fold {fold_id} neutral-policy predictions do not "
+                    "match the independently selected threshold"
+                ),
             )
             _require(
                 np.allclose(
@@ -935,32 +1015,50 @@ def audit_calibration_reliability(
         {
             "name": "calibration_suffix_alignment",
             "passed": True,
-            "detail": "Every raw calibration probability, feature date and actual label maps to the D04 suffix",
+            "detail": (
+                "Every raw calibration probability, feature date and actual label "
+                "maps to the D04 suffix"
+            ),
         },
         {
             "name": "temperature_refit_and_calibration_scores",
             "passed": True,
-            "detail": "Temperature and raw/scaled calibration log-loss and Brier scores independently reproduced",
+            "detail": (
+                "Temperature and raw/scaled calibration log-loss and Brier scores "
+                "independently reproduced"
+            ),
         },
         {
             "name": "threshold_selection_reproduction",
             "passed": True,
-            "detail": "Macro-F1 threshold selection and deterministic tie breaks independently reproduced",
+            "detail": (
+                "Macro-F1 threshold selection and deterministic tie breaks "
+                "independently reproduced"
+            ),
         },
         {
             "name": "oos_temperature_application",
             "passed": True,
-            "detail": "Every raw OOS probability vector independently temperature-scaled to the published calibrated vector",
+            "detail": (
+                "Every raw OOS probability vector independently temperature-scaled "
+                "to the published calibrated vector"
+            ),
         },
         {
             "name": "oos_metrics_and_reliability",
             "passed": True,
-            "detail": "OOS log-loss, Brier score, all one-vs-rest bins, ECE and MCE independently recomputed",
+            "detail": (
+                "OOS log-loss, Brier score, all one-vs-rest bins, ECE and MCE "
+                "independently recomputed"
+            ),
         },
         {
             "name": "aggregate_calibration_metrics",
             "passed": True,
-            "detail": f"{aggregate_count} calibration/decision metric aggregate rows independently recomputed",
+            "detail": (
+                f"{aggregate_count} calibration/decision metric aggregate rows "
+                "independently recomputed"
+            ),
         },
     ]
     ticker = re.sub(
@@ -1005,17 +1103,45 @@ def audit_calibration_reliability(
         "checks_passed": len(checks),
         "checks": checks,
         "interpretation": {
-            "ece": "Classwise one-vs-rest ECE is weighted by bin count over all OOS rows; multiclass ECE is the mean of the three classwise ECE values.",
-            "mce": "Classwise MCE is the largest non-empty-bin absolute calibration gap; multiclass MCE is the maximum across classes.",
-            "temperature": "D07.3 re-fits the scalar temperature from saved raw calibration-suffix probabilities; it then independently applies that temperature to saved raw OOS probabilities.",
+            "ece": (
+                "Classwise one-vs-rest ECE is weighted by bin count over all OOS rows; "
+                "multiclass ECE is the mean of the three classwise ECE values."
+            ),
+            "mce": (
+                "Classwise MCE is the largest non-empty-bin absolute calibration gap; "
+                "multiclass MCE is the maximum across classes."
+            ),
+            "temperature": (
+                "D07.3 re-fits the scalar temperature from saved raw calibration-suffix "
+                "probabilities; it then independently applies that temperature to "
+                "saved raw OOS probabilities."
+            ),
         },
         "limitations": [
-            "Calibration and threshold selection use the same historical suffix; the suffix scores are descriptive and optimistic.",
-            "Equal-width reliability bins are sample-size dependent and can be noisy in sparse bins.",
-            "A single global temperature cannot guarantee classwise calibration or protect against distribution shift.",
-            "Historical OOS folds may have been inspected and are not a prospective untouched test.",
-            "SHA-256 manifests detect accidental or subsequent file changes but are unsigned and do not authenticate artifact origin.",
-            "Passing this audit verifies reproducibility and internal consistency, not predictive edge or trading profitability.",
+            (
+                "Calibration and threshold selection use the same historical suffix; "
+                "the suffix scores are descriptive and optimistic."
+            ),
+            (
+                "Equal-width reliability bins are sample-size dependent and can be "
+                "noisy in sparse bins."
+            ),
+            (
+                "A single global temperature cannot guarantee classwise calibration "
+                "or protect against distribution shift."
+            ),
+            (
+                "Historical OOS folds may have been inspected and are not a "
+                "prospective untouched test."
+            ),
+            (
+                "SHA-256 manifests detect file changes but are unsigned and do not "
+                "authenticate artifact origin."
+            ),
+            (
+                "Passing this audit verifies reproducibility and internal consistency, "
+                "not predictive edge or trading profitability."
+            ),
         ],
         "output_directory": str(audit_dir),
         "outputs": {
