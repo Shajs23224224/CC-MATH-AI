@@ -172,6 +172,7 @@ def test_simulation_stops_opening_positions_after_bankruptcy():
     ("kwargs", "message"),
     [
         ({"initial_capital": 0.0}, "initial_capital must be positive"),
+        ({"initial_capital": True}, "must be numeric, not boolean"),
         ({"notional_per_trade": 200000.0}, "notional_per_trade"),
         ({"cost_scenarios_bps_per_side": ()}, "at least one transaction-cost scenario"),
         ({"cost_scenarios_bps_per_side": (5.0, 5.0)}, "must not contain duplicates"),
