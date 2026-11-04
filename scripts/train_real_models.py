@@ -27,6 +27,7 @@ import pandas as pd  # noqa: E402
 import yfinance as yf  # noqa: E402
 
 from core.contracts.ml import MLDataset, MLTrainingConfig  # noqa: E402
+from core.utils.market_dataset_artifacts import persist_market_dataset_artifacts  # noqa: E402
 from ml import ClassicalMLModel, supported_algorithms  # noqa: E402
 
 FEATURE_COLUMNS = (
@@ -201,27 +202,46 @@ def main() -> int:
     run_stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     run_dir = args.output_dir / f"{ticker.lower()}_{run_stamp}"
     run_dir.mkdir(parents=True, exist_ok=False)
+    dataset_source = (
+        "local_csv" if args.csv else "Yahoo Finance adjusted daily OHLCV"
+    )
+    dataset_manifest = persist_market_dataset_artifacts(
+        run_dir,
+        history,
+        rows,
+        ticker=ticker,
+        source=dataset_source,
+        period_requested=None if args.csv else args.period,
+        seed=args.seed,
+        feature_names=FEATURE_COLUMNS,
+        provider_version=(
+            getattr(yf, "__version__", "unknown") if args.csv is None else None
+        ),
+    )
+    dataset_summary = {
+        "ticker": ticker,
+        "source": dataset_source,
+        "period_requested": None if args.csv else args.period,
+        "downloaded_rows": len(history),
+        "usable_feature_rows": len(rows),
+        "first_usable_date": str(rows.index[0]),
+        "last_usable_date": str(rows.index[-1]),
+        "feature_names": list(FEATURE_COLUMNS),
+        "target_regression": "next_session_return = close[t+1]/close[t] - 1",
+        "target_classification": "UP if next_session_return > 0 else DOWN",
+        "raw_ohlcv_file": "raw_ohlcv.csv",
+        "dataset_snapshot_file": "dataset_snapshot.csv",
+        "dataset_manifest_file": "dataset_manifest.json",
+        "raw_ohlcv_sha256": dataset_manifest["artifacts"]["raw_ohlcv"]["sha256"],
+        "dataset_snapshot_sha256": dataset_manifest["artifacts"]["dataset_snapshot"]["sha256"],
+        "direction_distribution": dataset_manifest["dataset"]["direction_distribution"],
+        "warning": (
+            "Historical predictive fit does not establish profitability "
+            "or future performance."
+        ),
+    }
     (run_dir / "dataset_summary.json").write_text(
-        json.dumps(
-            {
-                "ticker": ticker,
-                "source": "local_csv" if args.csv else "Yahoo Finance adjusted daily OHLCV",
-                "period_requested": None if args.csv else args.period,
-                "downloaded_rows": len(history),
-                "usable_feature_rows": len(rows),
-                "first_usable_date": str(rows.index[0]),
-                "last_usable_date": str(rows.index[-1]),
-                "feature_names": list(FEATURE_COLUMNS),
-                "target_regression": "next_session_return = close[t+1]/close[t] - 1",
-                "target_classification": "UP if next_session_return > 0 else DOWN",
-                "warning": (
-                    "Historical predictive fit does not establish profitability "
-                    "or future performance."
-                ),
-            },
-            indent=2,
-        )
-        + "\n",
+        json.dumps(dataset_summary, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 

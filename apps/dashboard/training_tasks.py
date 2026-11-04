@@ -4,23 +4,19 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
-import platform
 import re
-import sys
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import joblib
-import numpy as np
 import pandas as pd
-import sklearn
 import yfinance as yf
 
 from apps.dashboard import TrainingCancelledError, TrainingOrchestrator
 from core.contracts.ml import MLTrainingConfig
+from core.utils.market_dataset_artifacts import persist_market_dataset_artifacts
 from core.contracts.training import (
     TrainingProgress,
     TrainingProgressCallback,
@@ -131,151 +127,18 @@ def _persist_reproducibility_artifacts(
     period: str,
     seed: int,
 ) -> dict[str, Any]:
-    """Save the exact source and derived dataset with a verifiable manifest."""
-    if not run_dir.is_dir():
-        raise FileNotFoundError(f"Run directory does not exist: {run_dir}")
-
-    required_features = set(FEATURE_COLUMNS)
-    missing = required_features - set(rows.columns)
-
-    if missing:
-        raise ValueError(
-            f"Dataset snapshot is missing features: {sorted(missing)}"
-        )
-
-    if "target_next_return" not in rows.columns:
-        raise ValueError("Dataset snapshot is missing target_next_return")
-
-    if history.empty or rows.empty:
-        raise ValueError("Cannot persist an empty historical dataset")
-
-    raw_path = run_dir / "raw_ohlcv.csv"
-    snapshot_path = run_dir / "dataset_snapshot.csv"
-    manifest_path = run_dir / "dataset_manifest.json"
-
-    for path in (raw_path, snapshot_path, manifest_path):
-        if path.exists():
-            raise FileExistsError(
-                f"Refusing to overwrite an existing reproducibility artifact: {path}"
-            )
-
-    snapshot = rows.copy(deep=True)
-
-    target = pd.to_numeric(
-        snapshot["target_next_return"],
-        errors="raise",
-    ).astype(float)
-
-    if not np.all(np.isfinite(target.to_numpy())):
-        raise ValueError("Dataset targets contain non-finite values")
-
-    snapshot["target_next_direction"] = np.where(
-        target.to_numpy() > 0.0,
-        "UP",
-        "DOWN",
+    """Use the shared reproducibility contract used by the standalone CLI."""
+    return persist_market_dataset_artifacts(
+        run_dir,
+        history,
+        rows,
+        ticker=ticker,
+        source="Yahoo Finance adjusted daily OHLCV",
+        period_requested=period,
+        seed=seed,
+        feature_names=FEATURE_COLUMNS,
+        provider_version=getattr(yf, "__version__", "unknown"),
     )
-
-    raw_hash = _write_csv_snapshot(history, raw_path)
-    snapshot_hash = _write_csv_snapshot(snapshot, snapshot_path)
-
-    total_samples = len(snapshot)
-    test_samples = max(2, int(math.ceil(total_samples * 0.20)))
-    training_samples = total_samples - test_samples
-
-    inner_validation_samples = max(
-        2,
-        int(math.ceil(training_samples * 0.15)),
-    )
-    inner_training_samples = (
-        training_samples - inner_validation_samples
-    )
-
-    direction_counts = {
-        str(label): int(count)
-        for label, count in (
-            snapshot["target_next_direction"]
-            .value_counts()
-            .sort_index()
-            .items()
-        )
-    }
-
-    manifest = {
-        "schema_version": "1.0",
-        "created_at": datetime.now(UTC).isoformat(),
-        "experiment": {
-            "ticker": ticker,
-            "period_requested": period,
-            "random_seed": seed,
-        },
-        "artifacts": {
-            "raw_ohlcv": {
-                "file": raw_path.name,
-                "sha256": raw_hash,
-                "bytes": raw_path.stat().st_size,
-            },
-            "dataset_snapshot": {
-                "file": snapshot_path.name,
-                "sha256": snapshot_hash,
-                "bytes": snapshot_path.stat().st_size,
-            },
-        },
-        "dataset": {
-            "source": "Yahoo Finance adjusted daily OHLCV",
-            "downloaded_rows": len(history),
-            "usable_feature_rows": total_samples,
-            "first_ohlcv_date": str(history.index[0]),
-            "last_ohlcv_date": str(history.index[-1]),
-            "first_feature_date": str(snapshot.index[0]),
-            "last_feature_date": str(snapshot.index[-1]),
-            "feature_names": list(FEATURE_COLUMNS),
-            "regression_target": (
-                "next_session_return = close[t+1]/close[t] - 1"
-            ),
-            "classification_target": (
-                "UP if next_session_return > 0 else DOWN"
-            ),
-            "direction_distribution": direction_counts,
-            "regression_target_statistics": {
-                "mean": float(target.mean()),
-                "std": float(target.std(ddof=0)),
-                "min": float(target.min()),
-                "max": float(target.max()),
-            },
-        },
-        "temporal_split": {
-            "method": "chronological",
-            "test_fraction": 0.20,
-            "training_samples": training_samples,
-            "test_samples": test_samples,
-            "train_start_index": 0,
-            "train_end_index": training_samples,
-            "test_start_index": training_samples,
-            "test_end_index": total_samples,
-            "test_used_for_selection": False,
-            "boosting_inner_validation_fraction": 0.15,
-            "boosting_inner_validation_samples": inner_validation_samples,
-            "boosting_inner_training_samples": inner_training_samples,
-        },
-        "serialization": {
-            "csv_float_format": "%.17g",
-            "csv_date_format": "%Y-%m-%dT%H:%M:%S.%f%z",
-            "index_column": "date",
-            "read_csv_float_precision": "round_trip",
-        },
-        "environment": {
-            "python_version": platform.python_version(),
-            "python_full_version": sys.version,
-            "platform": platform.platform(),
-            "numpy": np.__version__,
-            "pandas": pd.__version__,
-            "scikit_learn": sklearn.__version__,
-            "yfinance": getattr(yf, "__version__", "unknown"),
-        },
-    }
-
-    _write_json_atomic(manifest_path, manifest)
-    return manifest
 
 
 def _write_outputs(
