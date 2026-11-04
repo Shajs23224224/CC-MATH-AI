@@ -153,6 +153,7 @@ def _verify_audit_directory(
     if (
         checks_passed < 1
         or checks_passed != checks_total
+        or int(summary.get("algorithm_count", -1)) != len(summary.get("algorithms", []))
         or not isinstance(audit_checks, list)
         or len(audit_checks) != checks_total
         or any(
@@ -218,6 +219,8 @@ def _validate_audited_predictions(
         )
         if not np.all(np.isfinite(values)) or not np.all(values == np.floor(values)):
             raise ValueError(f"D07.1 {column} values must be finite integers")
+        if column == "row_index" and np.any(values < 0):
+            raise ValueError("D07.1 row_index values must be non-negative")
         predictions[column] = values.astype(np.int64)
 
     for column in ("entry_open", "exit_close", "actual_execution_return"):
@@ -284,6 +287,7 @@ def _validate_audited_predictions(
     canonical_indices: np.ndarray | None = None
     canonical_dates: list[tuple[int, int]] | None = None
     canonical_execution: np.ndarray | None = None
+    canonical_folds: np.ndarray | None = None
 
     for algorithm in algorithms:
         selected = predictions.loc[
@@ -318,15 +322,19 @@ def _validate_audited_predictions(
                 strict=True,
             )
         )
+        fold_ids = selected["fold"].to_numpy(dtype=np.int64)
         if canonical_indices is None:
             canonical_indices = row_indices
             canonical_dates = dates
             canonical_execution = execution_values
+            canonical_folds = fold_ids
         else:
             if not np.array_equal(row_indices, canonical_indices):
                 raise ValueError("D07.1 algorithms do not share identical OOS row indexes")
             if dates != canonical_dates:
                 raise ValueError("D07.1 algorithms do not share identical OOS dates")
+            if not np.array_equal(fold_ids, canonical_folds):
+                raise ValueError("D07.1 algorithms do not share identical fold assignments")
             if not np.allclose(
                 execution_values,
                 canonical_execution,
@@ -343,6 +351,8 @@ def _validate_audited_predictions(
             raise ValueError(f"D07.1 entry dates are not chronological for {algorithm}")
         if selected["_entry_date_parsed"].duplicated().any():
             raise ValueError(f"D07.1 entry dates contain duplicates for {algorithm}")
+        if selected["_feature_date_parsed"].duplicated().any():
+            raise ValueError(f"D07.1 feature dates contain duplicates for {algorithm}")
 
         for fold, fold_rows in selected.groupby("fold", sort=True):
             if fold_rows["selected_neutral_threshold"].nunique(dropna=False) != 1:
