@@ -680,7 +680,10 @@ def audit_decision_policy_run(
                 np.isfinite(threshold)
                 and 0.0 <= threshold <= 1.0
                 and np.any(np.isclose(threshold_grid, threshold, rtol=0.0, atol=1e-12)),
-                f"{algorithm} fold {fold_row.fold} neutral threshold is invalid or outside D06 grid",
+                (
+                    f"{algorithm} fold {fold_row.fold} neutral threshold is invalid "
+                    "or outside D06 grid"
+                ),
             )
             _require(
                 np.allclose(
