@@ -8,7 +8,12 @@ import pandas as pd
 import pytest
 
 from execution.research.d07_audit import audit_decision_policy_run
-from tests.unit.d07_fixture_factory import _manifest_entry, _write_json, build_d04_d06_artifacts
+from tests.unit.d07_fixture_factory import (
+    _manifest_entry,
+    _sha256,
+    _write_json,
+    build_d04_d06_artifacts,
+)
 
 
 def _refresh_d06_manifest(policy_dir, filename):
@@ -226,6 +231,45 @@ def test_audit_rejects_d04_threshold_declared_as_transaction_cost(tmp_path):
         audit_decision_policy_run(
             artifacts["policy_dir"],
             artifacts["dataset_path"],
+            output_root=tmp_path / "audits",
+        )
+
+
+def test_audit_rejects_entry_date_not_next_observed_session(tmp_path):
+    artifacts = build_d04_d06_artifacts(tmp_path)
+    dataset_path = artifacts["dataset_path"]
+    dataset = pd.read_csv(dataset_path)
+    dataset.loc[0, "entry_date"] = "2024-01-05"
+    dataset.to_csv(
+        dataset_path,
+        index=False,
+        float_format="%.17g",
+        lineterminator="\n",
+    )
+
+    d04_manifest_path = artifacts["dataset_manifest_path"]
+    d04_manifest = json.loads(d04_manifest_path.read_text(encoding="utf-8"))
+    d04_manifest["artifact"] = _manifest_entry(dataset_path)
+    _write_json(d04_manifest_path, d04_manifest)
+
+    policy_dir = artifacts["policy_dir"]
+    policy_manifest_path = policy_dir / "decision_policy_manifest.json"
+    policy_manifest = json.loads(policy_manifest_path.read_text(encoding="utf-8"))
+    policy_manifest["input"]["execution_dataset_sha256"] = _sha256(dataset_path)
+    policy_manifest["input"]["source_manifest_sha256"] = _sha256(d04_manifest_path)
+    summary_path = policy_dir / "decision_policy_summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["snapshot_sha256"] = _sha256(dataset_path)
+    _write_json(summary_path, summary)
+    policy_manifest["outputs"]["decision_policy_summary.json"] = _manifest_entry(
+        summary_path
+    )
+    _write_json(policy_manifest_path, policy_manifest)
+
+    with pytest.raises(ValueError, match="next observed feature session"):
+        audit_decision_policy_run(
+            policy_dir,
+            dataset_path,
             output_root=tmp_path / "audits",
         )
 
