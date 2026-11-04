@@ -240,7 +240,7 @@ def test_audit_rejects_entry_date_not_next_observed_session(tmp_path):
     dataset_path = artifacts["dataset_path"]
     dataset = pd.read_csv(dataset_path)
     # Keep valid, ordered session dates while breaking the next-session mapping.
-    dataset.loc[0, "feature_date"] = "2024-01-01"
+    dataset.loc[0, "feature_date"] = "2024-01-01T00:00:00.000000"
     dataset.loc[0, "entry_date"] = "2024-01-02"
     dataset.to_csv(
         dataset_path,
