@@ -485,9 +485,7 @@ class ClassicalMLModel:
                 "recall_macro": float(
                     recall_score(y_test, predictions, average="macro", zero_division=0)
                 ),
-                "f1_macro": float(
-                    f1_score(y_test, predictions, average="macro", zero_division=0)
-                ),
+                "f1_macro": float(f1_score(y_test, predictions, average="macro", zero_division=0)),
                 "balanced_accuracy": float(balanced_accuracy_score(y_test, predictions)),
                 "majority_baseline_accuracy": majority_accuracy,
                 "accuracy_delta_vs_majority": model_accuracy - majority_accuracy,
