@@ -82,15 +82,12 @@ def test_classifier_returns_probabilities_and_metrics() -> None:
         result.metrics["prediction_unique_classes"] == 1.0
     )
     assert (
-        result.metrics["class_negative_support"]
-        + result.metrics["class_positive_support"]
+        result.metrics["class_negative_support"] + result.metrics["class_positive_support"]
         == result.test_samples
     )
 
     confusion_total = sum(
-        value
-        for key, value in result.metrics.items()
-        if key.startswith("confusion_actual_")
+        value for key, value in result.metrics.items() if key.startswith("confusion_actual_")
     )
     assert confusion_total == result.test_samples
 
