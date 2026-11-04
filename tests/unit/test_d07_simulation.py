@@ -136,6 +136,29 @@ def test_simulation_rejects_failed_audit_checks(tmp_path):
         )
 
 
+def test_simulation_rejects_tampered_fold_date_boundaries(tmp_path):
+    _, _, audit_dir = _build_audit(tmp_path)
+    fold_path = audit_dir / "fold_audit.csv"
+    fold_audit = pd.read_csv(fold_path)
+    fold_audit.loc[0, "first_feature_date"] = "1999-01-01"
+    fold_audit.to_csv(
+        fold_path,
+        index=False,
+        float_format="%.17g",
+        lineterminator="\n",
+    )
+    manifest_path = audit_dir / "audit_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["outputs"]["fold_audit.csv"] = _manifest_entry(fold_path)
+    _write_json(manifest_path, manifest)
+
+    with pytest.raises(ValueError, match="feature-date boundaries mismatch"):
+        simulate_execution_decisions(
+            audit_dir,
+            output_root=tmp_path / "simulations",
+        )
+
+
 def test_simulation_stops_opening_positions_after_bankruptcy():
     rows = pd.DataFrame(
         {
