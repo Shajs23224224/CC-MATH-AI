@@ -210,6 +210,26 @@ def test_audit_reconstructs_exact_d06_calibration_suffix(tmp_path):
         )
 
 
+def test_audit_rejects_d04_threshold_declared_as_transaction_cost(tmp_path):
+    artifacts = build_d04_d06_artifacts(tmp_path)
+    d04_manifest_path = artifacts["dataset_manifest_path"]
+    d04_manifest = json.loads(d04_manifest_path.read_text(encoding="utf-8"))
+    d04_manifest["experiment"]["threshold_is_transaction_cost"] = True
+    _write_json(d04_manifest_path, d04_manifest)
+
+    policy_manifest_path = artifacts["policy_dir"] / "decision_policy_manifest.json"
+    policy_manifest = json.loads(policy_manifest_path.read_text(encoding="utf-8"))
+    policy_manifest["input"]["source_manifest_sha256"] = _sha256(d04_manifest_path)
+    _write_json(policy_manifest_path, policy_manifest)
+
+    with pytest.raises(ValueError, match="must be a label band"):
+        audit_decision_policy_run(
+            artifacts["policy_dir"],
+            artifacts["dataset_path"],
+            output_root=tmp_path / "audits",
+        )
+
+
 def test_audit_rejects_changed_d04_dataset(tmp_path):
     artifacts = build_d04_d06_artifacts(tmp_path)
     dataset = pd.read_csv(artifacts["dataset_path"])
