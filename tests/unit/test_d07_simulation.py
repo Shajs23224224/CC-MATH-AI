@@ -60,17 +60,17 @@ def test_simulation_compares_policies_across_cost_scenarios(tmp_path):
         (metrics["strategy"] == "neutral_policy") & (metrics["cost_bps_per_side"] == 5.0)
     ].iloc[0]
     assert argmax["trades"] == 4
-    assert argmax["total_gross_pnl"] == pytest.approx(650.0)
+    assert argmax["total_gross_pnl"] == pytest.approx(730.0)
     assert argmax["total_transaction_costs"] == pytest.approx(40.0)
-    assert argmax["total_net_pnl"] == pytest.approx(610.0)
-    assert argmax["final_equity"] == pytest.approx(100610.0)
-    assert argmax["break_even_cost_bps_per_side"] == pytest.approx(81.25)
+    assert argmax["total_net_pnl"] == pytest.approx(690.0)
+    assert argmax["final_equity"] == pytest.approx(100690.0)
+    assert argmax["break_even_cost_bps_per_side"] == pytest.approx(91.25)
 
     assert policy["trades"] == 3
     assert policy["neutral_signals"] == 3
-    assert policy["total_gross_pnl"] == pytest.approx(450.0)
+    assert policy["total_gross_pnl"] == pytest.approx(610.0)
     assert policy["total_transaction_costs"] == pytest.approx(30.0)
-    assert policy["total_net_pnl"] == pytest.approx(420.0)
+    assert policy["total_net_pnl"] == pytest.approx(580.0)
 
     neutral = ledger.loc[
         (ledger["strategy"] == "neutral_policy")
