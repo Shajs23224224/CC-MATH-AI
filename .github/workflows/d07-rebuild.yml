@@ -1,0 +1,68 @@
+name: D07 Rebuilt Execution Audit and Simulation
+
+on:
+  push:
+    branches:
+      - feature/cc-math-ai-d07-rebuild
+  pull_request:
+    branches:
+      - feature/cc-math-ai-d01-d06
+
+permissions:
+  contents: read
+
+jobs:
+  d07-quality:
+    name: Python \${{ matrix.python-version }} D07 rebuild
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: \${{ matrix.python-version }}
+          cache: pip
+
+      - name: Upgrade packaging tools
+        run: python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install project and development dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Ruff lint
+        run: >-
+          ruff check
+          execution/research
+          scripts/audit_execution_decision_policy.py
+          scripts/simulate_execution_decisions.py
+          tests/unit/d07_fixture_factory.py
+          tests/unit/test_d07_audit.py
+          tests/unit/test_d07_simulation.py
+
+      - name: Ruff format check
+        run: >-
+          ruff format --check
+          execution/research
+          scripts/audit_execution_decision_policy.py
+          scripts/simulate_execution_decisions.py
+          tests/unit/d07_fixture_factory.py
+          tests/unit/test_d07_audit.py
+          tests/unit/test_d07_simulation.py
+
+      - name: D07 audit/simulation and D04-D06 regressions
+        env:
+          PYTHONPATH: \${{ github.workspace }}
+        run: >-
+          pytest -q
+          tests/unit/test_d07_audit.py
+          tests/unit/test_d07_simulation.py
+          tests/unit/test_execution_dataset.py
+          tests/unit/test_execution_ml_walk_forward.py
+          tests/unit/test_execution_decision_policy.py
