@@ -88,6 +88,14 @@ def create_audit_fixture(tmp_path):
         "fold_count": 2,
         "checks_passed": 12,
         "checks_total": 12,
+        "checks": [
+            {
+                "check": f"fixture_check_{index}",
+                "passed": True,
+                "detail": "synthetic integrity check passed",
+            }
+            for index in range(12)
+        ],
     }
     summary_path = audit_dir / "audit_summary.json"
     _write_json(summary_path, audit_summary)
