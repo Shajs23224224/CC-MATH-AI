@@ -218,13 +218,49 @@ def _verify_d04_dataset(
     _require(entry_dates.is_monotonic_increasing, "D04 entry dates are not chronological")
     _require(not entry_dates.duplicated().any(), "D04 entry dates contain duplicates")
 
-    threshold = manifest.get("experiment", {}).get("threshold_fraction")
+    experiment = manifest.get("experiment")
+    _require(isinstance(experiment, dict), "D04 experiment metadata is missing")
+    threshold = experiment.get("threshold_fraction")
+    threshold_bps = experiment.get("threshold_bps")
     _require(
         isinstance(threshold, (int, float))
         and not isinstance(threshold, bool)
         and np.isfinite(float(threshold))
         and 0.0 <= float(threshold) <= 1.0,
         "D04 threshold_fraction is invalid",
+    )
+    _require(
+        isinstance(threshold_bps, (int, float))
+        and not isinstance(threshold_bps, bool)
+        and np.isfinite(float(threshold_bps))
+        and np.isclose(
+            float(threshold_bps) / 10_000.0,
+            float(threshold),
+            rtol=0.0,
+            atol=1e-12,
+        ),
+        "D04 threshold_bps and threshold_fraction disagree",
+    )
+    _require(
+        experiment.get("threshold_is_transaction_cost") is False,
+        "D04 threshold must be a label band, not a transaction-cost assumption",
+    )
+    target_manifest = manifest.get("target")
+    _require(
+        isinstance(target_manifest, dict)
+        and target_manifest.get("classification_name") == "target_execution_direction"
+        and target_manifest.get("classes") == list(EXPECTED_CLASSES),
+        "D04 target classification contract is invalid",
+    )
+    execution_assumption = manifest.get("execution_assumption")
+    _require(
+        isinstance(execution_assumption, dict)
+        and execution_assumption.get("signal_available_after") == "feature session close"
+        and execution_assumption.get("entry") == "next observed session open"
+        and execution_assumption.get("exit") == "same next session close"
+        and execution_assumption.get("return_formula")
+        == "next_session_close / next_session_open - 1",
+        "D04 execution timing/return contract is invalid",
     )
     returns = execution[:, 2]
     labels = np.where(
