@@ -11,7 +11,10 @@ classifier:
 
 D07.2 does not train a model, retune a threshold, or change a prediction. It consumes
 the exact audited_predictions.csv produced by D07.1 and verifies the SHA-256 hashes
-in audit_manifest.json before calculating any simulated PnL.
+in audit_manifest.json before calculating any simulated PnL. These hashes detect
+changes relative to the supplied manifest; the manifest is unsigned and does not
+authenticate who created it. For stronger provenance, preserve the original D04/D06
+inputs and rerun D07.1 in a trusted environment.
 
 ## Signal and execution contract
 
