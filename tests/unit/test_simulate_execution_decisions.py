@@ -186,6 +186,70 @@ def test_simulator_rejects_tampered_d07_1_prediction_file(tmp_path):
         )
 
 
+def test_simulator_rejects_algorithms_with_different_fold_assignments(tmp_path):
+    audit_dir = create_audit_fixture(tmp_path)
+    predictions_path = audit_dir / "audited_predictions.csv"
+    predictions = pd.read_csv(predictions_path)
+    second_algorithm = predictions.copy()
+    second_algorithm["algorithm"] = "second_classifier"
+    second_algorithm["fold"] = [1, 2, 2, 2]
+    predictions = pd.concat([predictions, second_algorithm], ignore_index=True)
+    predictions.to_csv(
+        predictions_path,
+        index=False,
+        float_format="%.17g",
+    )
+
+    summary_path = audit_dir / "audit_summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["algorithms"] = ["test_classifier", "second_classifier"]
+    summary["algorithm_count"] = 2
+    summary["rows_audited"] = len(predictions)
+    _write_json(summary_path, summary)
+
+    manifest_path = audit_dir / "audit_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    for filename in ("audited_predictions.csv", "audit_summary.json"):
+        path = audit_dir / filename
+        manifest["outputs"][filename] = {
+            "sha256": _sha256(path),
+            "bytes": path.stat().st_size,
+        }
+    _write_json(manifest_path, manifest)
+
+    with pytest.raises(ValueError, match="identical fold assignments"):
+        simulate_execution_decisions(
+            audit_dir,
+            output_root=tmp_path / "simulations",
+        )
+
+
+def test_simulator_rejects_failed_d07_1_integrity_check(tmp_path):
+    audit_dir = create_audit_fixture(tmp_path)
+    summary_path = audit_dir / "audit_summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["checks"][0] = {
+        "check": "tampered_check",
+        "passed": False,
+        "detail": "synthetic failure",
+    }
+    _write_json(summary_path, summary)
+
+    manifest_path = audit_dir / "audit_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["outputs"]["audit_summary.json"] = {
+        "sha256": _sha256(summary_path),
+        "bytes": summary_path.stat().st_size,
+    }
+    _write_json(manifest_path, manifest)
+
+    with pytest.raises(ValueError, match="failed or incomplete checks"):
+        simulate_execution_decisions(
+            audit_dir,
+            output_root=tmp_path / "simulations",
+        )
+
+
 def test_simulator_rejects_execution_return_price_mismatch(tmp_path):
     audit_dir = create_audit_fixture(tmp_path)
     predictions_path = audit_dir / "audited_predictions.csv"
