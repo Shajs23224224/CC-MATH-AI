@@ -164,7 +164,6 @@ def _numeric_matrix(
     return values
 
 
-
 def _class_coverage(labels: np.ndarray) -> dict[str, Any]:
     counts = {label: int(np.count_nonzero(labels == label)) for label in EXPECTED_CLASSES}
     missing = [label for label, count in counts.items() if count == 0]

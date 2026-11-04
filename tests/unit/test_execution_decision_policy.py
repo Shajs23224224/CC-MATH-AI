@@ -336,7 +336,6 @@ def test_run_writes_complete_hash_manifest_compatible_with_d07(tmp_path, monkeyp
     }.issubset(fold_metrics.columns)
 
 
-
 def test_temperature_scaling_preserves_probability_simplex_and_sharpens_confidence():
     raw = np.asarray(
         [

@@ -129,7 +129,6 @@ def _fingerprint(features: np.ndarray, target: Sequence[float | str]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-
 def _class_metric_slug(value: object, index: int, used: set[str]) -> str:
     """Generate a stable, collision-safe metric suffix for a class label."""
     base = re.sub(r"[^a-z0-9]+", "_", str(value).strip().lower()).strip("_")
@@ -413,12 +412,8 @@ class ClassicalMLModel:
             mse = float(mean_squared_error(actual_numeric, predicted_numeric))
             model_mae = float(mean_absolute_error(actual_numeric, predicted_numeric))
             model_rmse = math.sqrt(max(0.0, mse))
-            baseline_mae = float(
-                mean_absolute_error(actual_numeric, baseline_predictions)
-            )
-            baseline_mse = float(
-                mean_squared_error(actual_numeric, baseline_predictions)
-            )
+            baseline_mae = float(mean_absolute_error(actual_numeric, baseline_predictions))
+            baseline_mse = float(mean_squared_error(actual_numeric, baseline_predictions))
             baseline_rmse = math.sqrt(max(0.0, baseline_mse))
 
             metrics = {
@@ -428,15 +423,9 @@ class ClassicalMLModel:
                 "training_mean_baseline": training_mean,
                 "baseline_mae": baseline_mae,
                 "baseline_rmse": baseline_rmse,
-                "baseline_r2": float(
-                    r2_score(actual_numeric, baseline_predictions)
-                ),
-                "mae_skill_vs_baseline": _relative_error_skill(
-                    model_mae, baseline_mae
-                ),
-                "rmse_skill_vs_baseline": _relative_error_skill(
-                    model_rmse, baseline_rmse
-                ),
+                "baseline_r2": float(r2_score(actual_numeric, baseline_predictions)),
+                "mae_skill_vs_baseline": _relative_error_skill(model_mae, baseline_mae),
+                "rmse_skill_vs_baseline": _relative_error_skill(model_rmse, baseline_rmse),
             }
 
             evaluation_parameters = {
@@ -446,9 +435,7 @@ class ClassicalMLModel:
         else:
             # Include train and test labels to make temporal class drift visible.
             classes = np.unique(np.concatenate((y_train, y_test)))
-            class_counts, class_frequencies = np.unique(
-                y_train, return_counts=True
-            )
+            class_counts, class_frequencies = np.unique(y_train, return_counts=True)
             majority_class = class_counts[int(np.argmax(class_frequencies))]
 
             majority_predictions = np.full(
@@ -458,9 +445,7 @@ class ClassicalMLModel:
             )
 
             model_accuracy = float(accuracy_score(y_test, predictions))
-            majority_accuracy = float(
-                accuracy_score(y_test, majority_predictions)
-            )
+            majority_accuracy = float(accuracy_score(y_test, majority_predictions))
 
             class_precision = precision_score(
                 y_test,
@@ -495,26 +480,15 @@ class ClassicalMLModel:
             metrics = {
                 "accuracy": model_accuracy,
                 "precision_macro": float(
-                    precision_score(
-                        y_test, predictions,
-                        average="macro", zero_division=0
-                    )
+                    precision_score(y_test, predictions, average="macro", zero_division=0)
                 ),
                 "recall_macro": float(
-                    recall_score(
-                        y_test, predictions,
-                        average="macro", zero_division=0
-                    )
+                    recall_score(y_test, predictions, average="macro", zero_division=0)
                 ),
                 "f1_macro": float(
-                    f1_score(
-                        y_test, predictions,
-                        average="macro", zero_division=0
-                    )
+                    f1_score(y_test, predictions, average="macro", zero_division=0)
                 ),
-                "balanced_accuracy": float(
-                    balanced_accuracy_score(y_test, predictions)
-                ),
+                "balanced_accuracy": float(balanced_accuracy_score(y_test, predictions)),
                 "majority_baseline_accuracy": majority_accuracy,
                 "accuracy_delta_vs_majority": model_accuracy - majority_accuracy,
                 "prediction_unique_classes": float(unique_predictions),
@@ -523,38 +497,24 @@ class ClassicalMLModel:
 
             used_slugs = set()
             class_slugs = [
-                _class_metric_slug(label, index, used_slugs)
-                for index, label in enumerate(classes)
+                _class_metric_slug(label, index, used_slugs) for index, label in enumerate(classes)
             ]
 
             for index, slug in enumerate(class_slugs):
                 support = int(matrix[index, :].sum())
                 predicted_count = int(matrix[:, index].sum())
 
-                metrics[f"class_{slug}_precision"] = float(
-                    class_precision[index]
-                )
-                metrics[f"class_{slug}_recall"] = float(
-                    class_recall[index]
-                )
+                metrics[f"class_{slug}_precision"] = float(class_precision[index])
+                metrics[f"class_{slug}_recall"] = float(class_recall[index])
                 metrics[f"class_{slug}_f1"] = float(class_f1[index])
                 metrics[f"class_{slug}_support"] = float(support)
-                metrics[f"class_{slug}_predicted_count"] = float(
-                    predicted_count
-                )
-                metrics[f"predicted_share_{slug}"] = float(
-                    predicted_count / len(y_test)
-                )
+                metrics[f"class_{slug}_predicted_count"] = float(predicted_count)
+                metrics[f"predicted_share_{slug}"] = float(predicted_count / len(y_test))
 
             for actual_index, actual_slug in enumerate(class_slugs):
                 for predicted_index, predicted_slug in enumerate(class_slugs):
-                    key = (
-                        f"confusion_actual_{actual_slug}_"
-                        f"predicted_{predicted_slug}"
-                    )
-                    metrics[key] = float(
-                        matrix[actual_index, predicted_index]
-                    )
+                    key = f"confusion_actual_{actual_slug}_predicted_{predicted_slug}"
+                    metrics[key] = float(matrix[actual_index, predicted_index])
 
             evaluation_parameters = {
                 "evaluation_class_labels": __import__("json").dumps(
