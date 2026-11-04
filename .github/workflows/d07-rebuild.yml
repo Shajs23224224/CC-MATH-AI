@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   d07-quality:
-    name: Python \${{ matrix.python-version }} D07 rebuild
+    name: Python ${{ matrix.python-version }} D07 rebuild
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -27,7 +27,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: \${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
           cache: pip
 
       - name: Upgrade packaging tools
@@ -58,7 +58,7 @@ jobs:
 
       - name: D07 audit/simulation and D04-D06 regressions
         env:
-          PYTHONPATH: \${{ github.workspace }}
+          PYTHONPATH: ${{ github.workspace }}
         run: >-
           pytest -q
           tests/unit/test_d07_audit.py
