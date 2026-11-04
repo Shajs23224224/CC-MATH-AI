@@ -194,9 +194,7 @@ def _validate_audited_rows(
     algorithms = tuple(raw_algorithms)
     fold_count = summary.get("fold_count")
     _require(
-        isinstance(fold_count, int)
-        and not isinstance(fold_count, bool)
-        and fold_count > 0,
+        isinstance(fold_count, int) and not isinstance(fold_count, bool) and fold_count > 0,
         "D07.1 fold count is invalid",
     )
     _require(
@@ -262,12 +260,14 @@ def _validate_audited_rows(
         - 1.0
     )
     _require(
-        bool(np.allclose(
-            predictions["actual_execution_return"].to_numpy(dtype=float),
-            calculated_returns,
-            rtol=1e-10,
-            atol=1e-12,
-        )),
+        bool(
+            np.allclose(
+                predictions["actual_execution_return"].to_numpy(dtype=float),
+                calculated_returns,
+                rtol=1e-10,
+                atol=1e-12,
+            )
+        ),
         "D07.1 realized returns do not match execution prices",
     )
 
@@ -319,9 +319,9 @@ def _validate_audited_rows(
     canonical_prices: np.ndarray | None = None
 
     for algorithm in algorithms:
-        selected = predictions.loc[
-            predictions["algorithm"].astype(str) == algorithm
-        ].sort_values(["fold", "row_index"])
+        selected = predictions.loc[predictions["algorithm"].astype(str) == algorithm].sort_values(
+            ["fold", "row_index"]
+        )
         _require(not selected.empty, f"D07.1 has no rows for {algorithm}")
         _require(
             selected["_feature_date_utc"].is_monotonic_increasing
@@ -341,9 +341,9 @@ def _validate_audited_rows(
                 strict=True,
             )
         )
-        prices = selected[
-            ["entry_open", "exit_close", "actual_execution_return"]
-        ].to_numpy(dtype=np.float64)
+        prices = selected[["entry_open", "exit_close", "actual_execution_return"]].to_numpy(
+            dtype=np.float64
+        )
         if canonical_indices is None:
             canonical_indices = indices
             canonical_folds = fold_ids
@@ -376,14 +376,11 @@ def _validate_audited_rows(
             start = int(audit_row.test_start_index)
             end = int(audit_row.test_end_index)
             _require(
-                start >= 0
-                and end > start
-                and (previous_end is None or start == previous_end),
+                start >= 0 and end > start and (previous_end is None or start == previous_end),
                 f"{algorithm} fold audit has a gap or overlapping OOS windows",
             )
             _require(
-                int(audit_row.train_start_index) == 0
-                and int(audit_row.train_end_index) == start,
+                int(audit_row.train_start_index) == 0 and int(audit_row.train_end_index) == start,
                 f"{algorithm} fold audit has invalid training boundaries",
             )
             _require(
@@ -441,9 +438,7 @@ def _validate_audited_rows(
         len(predictions) == int(summary.get("rows_audited", -1)),
         "D07.1 summary prediction count mismatch",
     )
-    predictions = predictions.sort_values(
-        ["algorithm", "fold", "row_index"]
-    ).reset_index(drop=True)
+    predictions = predictions.sort_values(["algorithm", "fold", "row_index"]).reset_index(drop=True)
     return predictions, algorithms, fold_count
 
 
