@@ -54,12 +54,10 @@ def test_simulation_compares_policies_across_cost_scenarios(tmp_path):
     assert len(ledger) == 48
 
     argmax = metrics.loc[
-        (metrics["strategy"] == "argmax")
-        & (metrics["cost_bps_per_side"] == 5.0)
+        (metrics["strategy"] == "argmax") & (metrics["cost_bps_per_side"] == 5.0)
     ].iloc[0]
     policy = metrics.loc[
-        (metrics["strategy"] == "neutral_policy")
-        & (metrics["cost_bps_per_side"] == 5.0)
+        (metrics["strategy"] == "neutral_policy") & (metrics["cost_bps_per_side"] == 5.0)
     ].iloc[0]
     assert argmax["trades"] == 4
     assert argmax["total_gross_pnl"] == pytest.approx(650.0)
@@ -83,9 +81,7 @@ def test_simulation_compares_policies_across_cost_scenarios(tmp_path):
     assert (neutral["transaction_costs"] == 0.0).all()
     assert (neutral["executed_direction"] == 0).all()
 
-    manifest = json.loads(
-        (output_dir / "simulation_manifest.json").read_text(encoding="utf-8")
-    )
+    manifest = json.loads((output_dir / "simulation_manifest.json").read_text(encoding="utf-8"))
     for filename, entry in manifest["outputs"].items():
         path = output_dir / filename
         assert path.is_file()
