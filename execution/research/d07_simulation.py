@@ -276,6 +276,12 @@ def _validate_audited_rows(
         "D07.1 selected thresholds must be in [0, 1]",
     )
 
+    for column in ("actual", "argmax_prediction", "policy_prediction"):
+        predictions[column] = predictions[column].astype(str)
+        _require(
+            set(predictions[column]).issubset(EXPECTED_CLASSES),
+            f"D07.1 {column} contains an unknown class",
+        )
     for column in ("feature_date", "entry_date"):
         parsed = pd.to_datetime(predictions[column], errors="coerce", utc=True)
         _require(not parsed.isna().any(), f"D07.1 {column} contains invalid dates")
@@ -299,6 +305,11 @@ def _validate_audited_rows(
             predictions["algorithm"].astype(str) == algorithm
         ].sort_values(["fold", "row_index"])
         _require(not selected.empty, f"D07.1 has no rows for {algorithm}")
+        _require(
+            selected["_feature_date_utc"].is_monotonic_increasing
+            and selected["_entry_date_utc"].is_monotonic_increasing,
+            f"{algorithm} feature/entry dates are not chronological",
+        )
         fold_ids = selected["fold"].to_numpy(dtype=np.int64)
         _require(
             set(fold_ids.tolist()) == set(range(1, fold_count + 1)),
