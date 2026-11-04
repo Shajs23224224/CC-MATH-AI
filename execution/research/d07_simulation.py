@@ -73,7 +73,10 @@ def _validate_configuration(
     capital = _finite_number(initial_capital, "initial_capital")
     notional = _finite_number(notional_per_trade, "notional_per_trade")
     _require(capital > 0.0, "initial_capital must be positive")
-    _require(0.0 < notional <= capital, "notional_per_trade must be positive and <= initial_capital")
+    _require(
+        0.0 < notional <= capital,
+        "notional_per_trade must be positive and <= initial_capital",
+    )
     _require(
         isinstance(trading_days_per_year, int)
         and not isinstance(trading_days_per_year, bool)
@@ -227,7 +230,14 @@ def _validate_audited_rows(
         predictions[column] = values.astype(np.int64)
 
     fold_audit = fold_audit.copy()
-    for column in ("fold", "train_start_index", "train_end_index", "test_start_index", "test_end_index", "test_samples"):
+    for column in (
+        "fold",
+        "train_start_index",
+        "train_end_index",
+        "test_start_index",
+        "test_end_index",
+        "test_samples",
+    ):
         values = pd.to_numeric(fold_audit[column], errors="raise").to_numpy(dtype=float)
         _require(np.all(np.isfinite(values)), f"fold audit {column} is non-finite")
         _require(np.all(values == np.floor(values)), f"fold audit {column} must be integer")
@@ -805,15 +815,29 @@ def simulate_execution_decisions(
             "simple_annualized_return": "linear annualization, not CAGR",
             "sharpe_sortino": "calculated from daily net PnL / initial capital",
             "maximum_drawdown": "marked from initial capital and subsequent equity highs",
-            "break_even_cost_bps_per_side": "gross PnL / round-trip notional, converted to bps per side",
+            "break_even_cost_bps_per_side": (
+                "gross PnL / round-trip notional, converted to bps per side"
+            ),
         },
         "limitations": [
             "Historical simulation is not live trading; recorded prices are theoretical fills.",
-            "A short can lose more than its notional; negative equity is recorded and later trades are stopped.",
+            (
+                "A short can lose more than its notional; negative equity is "
+                "recorded and later trades are stopped."
+            ),
             "The fixed-notional model does not reinvest profits or compound returns.",
-            "Borrow fees, availability, dividends, financing, taxes, market impact and broker margin rules are not modeled.",
-            "Historical OOS folds were previously inspected and are not an untouched prospective test.",
-            "Cost scenarios are assumptions; results do not establish future profitability or suitability for capital deployment.",
+            (
+                "Borrow fees, availability, dividends, financing, taxes, market "
+                "impact and broker margin rules are not modeled."
+            ),
+            (
+                "Historical OOS folds were previously inspected and are not an "
+                "untouched prospective test."
+            ),
+            (
+                "Cost scenarios are assumptions; results do not establish future "
+                "profitability or suitability for capital deployment."
+            ),
         ],
         "outputs": {
             "trade_ledger": ledger_path.name,
