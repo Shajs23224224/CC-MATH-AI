@@ -603,7 +603,12 @@ def audit_calibration_reliability(
     _require(
         isinstance(summary_bounds, list)
         and len(summary_bounds) == 2
-        and np.allclose(np.asarray(summary_bounds, dtype=float), bounds, rtol=0.0, atol=1e-12),
+        and np.allclose(
+            np.asarray(summary_bounds, dtype=float),
+            bounds,
+            rtol=0.0,
+            atol=1e-12,
+        ),
         "D06 manifest and summary temperature bounds differ",
     )
     n_bins = _as_integer(
