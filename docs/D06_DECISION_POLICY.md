@@ -1,4 +1,4 @@
-# D06.2 — Nested chronological decision-policy evaluation
+# D06.3 — Calibrated chronological decision-policy evaluation
 
 ## Purpose
 
@@ -9,35 +9,37 @@ D06 compares two deterministic decisions from the same classifier probabilities:
 2. **Adaptive neutral policy:** choose \`NEUTRAL\` when its probability reaches
    a selected threshold; otherwise choose the more likely of \`DOWN\` and \`UP\`.
 
-D06 does not change the training labels or classifier probabilities when it
-changes the decision policy.
+D06 does not change the training labels. D06.3 post-hoc calibrates classifier
+probabilities with one scalar temperature before comparing the two decision rules.
 
 ## Nested temporal protocol
 
 Each outer evaluation fold is an expanding chronological split. Its training
 prefix ends exactly where its non-overlapping outer test window begins.
 
-Inside the outer training prefix, D06 withholds a chronological suffix for
-threshold selection:
+Inside the outer training prefix, D06 withholds a chronological suffix:
 
-- The estimator used for threshold selection is fitted only on the prefix before
-  that suffix.
-- Probabilities on the suffix are aligned to the canonical three-class order.
-- A declared threshold grid is evaluated using macro F1. Ties are resolved by
-  balanced accuracy, neutral precision, then the higher threshold.
-- A fresh estimator is fitted on the complete outer training prefix.
-- The outer test is evaluated once and cannot select the threshold, estimator,
-  or hyperparameters.
+- The estimator is fitted only on the prefix before that suffix.
+- Its suffix probabilities are aligned to the canonical DOWN, NEUTRAL, UP order.
+- A single multiclass temperature is fitted by minimizing suffix log loss over
+  the bounded interval [0.05, 20].
+- The calibrated suffix probabilities are then used to select the neutral
+  threshold by macro F1. Ties are resolved by balanced accuracy, neutral
+  precision, then the higher threshold.
+- The exact same estimator and fitted temperature produce the outer OOS
+  probabilities. The estimator is not refitted on its calibration suffix.
+- The outer test is evaluated once and cannot fit the temperature, select the
+  threshold, estimator, or hyperparameters.
 
 The implementation checks class coverage in the pre-calibration training prefix,
 calibration suffix and outer test. It validates exact split boundaries, row/date
 alignment, probability dimensions, finite values, bounds and row sums.
 
-**Important terminology:** the inner suffix selects a decision threshold; it does
-not perform post-hoc probability calibration. Log loss and Brier score are
-descriptive scores of the model's emitted probabilities. Calibration-suffix
-selection metrics are not unbiased OOS estimates because the same suffix selects
-the threshold.
+**Selection caveat:** the same inner suffix fits the temperature and selects
+the neutral threshold. Its calibration scores are descriptive and optimistic,
+not an unbiased performance estimate. The untouched outer OOS probabilities
+receive multiclass log loss, Brier score, equal-width one-vs-rest reliability
+bins, expected calibration error (ECE), and maximum calibration error (MCE).
 
 ## Outputs and traceability
 
@@ -74,8 +76,12 @@ python -m scripts.run_execution_decision_policy \\
 
 ## Interpretation limits
 
-The outer historical folds may have been inspected during development and are not
-an untouched prospective test. A successful run proves that the declared
-software protocol completed; it does not establish an edge or trading
-profitability. D06 does not include transaction costs, portfolio sizing, risk
-approval or broker execution. Those belong to later, separately validated stages.
+The same past-only suffix is used to fit temperature and select the neutral
+threshold, so suffix metrics are not independent validation. Temperature scaling
+is a one-parameter adjustment; it may not correct class-specific distortions or
+distribution shift. The outer historical folds may have been inspected during
+development and are not an untouched prospective test. A successful run proves
+that the declared software protocol completed; it does not establish an edge or
+trading profitability. D06 does not include transaction costs, portfolio sizing,
+risk approval or broker execution. Those belong to later, separately validated
+stages.

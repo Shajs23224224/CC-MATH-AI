@@ -1,8 +1,7 @@
-"""D06: nested chronological calibration and evaluation of three-class policies.
+"""D06.3: chronological probability calibration and three-class policy evaluation.
 
-A calibration suffix is used only to select the NEUTRAL decision threshold.
-It is not probability calibration and the outer OOS test is never used for
-threshold, estimator, or model selection.
+A past-only calibration suffix fits multiclass temperature scaling and selects
+the NEUTRAL decision threshold. The outer OOS test is never used for either.
 """
 
 from __future__ import annotations
@@ -24,12 +23,12 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import sklearn
+from scipy.optimize import minimize_scalar
 from sklearn.metrics import (
     accuracy_score,
     balanced_accuracy_score,
     confusion_matrix,
     f1_score,
-    log_loss,
     precision_recall_fscore_support,
 )
 
@@ -181,6 +180,181 @@ def _aligned_probabilities(
         raise ValueError("probability matrix has invalid dimensions")
     aligned = raw[:, [source_classes.index(label) for label in EXPECTED_CLASSES]]
     return _validate_probability_matrix(aligned, expected_rows)
+
+
+def apply_temperature_scaling(
+    probabilities: np.ndarray,
+    temperature: float,
+) -> np.ndarray:
+    """Apply one positive multiclass temperature while preserving row sums."""
+    raw = np.asarray(probabilities, dtype=np.float64)
+    matrix = _validate_probability_matrix(raw, len(raw))
+    if (
+        isinstance(temperature, bool)
+        or not isinstance(temperature, Real)
+        or not math.isfinite(float(temperature))
+        or float(temperature) <= 0.0
+    ):
+        raise ValueError("temperature must be finite and greater than zero")
+    logits = np.log(np.clip(matrix, 1e-15, 1.0)) / float(temperature)
+    logits -= np.max(logits, axis=1, keepdims=True)
+    exponentials = np.exp(logits)
+    scaled = exponentials / exponentials.sum(axis=1, keepdims=True)
+    return _validate_probability_matrix(scaled, len(matrix))
+
+
+def _multiclass_log_loss(actual: np.ndarray, probabilities: np.ndarray) -> float:
+    labels = np.asarray(actual, dtype=str)
+    matrix = _validate_probability_matrix(probabilities, len(labels))
+    if labels.ndim != 1 or set(labels.tolist()) != set(EXPECTED_CLASSES):
+        raise ValueError("calibration labels must contain all three classes")
+    class_indices = np.asarray(
+        [EXPECTED_CLASSES.index(label) for label in labels],
+        dtype=np.int64,
+    )
+    selected = matrix[np.arange(len(labels)), class_indices]
+    return float(-np.mean(np.log(np.clip(selected, 1e-15, 1.0))))
+
+
+def _multiclass_brier_score(actual: np.ndarray, probabilities: np.ndarray) -> float:
+    labels = np.asarray(actual, dtype=str)
+    matrix = _validate_probability_matrix(probabilities, len(labels))
+    one_hot = np.column_stack(
+        [labels == label for label in EXPECTED_CLASSES]
+    ).astype(np.float64)
+    return float(np.mean(np.sum((matrix - one_hot) ** 2, axis=1)))
+
+
+def fit_temperature_scaling(
+    actual: Sequence[str] | np.ndarray,
+    probabilities: np.ndarray,
+    *,
+    minimum_temperature: float = 0.05,
+    maximum_temperature: float = 20.0,
+) -> tuple[float, dict[str, float]]:
+    """Fit a scalar temperature on a chronological holdout probability sample."""
+    labels = np.asarray(actual, dtype=str)
+    raw = np.asarray(probabilities, dtype=np.float64)
+    matrix = _validate_probability_matrix(raw, len(labels))
+    if (
+        labels.ndim != 1
+        or len(labels) == 0
+        or set(labels.tolist()) != set(EXPECTED_CLASSES)
+    ):
+        raise ValueError("temperature calibration labels must contain all three classes")
+    if (
+        isinstance(minimum_temperature, bool)
+        or isinstance(maximum_temperature, bool)
+        or not isinstance(minimum_temperature, Real)
+        or not isinstance(maximum_temperature, Real)
+        or not math.isfinite(float(minimum_temperature))
+        or not math.isfinite(float(maximum_temperature))
+        or not 0.0 < float(minimum_temperature) < float(maximum_temperature)
+    ):
+        raise ValueError("temperature bounds must be finite, positive and increasing")
+
+    lower = math.log(float(minimum_temperature))
+    upper = math.log(float(maximum_temperature))
+
+    def objective(log_temperature: float) -> float:
+        calibrated = apply_temperature_scaling(matrix, math.exp(log_temperature))
+        return _multiclass_log_loss(labels, calibrated)
+
+    optimized = minimize_scalar(
+        objective,
+        bounds=(lower, upper),
+        method="bounded",
+        options={"xatol": 1e-8},
+    )
+    if not optimized.success or not math.isfinite(float(optimized.fun)):
+        raise RuntimeError("multiclass temperature optimization did not converge")
+
+    candidates = (lower, upper, 0.0, float(optimized.x))
+    best_log_temperature = min(
+        candidates,
+        key=lambda value: (objective(value), abs(value)),
+    )
+    temperature = float(math.exp(best_log_temperature))
+    return temperature, {
+        "raw_log_loss": objective(0.0),
+        "calibrated_log_loss": objective(best_log_temperature),
+        "raw_brier_score": _multiclass_brier_score(labels, matrix),
+        "calibrated_brier_score": _multiclass_brier_score(
+            labels,
+            apply_temperature_scaling(matrix, temperature),
+        ),
+    }
+
+
+def _reliability_diagnostics(
+    actual: np.ndarray,
+    probabilities: np.ndarray,
+    *,
+    algorithm: str,
+    fold: int,
+    n_bins: int = 10,
+) -> tuple[list[dict[str, Any]], dict[str, float]]:
+    """Create one-vs-rest equal-width reliability bins from OOS probabilities."""
+    labels = np.asarray(actual, dtype=str)
+    raw = np.asarray(probabilities, dtype=np.float64)
+    matrix = _validate_probability_matrix(raw, len(labels))
+    if labels.ndim != 1 or len(labels) == 0:
+        raise ValueError("reliability labels must be a non-empty vector")
+    if set(labels.tolist()) != set(EXPECTED_CLASSES):
+        raise ValueError("reliability sample must contain all three classes")
+    if isinstance(n_bins, bool) or not isinstance(n_bins, int) or n_bins < 2:
+        raise ValueError("reliability bin count must be an integer of at least two")
+
+    rows: list[dict[str, Any]] = []
+    class_ece: list[float] = []
+    class_mce: list[float] = []
+    for class_index, class_name in enumerate(EXPECTED_CLASSES):
+        confidence = matrix[:, class_index]
+        observed = (labels == class_name).astype(np.float64)
+        bin_indices = np.minimum(
+            np.floor(confidence * n_bins).astype(np.int64),
+            n_bins - 1,
+        )
+        gaps: list[float] = []
+        weighted_error = 0.0
+        for bin_index in range(n_bins):
+            selected = bin_indices == bin_index
+            count = int(np.count_nonzero(selected))
+            if count:
+                mean_confidence = float(np.mean(confidence[selected]))
+                observed_frequency = float(np.mean(observed[selected]))
+                gap = abs(mean_confidence - observed_frequency)
+                weighted_error += (count / len(labels)) * gap
+                gaps.append(gap)
+            else:
+                mean_confidence = None
+                observed_frequency = None
+                gap = None
+            rows.append(
+                {
+                    "algorithm": algorithm,
+                    "fold": fold,
+                    "class": class_name,
+                    "bin": bin_index,
+                    "bin_lower": bin_index / n_bins,
+                    "bin_upper": (bin_index + 1) / n_bins,
+                    "sample_count": count,
+                    "mean_confidence": mean_confidence,
+                    "observed_frequency": observed_frequency,
+                    "absolute_calibration_gap": gap,
+                }
+            )
+        class_ece.append(float(weighted_error))
+        class_mce.append(max(gaps, default=0.0))
+
+    metrics = {
+        "multiclass_expected_calibration_error": float(np.mean(class_ece)),
+        "multiclass_maximum_calibration_error": float(max(class_mce)),
+    }
+    for class_name, ece, mce in zip(EXPECTED_CLASSES, class_ece, class_mce, strict=True):
+        metrics[f"{class_name.lower()}_expected_calibration_error"] = ece
+        metrics[f"{class_name.lower()}_maximum_calibration_error"] = mce
+    return rows, metrics
 
 
 def apply_neutral_threshold(
@@ -357,8 +531,9 @@ def evaluate_decision_policy_fold(
     seed: int,
     dates: tuple[str, ...],
     calibration_fraction: float = 0.20,
+    reliability_records: list[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    """Fit, select the policy threshold on a past suffix, and score the outer test."""
+    """Calibrate and select the decision threshold using only a past suffix."""
     if dataset.task != "classification":
         raise ValueError("decision policy requires a classification dataset")
     if len(dataset.features) != len(dataset.target) or len(dates) != len(dataset.features):
@@ -405,8 +580,8 @@ def evaluate_decision_policy_fold(
     if set(calibration_labels.tolist()) != set(EXPECTED_CLASSES):
         raise ValueError("inner calibration window must contain all three classes")
 
-    # The inner suffix is withheld from estimator fitting and used solely to
-    # select the neutral threshold. No outer-test observation is visible here.
+    # Fit the base classifier only before the suffix. The same fitted estimator
+    # generates suffix and OOS probabilities, avoiding in-sample calibration.
     outer_train = _prefix_dataset(dataset, fold.train_end)
     calibration_model = ClassicalMLModel(
         MLTrainingConfig(
@@ -437,51 +612,40 @@ def evaluate_decision_policy_fold(
     calibration_prediction = calibration_model.predict(
         dataset.features[calibration_start : fold.train_end]
     )
-    calibration_probabilities = _aligned_probabilities(
+    raw_calibration_probabilities = _aligned_probabilities(
         calibration_prediction,
         calibration_size,
     )
+    temperature, calibration_scores = fit_temperature_scaling(
+        calibration_labels,
+        raw_calibration_probabilities,
+    )
+    calibrated_suffix_probabilities = apply_temperature_scaling(
+        raw_calibration_probabilities,
+        temperature,
+    )
     selected = choose_neutral_threshold(
         calibration_labels,
-        calibration_probabilities,
+        calibrated_suffix_probabilities,
     )
 
-    # Refit a fresh estimator on the full outer training prefix. The final
-    # model's internal holdout mirrors the outer test, but it cannot select
-    # thresholds or hyperparameters from that test.
-    full_prefix = _prefix_dataset(dataset, fold.test_end)
-    final_model = ClassicalMLModel(
-        MLTrainingConfig(
-            algorithm=algorithm,
-            task="classification",
-            random_seed=seed,
-            test_fraction=_holdout_fraction(fold.test_end, fold.test_samples),
-        )
+    # Keep the estimator fitted before the suffix. No refit includes calibration
+    # labels, and the outer test cannot influence its temperature or threshold.
+    test_prediction = calibration_model.predict(
+        dataset.features[fold.test_start : fold.test_end]
     )
-    evaluation = final_model.fit(full_prefix)
-    expected_outer = (
-        fold.training_samples,
-        fold.test_samples,
-        fold.train_end,
-        fold.test_start,
-        fold.test_end,
-    )
-    actual_outer = (
-        evaluation.training_samples,
-        evaluation.test_samples,
-        evaluation.train_end_index,
-        evaluation.test_start_index,
-        evaluation.test_end_index,
-    )
-    if actual_outer != expected_outer or evaluation.test_used_for_selection:
-        raise RuntimeError("final model does not respect outer fold boundaries")
-
-    test_prediction = final_model.predict(dataset.features[fold.test_start : fold.test_end])
-    probabilities = _aligned_probabilities(test_prediction, fold.test_samples)
+    raw_test_probabilities = _aligned_probabilities(test_prediction, fold.test_samples)
+    probabilities = apply_temperature_scaling(raw_test_probabilities, temperature)
     actual = np.asarray(dataset.target[fold.test_start : fold.test_end], dtype=str)
 
-    # Derive argmax explicitly from canonical probability columns so that the
-    # persisted decision can be independently reproduced without model objects.
+    reliability_rows, reliability_scores = _reliability_diagnostics(
+        actual,
+        probabilities,
+        algorithm=algorithm,
+        fold=fold.fold,
+        n_bins=10,
+    )
+
     argmax_indices = np.argmax(probabilities, axis=1)
     argmax_predictions = tuple(EXPECTED_CLASSES[index] for index in argmax_indices)
     policy_predictions = apply_neutral_threshold(
@@ -499,6 +663,7 @@ def evaluate_decision_policy_fold(
         "test_start_index": fold.test_start,
         "test_end_index": fold.test_end,
         "training_samples": fold.training_samples,
+        "estimator_fit_samples": calibration_start,
         "test_samples": fold.test_samples,
         "test_used_for_selection": False,
         "test_start_date": dates[fold.test_start],
@@ -507,6 +672,12 @@ def evaluate_decision_policy_fold(
         "calibration_end_index": fold.train_end,
         "calibration_samples": calibration_size,
         "calibration_test_used_for_selection": True,
+        "probability_calibration_method": "multiclass_temperature_scaling",
+        "probability_calibration_temperature": temperature,
+        "calibration_raw_log_loss": calibration_scores["raw_log_loss"],
+        "calibration_scaled_log_loss": calibration_scores["calibrated_log_loss"],
+        "calibration_raw_brier_score": calibration_scores["raw_brier_score"],
+        "calibration_scaled_brier_score": calibration_scores["calibrated_brier_score"],
         "threshold_objective": "macro_f1",
         "selected_neutral_threshold": selected["threshold"],
         "calibration_macro_f1": selected["macro_f1"],
@@ -516,14 +687,9 @@ def evaluate_decision_policy_fold(
     }
     metrics.update(_policy_metrics("argmax", actual, argmax_predictions))
     metrics.update(_policy_metrics("policy", actual, policy_predictions))
-
-    one_hot = np.column_stack([actual == label for label in EXPECTED_CLASSES]).astype(np.float64)
-    metrics["multiclass_log_loss"] = float(
-        log_loss(actual, probabilities, labels=list(EXPECTED_CLASSES))
-    )
-    metrics["multiclass_brier_score"] = float(
-        np.mean(np.sum((probabilities - one_hot) ** 2, axis=1))
-    )
+    metrics["multiclass_log_loss"] = _multiclass_log_loss(actual, probabilities)
+    metrics["multiclass_brier_score"] = _multiclass_brier_score(actual, probabilities)
+    metrics.update(reliability_scores)
 
     training_counts = Counter(dataset.target[: fold.train_end])
     majority_class, majority_count = training_counts.most_common(1)[0]
@@ -561,6 +727,8 @@ def evaluate_decision_policy_fold(
                 "probability_up": float(probabilities[offset, 2]),
             }
         )
+    if reliability_records is not None:
+        reliability_records.extend(reliability_rows)
     return metrics, predictions
 
 
@@ -817,6 +985,7 @@ def run_decision_policy(
 
     fold_records: list[dict[str, Any]] = []
     prediction_records: list[dict[str, Any]] = []
+    reliability_records: list[dict[str, Any]] = []
     total = len(DEFAULT_ALGORITHMS) * len(folds)
     completed = 0
 
@@ -837,6 +1006,7 @@ def run_decision_policy(
                     seed=seed,
                     dates=dates,
                     calibration_fraction=calibration_fraction,
+                    reliability_records=reliability_records,
                 )
                 fold_records.append(record)
                 prediction_records.extend(predictions)
@@ -892,6 +1062,10 @@ def run_decision_policy(
         "threshold_grid": list(THRESHOLD_GRID),
         "threshold_selection_objective": "macro_f1",
         "calibration_fraction": calibration_fraction,
+        "probability_calibration_method": "multiclass_temperature_scaling",
+        "probability_calibration_temperature_bounds": [0.05, 20.0],
+        "reliability_bin_count": 10,
+        "reliability_bins": reliability_records,
         "outer_test_used_for_selection": False,
         "folds": [
             {
@@ -912,23 +1086,27 @@ def run_decision_policy(
         "source_manifest_sha256": d04_manifest_sha256,
         "d04_original_source_manifest_sha256": source_manifest["source"]["source_manifest_sha256"],
         "evaluation_scope": (
-            "Exploratory historical nested chronological evaluation. Thresholds "
-            "are selected using only a past inner suffix. Previously inspected "
-            "historical folds are not an untouched prospective test and do not "
-            "establish profitability. The suffix selects a decision threshold; "
-            "it does not calibrate the probability estimates."
+            "Exploratory historical nested chronological evaluation. A past-only "
+            "suffix fits one multiclass temperature and selects the neutral threshold. "
+            "The same fitted estimator and temperature are applied to the untouched "
+            "outer test. Previously inspected historical folds are not a prospective "
+            "test and do not establish profitability."
         ),
         "limitations": [
-            "Threshold selection uses the inner suffix; its selection metrics "
-            "are not unbiased OOS estimates.",
-            "Classifier probabilities are model estimates and are not "
-            "post-hoc calibrated probabilities.",
+            "The same inner suffix fits the temperature and selects the decision "
+            "threshold; suffix diagnostics are therefore descriptive and optimistic.",
+            "Temperature scaling adjusts one global probability sharpness parameter; "
+            "it cannot guarantee classwise or distribution-shift calibration.",
             "Outer test windows are used only for final descriptive evaluation.",
             "Historical folds may have been inspected during development "
             "and are not a prospective test.",
             "D06 does not model transaction costs or execute orders.",
         ],
         "output_directory": str(run_dir),
+        "probability_reliability": (
+            "Equal-width one-vs-rest bins from calibrated outer-OOS probabilities; "
+            "stored in this summary's reliability_bins array."
+        ),
         "outputs": {
             "fold_metrics": fold_path.name,
             "aggregate_metrics": aggregate_path.name,
@@ -941,7 +1119,7 @@ def run_decision_policy(
     output_files = (fold_path, aggregate_path, predictions_path, summary_path)
     output_manifest = {
         "schema_version": "1.0",
-        "contract_version": "D06.2",
+        "contract_version": "D06.3",
         "created_at": timestamp.isoformat(),
         "input": {
             "execution_dataset": dataset_path.name,
@@ -958,6 +1136,9 @@ def run_decision_policy(
             "fold_count": n_folds,
             "test_fraction": test_fraction,
             "calibration_fraction": calibration_fraction,
+            "probability_calibration_method": "multiclass_temperature_scaling",
+            "probability_calibration_temperature_bounds": [0.05, 20.0],
+            "reliability_bin_count": 10,
             "algorithms": list(DEFAULT_ALGORITHMS),
             "classes": list(EXPECTED_CLASSES),
             "threshold_grid": list(THRESHOLD_GRID),

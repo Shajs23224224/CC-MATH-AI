@@ -12,8 +12,10 @@ from core.contracts.ml import MLDataset
 from scripts.build_execution_dataset import build_execution_dataset
 from scripts.run_execution_decision_policy import (
     apply_neutral_threshold,
+    apply_temperature_scaling,
     choose_neutral_threshold,
     evaluate_decision_policy_fold,
+    fit_temperature_scaling,
     run_decision_policy,
 )
 from scripts.run_ml_walk_forward import build_expanding_folds
@@ -207,6 +209,9 @@ def test_nested_policy_keeps_outer_test_out_of_threshold_selection():
     assert record["calibration_end_index"] == 72
     assert record["calibration_samples"] == 15
     assert record["calibration_test_used_for_selection"] is True
+    assert record["probability_calibration_method"] == "multiclass_temperature_scaling"
+    assert 0.05 <= record["probability_calibration_temperature"] <= 20.0
+    assert record["calibration_scaled_log_loss"] <= record["calibration_raw_log_loss"] + 1e-8
     assert 0.05 <= record["selected_neutral_threshold"] <= 0.80
     assert len(predictions) == 12
     assert predictions[0]["row_index"] == 72
@@ -262,6 +267,9 @@ def test_outer_test_changes_cannot_change_selected_calibration_threshold():
         dates=dates,
     )
     assert modified["selected_neutral_threshold"] == original["selected_neutral_threshold"]
+    assert modified["probability_calibration_temperature"] == original[
+        "probability_calibration_temperature"
+    ]
     assert modified["calibration_macro_f1"] == original["calibration_macro_f1"]
     assert modified["calibration_start_index"] == original["calibration_start_index"]
 
@@ -298,7 +306,13 @@ def test_run_writes_complete_hash_manifest_compatible_with_d07(tmp_path, monkeyp
     assert summary["completed_model_folds"] == 1
     assert summary["failed_model_folds"] == 0
     assert summary["prediction_rows"] == 18
-    assert manifest["contract_version"] == "D06.2"
+    assert manifest["contract_version"] == "D06.3"
+    assert manifest["configuration"]["probability_calibration_method"] == (
+        "multiclass_temperature_scaling"
+    )
+    assert manifest["configuration"]["reliability_bin_count"] == 10
+    assert len(summary["reliability_bins"]) == 30
+    assert summary["probability_calibration_method"] == "multiclass_temperature_scaling"
     assert manifest["input"]["execution_dataset"] == dataset_path.name
     assert manifest["input"]["execution_dataset_sha256"] == digest(dataset_path)
     assert manifest["input"]["source_manifest_sha256"] == digest(d04_manifest_path)
@@ -314,3 +328,63 @@ def test_run_writes_complete_hash_manifest_compatible_with_d07(tmp_path, monkeyp
     assert set(predictions["actual"]) == {"DOWN", "NEUTRAL", "UP"}
     assert set(predictions["argmax_prediction"]).issubset({"DOWN", "NEUTRAL", "UP"})
     assert set(predictions["policy_prediction"]).issubset({"DOWN", "NEUTRAL", "UP"})
+    fold_metrics = pd.read_csv(run_dir / "fold_metrics.csv")
+    assert {
+        "multiclass_expected_calibration_error",
+        "multiclass_maximum_calibration_error",
+    }.issubset(fold_metrics.columns)
+
+
+
+def test_temperature_scaling_preserves_probability_simplex_and_sharpens_confidence():
+    raw = np.asarray(
+        [
+            [0.55, 0.30, 0.15],
+            [0.20, 0.50, 0.30],
+        ],
+        dtype=np.float64,
+    )
+
+    softened = apply_temperature_scaling(raw, 2.0)
+    sharpened = apply_temperature_scaling(raw, 0.5)
+
+    assert softened.sum(axis=1) == pytest.approx(np.ones(2))
+    assert sharpened.sum(axis=1) == pytest.approx(np.ones(2))
+    assert sharpened[0, 0] > raw[0, 0]
+    assert softened[0, 0] < raw[0, 0]
+
+
+def test_temperature_fit_does_not_increase_calibration_log_loss():
+    actual = np.asarray(["DOWN", "NEUTRAL", "UP"] * 12)
+    probabilities = np.tile(
+        np.asarray(
+            [
+                [0.55, 0.25, 0.20],
+                [0.20, 0.55, 0.25],
+                [0.20, 0.25, 0.55],
+            ]
+        ),
+        (12, 1),
+    )
+
+    temperature, diagnostics = fit_temperature_scaling(actual, probabilities)
+
+    assert 0.05 <= temperature <= 20.0
+    assert diagnostics["calibrated_log_loss"] <= diagnostics["raw_log_loss"] + 1e-8
+    calibrated = apply_temperature_scaling(probabilities, temperature)
+    assert calibrated.sum(axis=1) == pytest.approx(np.ones(len(actual)))
+
+
+def test_temperature_fit_rejects_calibration_without_all_classes():
+    actual = np.asarray(["DOWN", "DOWN", "UP", "UP"])
+    probabilities = np.asarray(
+        [
+            [0.7, 0.2, 0.1],
+            [0.6, 0.3, 0.1],
+            [0.1, 0.2, 0.7],
+            [0.2, 0.3, 0.5],
+        ]
+    )
+
+    with pytest.raises(ValueError, match="all three classes"):
+        fit_temperature_scaling(actual, probabilities)
