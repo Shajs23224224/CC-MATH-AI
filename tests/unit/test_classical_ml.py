@@ -101,7 +101,6 @@ def test_classifier_returns_probabilities_and_metrics() -> None:
     assert all(abs(sum(row) - 1.0) < 1e-8 for row in prediction.probabilities)
 
 
-
 def test_classifier_detects_prediction_collapse(monkeypatch: pytest.MonkeyPatch) -> None:
     features = tuple((float(index),) for index in range(60))
     labels = tuple("DOWN" if index % 2 == 0 else "UP" for index in range(60))
