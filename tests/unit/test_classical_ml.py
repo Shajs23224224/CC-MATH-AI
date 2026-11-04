@@ -2,7 +2,9 @@
 
 import numpy as np
 import pytest
+from sklearn.dummy import DummyClassifier
 
+import ml.classical as classical_module
 from core.contracts.ml import MLDataset, MLTrainingConfig
 from ml import ClassicalMLModel, supported_algorithms
 from ml.errors import MLInputError
@@ -71,12 +73,74 @@ def test_classifier_returns_probabilities_and_metrics() -> None:
         MLTrainingConfig(algorithm="logistic_regression", task="classification", random_seed=5)
     )
     result = model.fit(dataset)
+
     assert 0.0 <= result.metrics["accuracy"] <= 1.0
+    assert 0.0 <= result.metrics["balanced_accuracy"] <= 1.0
+    assert result.metrics["majority_baseline_accuracy"] == pytest.approx(0.5)
+    assert result.metrics["prediction_unique_classes"] >= 1.0
+    assert result.metrics["prediction_collapse"] == float(
+        result.metrics["prediction_unique_classes"] == 1.0
+    )
+    assert (
+        result.metrics["class_negative_support"]
+        + result.metrics["class_positive_support"]
+        == result.test_samples
+    )
+
+    confusion_total = sum(
+        value
+        for key, value in result.metrics.items()
+        if key.startswith("confusion_actual_")
+    )
+    assert confusion_total == result.test_samples
+
+    assert model.metadata is not None
+    assert model.metadata.parameters["majority_baseline_class"] == "negative"
+
     prediction = model.predict(((61.0, 1.0), (62.0, 2.0)))
     assert prediction.probabilities is not None
     assert prediction.classes is not None
     assert len(prediction.probabilities) == 2
     assert all(abs(sum(row) - 1.0) < 1e-8 for row in prediction.probabilities)
+
+
+
+def test_classifier_detects_prediction_collapse(monkeypatch: pytest.MonkeyPatch) -> None:
+    features = tuple((float(index),) for index in range(60))
+    labels = tuple("DOWN" if index % 2 == 0 else "UP" for index in range(60))
+
+    dataset = MLDataset(
+        dataset_id="synthetic-collapse-v1",
+        source="synthetic test fixture",
+        feature_names=("trend",),
+        target_name="direction",
+        features=features,
+        target=labels,
+        task="classification",
+    )
+
+    monkeypatch.setitem(
+        classical_module._CLASSIFIERS,
+        "dummy_majority_test",
+        lambda seed: DummyClassifier(strategy="most_frequent"),
+    )
+
+    model = ClassicalMLModel(
+        MLTrainingConfig(
+            algorithm="dummy_majority_test",
+            task="classification",
+            random_seed=7,
+        )
+    )
+    result = model.fit(dataset)
+
+    assert result.metrics["prediction_unique_classes"] == 1.0
+    assert result.metrics["prediction_collapse"] == 1.0
+    assert result.metrics["accuracy"] == pytest.approx(0.5)
+    assert result.metrics["majority_baseline_accuracy"] == pytest.approx(0.5)
+    assert result.metrics["balanced_accuracy"] == pytest.approx(0.5)
+    assert model.metadata is not None
+    assert model.metadata.parameters["majority_baseline_class"] == "DOWN"
 
 
 def test_invalid_parameters_and_unfitted_prediction_fail_closed() -> None:

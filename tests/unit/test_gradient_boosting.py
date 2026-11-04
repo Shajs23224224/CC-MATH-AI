@@ -57,7 +57,17 @@ def test_regressor_selects_tree_count_on_temporal_validation_and_predicts() -> N
     assert result.train_end_index == result.test_start_index == 96
     assert result.test_end_index == 120
     assert result.test_used_for_selection is False
-    assert set(result.metrics) == {"mae", "rmse", "r2"}
+    assert set(result.metrics) == {
+        "mae",
+        "rmse",
+        "r2",
+        "training_mean_baseline",
+        "baseline_mae",
+        "baseline_rmse",
+        "baseline_r2",
+        "mae_skill_vs_baseline",
+        "rmse_skill_vs_baseline",
+    }
     assert model.metadata is not None
     assert model.metadata.parameters["temporal_early_stopping"] is True
     assert model.metadata.parameters["requested_max_estimators"] == 40

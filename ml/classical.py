@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 from collections.abc import Callable, Sequence
 from typing import Any
 
@@ -20,6 +21,8 @@ from sklearn.ensemble import (
 from sklearn.linear_model import ElasticNet, Lasso, LinearRegression, LogisticRegression, Ridge
 from sklearn.metrics import (
     accuracy_score,
+    balanced_accuracy_score,
+    confusion_matrix,
     f1_score,
     log_loss,
     mean_absolute_error,
@@ -124,6 +127,28 @@ def _fingerprint(features: np.ndarray, target: Sequence[float | str]) -> str:
         allow_nan=False,
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+
+def _class_metric_slug(value: object, index: int, used: set[str]) -> str:
+    """Generate a stable, collision-safe metric suffix for a class label."""
+    base = re.sub(r"[^a-z0-9]+", "_", str(value).strip().lower()).strip("_")
+    base = base or f"class_{index}"
+    candidate = base
+    suffix = 0
+    while candidate in used:
+        suffix += 1
+        candidate = f"{base}_{index}_{suffix}"
+    used.add(candidate)
+    return candidate
+
+
+def _relative_error_skill(model_error: float, baseline_error: float) -> float:
+    """Return relative error reduction versus a baseline, handling zero safely."""
+    epsilon = np.finfo(np.float64).eps
+    if baseline_error <= epsilon:
+        return 0.0 if model_error <= epsilon else -1.0
+    return float(1.0 - model_error / baseline_error)
 
 
 def _select_gradient_boosting_iterations(
@@ -374,25 +399,172 @@ class ClassicalMLModel:
         if self.config.task == "regression":
             predicted_numeric = predictions.astype(np.float64)
             actual_numeric = y_test.astype(np.float64)
+
             if not np.all(np.isfinite(predicted_numeric)):
                 raise MLTrainingError("model produced non-finite regression predictions")
+
+            training_mean = float(np.mean(y_train.astype(np.float64)))
+            baseline_predictions = np.full(
+                actual_numeric.shape,
+                training_mean,
+                dtype=np.float64,
+            )
+
             mse = float(mean_squared_error(actual_numeric, predicted_numeric))
+            model_mae = float(mean_absolute_error(actual_numeric, predicted_numeric))
+            model_rmse = math.sqrt(max(0.0, mse))
+            baseline_mae = float(
+                mean_absolute_error(actual_numeric, baseline_predictions)
+            )
+            baseline_mse = float(
+                mean_squared_error(actual_numeric, baseline_predictions)
+            )
+            baseline_rmse = math.sqrt(max(0.0, baseline_mse))
+
             metrics = {
-                "mae": float(mean_absolute_error(actual_numeric, predicted_numeric)),
-                "rmse": math.sqrt(max(0.0, mse)),
+                "mae": model_mae,
+                "rmse": model_rmse,
                 "r2": float(r2_score(actual_numeric, predicted_numeric)),
+                "training_mean_baseline": training_mean,
+                "baseline_mae": baseline_mae,
+                "baseline_rmse": baseline_rmse,
+                "baseline_r2": float(
+                    r2_score(actual_numeric, baseline_predictions)
+                ),
+                "mae_skill_vs_baseline": _relative_error_skill(
+                    model_mae, baseline_mae
+                ),
+                "rmse_skill_vs_baseline": _relative_error_skill(
+                    model_rmse, baseline_rmse
+                ),
             }
+
+            evaluation_parameters = {
+                "training_mean_baseline": training_mean,
+            }
+
         else:
+            # Include train and test labels to make temporal class drift visible.
+            classes = np.unique(np.concatenate((y_train, y_test)))
+            class_counts, class_frequencies = np.unique(
+                y_train, return_counts=True
+            )
+            majority_class = class_counts[int(np.argmax(class_frequencies))]
+
+            majority_predictions = np.full(
+                y_test.shape,
+                majority_class,
+                dtype=classes.dtype,
+            )
+
+            model_accuracy = float(accuracy_score(y_test, predictions))
+            majority_accuracy = float(
+                accuracy_score(y_test, majority_predictions)
+            )
+
+            class_precision = precision_score(
+                y_test,
+                predictions,
+                labels=classes,
+                average=None,
+                zero_division=0,
+            )
+            class_recall = recall_score(
+                y_test,
+                predictions,
+                labels=classes,
+                average=None,
+                zero_division=0,
+            )
+            class_f1 = f1_score(
+                y_test,
+                predictions,
+                labels=classes,
+                average=None,
+                zero_division=0,
+            )
+
+            matrix = confusion_matrix(
+                y_test,
+                predictions,
+                labels=classes,
+            )
+
+            unique_predictions = int(np.unique(predictions).size)
+
             metrics = {
-                "accuracy": float(accuracy_score(y_test, predictions)),
+                "accuracy": model_accuracy,
                 "precision_macro": float(
-                    precision_score(y_test, predictions, average="macro", zero_division=0)
+                    precision_score(
+                        y_test, predictions,
+                        average="macro", zero_division=0
+                    )
                 ),
                 "recall_macro": float(
-                    recall_score(y_test, predictions, average="macro", zero_division=0)
+                    recall_score(
+                        y_test, predictions,
+                        average="macro", zero_division=0
+                    )
                 ),
-                "f1_macro": float(f1_score(y_test, predictions, average="macro", zero_division=0)),
+                "f1_macro": float(
+                    f1_score(
+                        y_test, predictions,
+                        average="macro", zero_division=0
+                    )
+                ),
+                "balanced_accuracy": float(
+                    balanced_accuracy_score(y_test, predictions)
+                ),
+                "majority_baseline_accuracy": majority_accuracy,
+                "accuracy_delta_vs_majority": model_accuracy - majority_accuracy,
+                "prediction_unique_classes": float(unique_predictions),
+                "prediction_collapse": float(unique_predictions == 1),
             }
+
+            used_slugs = set()
+            class_slugs = [
+                _class_metric_slug(label, index, used_slugs)
+                for index, label in enumerate(classes)
+            ]
+
+            for index, slug in enumerate(class_slugs):
+                support = int(matrix[index, :].sum())
+                predicted_count = int(matrix[:, index].sum())
+
+                metrics[f"class_{slug}_precision"] = float(
+                    class_precision[index]
+                )
+                metrics[f"class_{slug}_recall"] = float(
+                    class_recall[index]
+                )
+                metrics[f"class_{slug}_f1"] = float(class_f1[index])
+                metrics[f"class_{slug}_support"] = float(support)
+                metrics[f"class_{slug}_predicted_count"] = float(
+                    predicted_count
+                )
+                metrics[f"predicted_share_{slug}"] = float(
+                    predicted_count / len(y_test)
+                )
+
+            for actual_index, actual_slug in enumerate(class_slugs):
+                for predicted_index, predicted_slug in enumerate(class_slugs):
+                    key = (
+                        f"confusion_actual_{actual_slug}_"
+                        f"predicted_{predicted_slug}"
+                    )
+                    metrics[key] = float(
+                        matrix[actual_index, predicted_index]
+                    )
+
+            evaluation_parameters = {
+                "evaluation_class_labels": __import__("json").dumps(
+                    [str(label) for label in classes],
+                    ensure_ascii=False,
+                ),
+                "majority_baseline_class": str(majority_class),
+                "prediction_collapse": unique_predictions == 1,
+            }
+
         if any(not math.isfinite(value) for value in metrics.values()):
             raise MLTrainingError("model evaluation produced non-finite metrics")
 
@@ -415,6 +587,7 @@ class ClassicalMLModel:
         }
         resolved_parameters["random_seed"] = self.config.random_seed
         resolved_parameters.update(boosting_details)
+        resolved_parameters.update(evaluation_parameters)
 
         self._pipeline = pipeline
         self.metadata = MLModelMetadata(
