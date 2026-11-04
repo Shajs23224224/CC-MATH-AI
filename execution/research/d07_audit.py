@@ -524,6 +524,24 @@ def audit_decision_policy_run(
                 and calibration_samples >= 2,
                 f"{algorithm} fold {fold_row.fold} has invalid calibration boundaries",
             )
+            target_labels = frame["target_execution_direction"].astype(str).to_numpy()
+            _require(
+                set(target_labels[train_start:train_end].tolist()) == set(EXPECTED_CLASSES),
+                f"{algorithm} fold {fold_row.fold} training prefix omits a class",
+            )
+            _require(
+                set(target_labels[calibration_start:calibration_end].tolist())
+                == set(EXPECTED_CLASSES),
+                f"{algorithm} fold {fold_row.fold} calibration suffix omits a class",
+            )
+            _require(
+                set(target_labels[test_start:test_end].tolist()) == set(EXPECTED_CLASSES),
+                f"{algorithm} fold {fold_row.fold} outer test omits a class",
+            )
+            _require(
+                str(fold_row.threshold_objective) == "macro_f1",
+                f"{algorithm} fold {fold_row.fold} threshold objective mismatch",
+            )
             _require(
                 int(fold_row.training_samples) == train_end - train_start
                 and int(fold_row.test_samples) == test_end - test_start,
