@@ -117,9 +117,7 @@ def _verify_source_artifact(
     expected_hash = artifact.get("sha256")
     if expected_name != path.name:
         raise ValueError(f"{artifact_key} filename does not match source manifest")
-    if not isinstance(expected_hash, str) or not re.fullmatch(
-        r"[0-9a-f]{64}", expected_hash
-    ):
+    if not isinstance(expected_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
         raise ValueError(f"{artifact_key} SHA-256 is missing or malformed")
 
     actual_hash = _sha256_file(path)
@@ -153,10 +151,14 @@ def _numeric_matrix(
     columns: list[str],
     description: str,
 ) -> np.ndarray:
-    values = frame.loc[:, columns].apply(
-        pd.to_numeric,
-        errors="coerce",
-    ).to_numpy(dtype=np.float64)
+    values = (
+        frame.loc[:, columns]
+        .apply(
+            pd.to_numeric,
+            errors="coerce",
+        )
+        .to_numpy(dtype=np.float64)
+    )
     if not np.all(np.isfinite(values)):
         raise ValueError(f"{description} contains non-finite or non-numeric values")
     return values
@@ -358,14 +360,8 @@ def build_execution_dataset(
     manifest_path = run_dir / "execution_dataset_manifest.json"
     _write_csv_atomic(output, dataset_path)
 
-    class_counts = {
-        label: int(np.sum(labels == label))
-        for label in EXPECTED_CLASSES
-    }
-    class_shares = {
-        label: count / len(labels)
-        for label, count in class_counts.items()
-    }
+    class_counts = {label: int(np.sum(labels == label)) for label in EXPECTED_CLASSES}
+    class_shares = {label: count / len(labels) for label, count in class_counts.items()}
 
     manifest = {
         "schema_version": "1.0",
@@ -401,8 +397,7 @@ def build_execution_dataset(
             "name": "target_execution_return",
             "classification_name": "target_execution_direction",
             "label_rule": (
-                "UP if return > threshold; DOWN if return < -threshold; "
-                "NEUTRAL otherwise"
+                "UP if return > threshold; DOWN if return < -threshold; NEUTRAL otherwise"
             ),
             "classes": list(EXPECTED_CLASSES),
             "threshold_units": "basis_points",
