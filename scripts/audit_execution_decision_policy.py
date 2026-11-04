@@ -560,7 +560,9 @@ def audit_decision_policy_run(
     }
     missing_prediction_columns = required_prediction_columns - set(predictions.columns)
     if missing_prediction_columns:
-        raise ValueError(f"D06 oos_predictions.csv missing columns: {sorted(missing_prediction_columns)}")
+        raise ValueError(
+            f"D06 oos_predictions.csv missing columns: {sorted(missing_prediction_columns)}"
+        )
 
     expected_model_folds = len(algorithms) * fold_count
     _record_check(
