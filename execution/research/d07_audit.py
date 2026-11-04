@@ -32,6 +32,7 @@ from scripts.run_execution_ml_walk_forward import (
     EXPECTED_CLASSES,
     load_execution_dataset,
 )
+from scripts.run_ml_walk_forward import build_expanding_folds
 
 _D06_OUTPUTS = (
     "fold_metrics.csv",
@@ -388,10 +389,59 @@ def audit_decision_policy_run(
         d06_manifest.get("configuration", {}).get("algorithms") == list(algorithms),
         "D06 manifest algorithms differ from its summary",
     )
+    configuration = d06_manifest.get("configuration")
+    _require(isinstance(configuration, dict), "D06 manifest configuration is missing")
     _require(
-        d06_manifest.get("configuration", {}).get("fold_count") == fold_count,
+        configuration.get("algorithms") == list(algorithms),
+        "D06 manifest algorithms differ from its summary",
+    )
+    _require(
+        configuration.get("fold_count") == fold_count,
         "D06 manifest fold count differs from its summary",
     )
+    test_fraction = configuration.get("test_fraction")
+    _require(
+        isinstance(test_fraction, (int, float))
+        and not isinstance(test_fraction, bool)
+        and np.isfinite(float(test_fraction))
+        and 0.0 < float(test_fraction) < 0.5,
+        "D06 manifest test_fraction is invalid",
+    )
+    threshold_grid_raw = configuration.get("threshold_grid")
+    _require(
+        isinstance(threshold_grid_raw, list) and bool(threshold_grid_raw),
+        "D06 manifest threshold_grid is missing",
+    )
+    threshold_grid = np.asarray(threshold_grid_raw, dtype=np.float64)
+    _require(
+        np.all(np.isfinite(threshold_grid))
+        and np.all((threshold_grid >= 0.0) & (threshold_grid <= 1.0))
+        and len(np.unique(threshold_grid)) == len(threshold_grid),
+        "D06 manifest threshold_grid is invalid",
+    )
+    calibration_fraction = d06_summary.get("calibration_fraction")
+    _require(
+        isinstance(calibration_fraction, (int, float))
+        and not isinstance(calibration_fraction, bool)
+        and np.isfinite(float(calibration_fraction))
+        and 0.05 < float(calibration_fraction) < 0.5,
+        "D06 calibration_fraction is invalid",
+    )
+    _require(
+        np.isclose(
+            float(configuration.get("calibration_fraction", np.nan)),
+            float(calibration_fraction),
+            rtol=0.0,
+            atol=1e-12,
+        ),
+        "D06 manifest and summary calibration_fraction differ",
+    )
+    expected_folds = build_expanding_folds(
+        len(frame),
+        n_folds=fold_count,
+        test_fraction=float(test_fraction),
+    )
+    expected_fold_map = {fold.fold: fold for fold in expected_folds}
 
     folds = pd.read_csv(policy_run_dir / "fold_metrics.csv")
     aggregates = pd.read_csv(policy_run_dir / "aggregate_metrics.csv")
@@ -553,6 +603,17 @@ def audit_decision_policy_run(
                 str(fold_row.threshold_objective) == "macro_f1",
                 f"{algorithm} fold {fold_row.fold} threshold objective mismatch",
             )
+            expected_fold = expected_fold_map[int(fold_row.fold)]
+            _require(
+                (train_start, train_end, test_start, test_end)
+                == (
+                    expected_fold.train_start,
+                    expected_fold.train_end,
+                    expected_fold.test_start,
+                    expected_fold.test_end,
+                ),
+                f"{algorithm} fold {fold_row.fold} differs from D06 expanding-fold configuration",
+            )
             _require(
                 int(fold_row.training_samples) == train_end - train_start
                 and int(fold_row.test_samples) == test_end - test_start,
@@ -616,8 +677,10 @@ def audit_decision_policy_run(
             )
             threshold = float(fold_row.selected_neutral_threshold)
             _require(
-                np.isfinite(threshold) and 0.0 <= threshold <= 1.0,
-                f"{algorithm} fold {fold_row.fold} neutral threshold is invalid",
+                np.isfinite(threshold)
+                and 0.0 <= threshold <= 1.0
+                and np.any(np.isclose(threshold_grid, threshold, rtol=0.0, atol=1e-12)),
+                f"{algorithm} fold {fold_row.fold} neutral threshold is invalid or outside D06 grid",
             )
             _require(
                 np.allclose(
