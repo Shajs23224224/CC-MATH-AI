@@ -155,7 +155,10 @@ def _verify_audit_directory(
         or checks_passed != checks_total
         or not isinstance(audit_checks, list)
         or len(audit_checks) != checks_total
-        or any(not isinstance(item, dict) or item.get("passed") is not True for item in audit_checks)
+        or any(
+            not isinstance(item, dict) or item.get("passed") is not True
+            for item in audit_checks
+        )
     ):
         raise ValueError("D07.1 audit contains failed or incomplete checks")
 
@@ -767,7 +770,10 @@ def simulate_execution_decisions(
             "Market impact, taxes, borrow fees, rebates, funding and margin rules are not modeled.",
             "Short positions can lose more than their notional; equity can become negative.",
             "The fixed-notional model does not compound or reinvest profits.",
-            "The historical OOS folds were already inspected in prior phases; they are not an untouched prospective test.",
+            (
+                "The historical OOS folds were already inspected in prior phases; "
+                "they are not an untouched prospective test."
+            ),
             "Results do not establish future profitability or suitability for capital deployment.",
         ],
         "outputs": {
