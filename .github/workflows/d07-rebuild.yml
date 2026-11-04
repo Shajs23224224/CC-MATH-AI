@@ -4,12 +4,12 @@ on:
   push:
     branches:
       - feature/cc-math-ai-d07-rebuild
-  pull_request:
-    branches:
-      - feature/cc-math-ai-d01-d06
-
 permissions:
   contents: read
+
+concurrency:
+  group: d07-rebuild-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   d07-quality:
