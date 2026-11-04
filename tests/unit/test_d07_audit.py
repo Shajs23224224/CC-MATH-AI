@@ -64,7 +64,10 @@ def test_audit_rejects_d06_file_tampering_before_reconciliation(tmp_path):
     with artifacts["predictions_path"].open("a", encoding="utf-8") as stream:
         stream.write("\n")
 
-    with pytest.raises(ValueError, match="byte-count verification failed|SHA-256 verification failed"):
+    with pytest.raises(
+        ValueError,
+        match="byte-count verification failed|SHA-256 verification failed",
+    ):
         audit_decision_policy_run(
             artifacts["policy_dir"],
             artifacts["dataset_path"],
