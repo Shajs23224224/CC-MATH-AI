@@ -357,12 +357,19 @@ def audit_decision_policy_run(
         raise FileNotFoundError("D06 decision_policy_manifest.json not found")
     policy_manifest = _read_json(policy_manifest_path)
 
+    output_entries = policy_manifest.get("outputs")
+    if not isinstance(output_entries, dict):
+        raise ValueError("D06 manifest outputs must be an object")
+
     for filename in _REQUIRED_D06_OUTPUTS:
         artifact_path = policy_run_dir / filename
         if not artifact_path.is_file():
             raise FileNotFoundError(f"D06 output is missing: {filename}")
-        expected = policy_manifest.get("outputs", {}).get(filename, {}).get(
-            "sha256"
+        output_entry = output_entries.get(filename)
+        expected = (
+            output_entry.get("sha256")
+            if isinstance(output_entry, dict)
+            else None
         )
         actual_hash = _sha256_file(artifact_path)
         _record_check(
@@ -372,7 +379,11 @@ def audit_decision_policy_run(
             f"expected={expected}; actual={actual_hash}",
         )
 
-        expected_bytes = policy_manifest["outputs"][filename].get("bytes")
+        expected_bytes = (
+            output_entry.get("bytes")
+            if isinstance(output_entry, dict)
+            else None
+        )
         if expected_bytes is not None:
             _record_check(
                 checks,
@@ -687,6 +698,7 @@ def audit_decision_policy_run(
 
     threshold_lookup: dict[tuple[str, int], float] = {}
     fold_audit_rows: list[dict[str, Any]] = []
+    audited_frames: list[pd.DataFrame] = []
     for _, fold_row in fold_metrics.iterrows():
         algorithm = str(fold_row["algorithm"])
         fold_number = int(fold_row["fold"])
@@ -829,11 +841,6 @@ def audit_decision_policy_run(
         enriched["argmax_correct"] = expected_argmax == actual
         enriched["policy_correct"] = expected_policy == actual
 
-        class_to_column = {
-            "DOWN": "probability_down",
-            "NEUTRAL": "probability_neutral",
-            "UP": "probability_up",
-        }
         argmax_probability = np.asarray(
             [
                 probabilities[index, EXPECTED_CLASSES.index(label)]
@@ -859,8 +866,6 @@ def audit_decision_policy_run(
             probabilities[index, EXPECTED_CLASSES.index(label)]
             for index, label in enumerate(expected_policy)
         ]
-        del class_to_column
-
         fold_record = {
             "algorithm": algorithm,
             "fold": fold_number,
@@ -883,10 +888,7 @@ def audit_decision_policy_run(
         )
         fold_audit_rows.append(fold_record)
 
-        selected_predictions = enriched
-        if "audited_frames" not in locals():
-            audited_frames: list[pd.DataFrame] = []
-        audited_frames.append(selected_predictions)
+        audited_frames.append(enriched)
 
     expected_folds = set(range(1, fold_count + 1))
     for algorithm in algorithms:
@@ -989,6 +991,8 @@ def audit_decision_policy_run(
         "outputs": {
             "predictions": "audited_predictions.csv",
             "fold_metrics": "fold_audit.csv",
+            "summary": "audit_summary.json",
+            "manifest": "audit_manifest.json",
         },
     }
 
@@ -1030,8 +1034,6 @@ def audit_decision_policy_run(
     }
     _write_json(audit_dir / "audit_manifest.json", output_manifest)
 
-    summary["outputs"]["summary"] = summary_path.name
-    summary["outputs"]["manifest"] = "audit_manifest.json"
     return summary
 
 
