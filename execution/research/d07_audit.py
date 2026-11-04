@@ -299,13 +299,13 @@ def _verify_aggregate_metrics(
     aggregates: pd.DataFrame,
     algorithms: tuple[str, ...],
 ) -> int:
-    required = {"algorithm", "metric", "successful_folds", "mean", "std", "min", "max"}
+    required = {"task", "algorithm", "metric", "successful_folds", "mean", "std", "min", "max"}
     _require(required.issubset(aggregates.columns), "D06 aggregate metrics schema is incomplete")
     _require(
         not aggregates.duplicated(["algorithm", "metric"]).any(),
         "D06 aggregate metrics contain duplicate algorithm/metric keys",
     )
-    expected_rows: set[tuple[str, str]] = set()
+    expected_rows: set[tuple[str, str, str]] = set()
     verified = 0
     for algorithm in algorithms:
         group = folds.loc[folds["algorithm"].astype(str) == algorithm]
@@ -318,7 +318,7 @@ def _verify_aggregate_metrics(
             and group[column].notna().all()
         ]
         for metric in numeric_columns:
-            expected_rows.add((algorithm, metric))
+            expected_rows.add(("classification", algorithm, metric))
             selected = aggregates.loc[
                 (aggregates["algorithm"].astype(str) == algorithm)
                 & (aggregates["metric"].astype(str) == metric)
@@ -326,6 +326,10 @@ def _verify_aggregate_metrics(
             _require(len(selected) == 1, f"D06 aggregate row missing: {algorithm}/{metric}")
             values = pd.to_numeric(group[metric], errors="raise").to_numpy(dtype=np.float64)
             row = selected.iloc[0]
+            _require(
+                str(row["task"]) == "classification",
+                "aggregate task must be classification",
+            )
             _require(int(row["successful_folds"]) == len(values), "aggregate fold count mismatch")
             expected = {
                 "mean": float(np.mean(values)),
@@ -337,7 +341,8 @@ def _verify_aggregate_metrics(
                 _close(row[name], value, f"aggregate {algorithm}/{metric}/{name}")
             verified += 1
     observed_rows = {
-        (str(row.algorithm), str(row.metric)) for row in aggregates.itertuples(index=False)
+        (str(row.task), str(row.algorithm), str(row.metric))
+        for row in aggregates.itertuples(index=False)
     }
     _require(
         observed_rows == expected_rows,
