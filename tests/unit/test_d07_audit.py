@@ -47,7 +47,8 @@ def test_audit_reconciles_d06_predictions_with_d04_and_writes_manifest(tmp_path)
     }.issubset(audited.columns)
     assert audited.loc[0, "argmax_prediction"] == "DOWN"
     assert audited.loc[0, "policy_prediction"] == "NEUTRAL"
-    assert audited.loc[0, "actual_execution_return"] == pytest.approx(-0.02)
+    assert audited.loc[0, "row_index"] == 12
+    assert audited.loc[0, "actual_execution_return"] == pytest.approx(-0.012)
 
     manifest = json.loads((audit_dir / "audit_manifest.json").read_text(encoding="utf-8"))
     for filename, entry in manifest["outputs"].items():
@@ -146,6 +147,21 @@ def test_audit_recomputes_aggregate_metrics(tmp_path):
     _refresh_d06_manifest(artifacts["policy_dir"], "aggregate_metrics.csv")
 
     with pytest.raises(ValueError, match="aggregate .* mismatch"):
+        audit_decision_policy_run(
+            artifacts["policy_dir"],
+            artifacts["dataset_path"],
+            output_root=tmp_path / "audits",
+        )
+
+
+def test_audit_reconstructs_d06_fold_geometry_from_manifest(tmp_path):
+    artifacts = build_d04_d06_artifacts(tmp_path)
+    manifest_path = artifacts["policy_dir"] / "decision_policy_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["configuration"]["test_fraction"] = 0.30
+    _write_json(manifest_path, manifest)
+
+    with pytest.raises(ValueError, match="differs from D06 expanding-fold configuration"):
         audit_decision_policy_run(
             artifacts["policy_dir"],
             artifacts["dataset_path"],
