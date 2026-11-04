@@ -103,8 +103,7 @@ def build_d04_d06_artifacts(root: Path) -> dict[str, Path]:
             "name": "target_execution_return",
             "classification_name": "target_execution_direction",
             "label_rule": (
-                "UP if return > threshold; DOWN if return < -threshold; "
-                "NEUTRAL otherwise"
+                "UP if return > threshold; DOWN if return < -threshold; NEUTRAL otherwise"
             ),
             "classes": ["DOWN", "NEUTRAL", "UP"],
         },

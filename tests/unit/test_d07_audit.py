@@ -261,9 +261,7 @@ def test_audit_rejects_entry_date_not_next_observed_session(tmp_path):
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     summary["snapshot_sha256"] = _sha256(dataset_path)
     _write_json(summary_path, summary)
-    policy_manifest["outputs"]["decision_policy_summary.json"] = _manifest_entry(
-        summary_path
-    )
+    policy_manifest["outputs"]["decision_policy_summary.json"] = _manifest_entry(summary_path)
     _write_json(policy_manifest_path, policy_manifest)
 
     with pytest.raises(ValueError, match="next observed feature session"):
