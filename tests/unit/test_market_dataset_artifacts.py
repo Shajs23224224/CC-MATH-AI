@@ -101,6 +101,7 @@ def test_shared_artifacts_are_round_trip_safe_and_consumable_by_d04(tmp_path):
         snapshot_path,
         output_root=tmp_path / "execution",
     )
+    output_path = Path(result["output_directory"]) / "execution_dataset.csv"
     assert result["status"] == "COMPLETED"
     assert result["rows"] == len(rows)
     assert result["readiness_status"] == "READY"
