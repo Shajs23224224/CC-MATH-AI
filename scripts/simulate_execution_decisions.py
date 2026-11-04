@@ -149,7 +149,14 @@ def _verify_audit_directory(
 
     checks_passed = int(summary.get("checks_passed", -1))
     checks_total = int(summary.get("checks_total", -1))
-    if checks_passed < 1 or checks_passed != checks_total:
+    audit_checks = summary.get("checks")
+    if (
+        checks_passed < 1
+        or checks_passed != checks_total
+        or not isinstance(audit_checks, list)
+        or len(audit_checks) != checks_total
+        or any(not isinstance(item, dict) or item.get("passed") is not True for item in audit_checks)
+    ):
         raise ValueError("D07.1 audit contains failed or incomplete checks")
 
     input_manifest = manifest.get("input")
