@@ -34,7 +34,7 @@ jobs:
         run: python -m pip install --upgrade pip setuptools wheel
 
       - name: Install project and development dependencies
-        run: python -m pip install -e ".[dev]"
+        run: python -m pip install -e ".[dev,dashboard]"
 
       - name: Ruff lint
         run: >-
@@ -49,6 +49,8 @@ jobs:
           tests/unit/test_audit_execution_decision_policy.py
 
       - name: D04-D06 and D07.1 regression tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: >-
           pytest -q
           tests/unit/test_audit_execution_decision_policy.py
