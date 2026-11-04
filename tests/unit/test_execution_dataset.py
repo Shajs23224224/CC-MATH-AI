@@ -41,9 +41,7 @@ def create_source(tmp_path, closes=None):
     )
     snapshot.index.name = "date"
     snapshot["target_next_return"] = (
-        raw["close"].shift(-1).iloc[:-1].to_numpy()
-        / raw["close"].iloc[:-1].to_numpy()
-        - 1.0
+        raw["close"].shift(-1).iloc[:-1].to_numpy() / raw["close"].iloc[:-1].to_numpy() - 1.0
     )
     snapshot["target_next_direction"] = np.where(
         snapshot["target_next_return"] > 0.0,
@@ -107,9 +105,7 @@ def test_execution_target_uses_next_observed_session_open_and_close(tmp_path):
         "NEUTRAL",
     ]
     assert output["entry_open"].tolist() == pytest.approx([100.0] * 5)
-    assert output["exit_close"].tolist() == pytest.approx(
-        [100.3, 99.7, 100.0, 100.05, 100.0]
-    )
+    assert output["exit_close"].tolist() == pytest.approx([100.3, 99.7, 100.0, 100.05, 100.0])
     assert output["target_execution_return"].iloc[0] == pytest.approx(0.003)
     assert output["target_execution_return"].iloc[1] == pytest.approx(-0.003)
     assert result["direction_distribution"] == {
