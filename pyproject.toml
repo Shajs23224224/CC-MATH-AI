@@ -22,6 +22,7 @@ dependencies = [
 [project.optional-dependencies]
 dashboard = [
   "uvicorn>=0.30,<1",
+  "yfinance>=0.2,<2",
 ]
 deep-learning = [
   "torch>=2.4,<3",
