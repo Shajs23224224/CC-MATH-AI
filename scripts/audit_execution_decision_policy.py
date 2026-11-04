@@ -121,9 +121,7 @@ def _classification_metrics(
 
     metrics = {
         f"{prefix}_accuracy": float(accuracy_score(y_true, y_pred)),
-        f"{prefix}_balanced_accuracy": float(
-            balanced_accuracy_score(y_true, y_pred)
-        ),
+        f"{prefix}_balanced_accuracy": float(balanced_accuracy_score(y_true, y_pred)),
         f"{prefix}_macro_f1": float(
             f1_score(
                 y_true,
@@ -143,18 +141,13 @@ def _classification_metrics(
         metrics[f"{prefix}_{label.lower()}_recall"] = float(recall[index])
         metrics[f"{prefix}_{label.lower()}_f1"] = float(f1[index])
         metrics[f"{prefix}_{label.lower()}_support"] = float(support[index])
-        metrics[f"{prefix}_{label.lower()}_predicted_count"] = float(
-            predicted_count
-        )
-        metrics[f"{prefix}_{label.lower()}_predicted_share"] = float(
-            predicted_count / len(y_true)
-        )
+        metrics[f"{prefix}_{label.lower()}_predicted_count"] = float(predicted_count)
+        metrics[f"{prefix}_{label.lower()}_predicted_share"] = float(predicted_count / len(y_true))
 
     for actual_index, actual_label in enumerate(EXPECTED_CLASSES):
         for predicted_index, predicted_label in enumerate(EXPECTED_CLASSES):
             metrics[
-                f"{prefix}_confusion_{actual_label.lower()}_"
-                f"predicted_{predicted_label.lower()}"
+                f"{prefix}_confusion_{actual_label.lower()}_predicted_{predicted_label.lower()}"
             ] = float(matrix[actual_index, predicted_index])
 
     return metrics
@@ -200,9 +193,7 @@ def _check_metric_record(
 ) -> None:
     for name, expected in computed.items():
         if name not in stored.index:
-            raise ValueError(
-                f"fold metrics missing {name} for {algorithm} fold {fold}"
-            )
+            raise ValueError(f"fold metrics missing {name} for {algorithm} fold {fold}")
         observed = float(stored[name])
         if not math.isclose(
             observed,
@@ -225,14 +216,10 @@ def _validate_aggregate_metrics(
     required = {"algorithm", "metric", "successful_folds", "mean"}
     missing = required - set(aggregate_metrics.columns)
     if missing:
-        raise ValueError(
-            f"aggregate_metrics.csv is missing columns: {sorted(missing)}"
-        )
+        raise ValueError(f"aggregate_metrics.csv is missing columns: {sorted(missing)}")
 
     for algorithm in algorithms:
-        selected_folds = fold_metrics.loc[
-            fold_metrics["algorithm"] == algorithm
-        ]
+        selected_folds = fold_metrics.loc[fold_metrics["algorithm"] == algorithm]
         if len(selected_folds) != fold_count:
             raise ValueError(f"unexpected fold count for {algorithm}")
 
@@ -246,16 +233,14 @@ def _validate_aggregate_metrics(
             ]
             if len(rows) != 1:
                 raise ValueError(
-                    f"aggregate metric {metric_name} is missing or duplicated "
-                    f"for {algorithm}"
+                    f"aggregate metric {metric_name} is missing or duplicated for {algorithm}"
                 )
 
             row = rows.iloc[0]
             expected_mean = float(selected_folds[metric_name].astype(float).mean())
             if int(row["successful_folds"]) != fold_count:
                 raise ValueError(
-                    f"aggregate successful_folds mismatch for {algorithm} "
-                    f"{metric_name}"
+                    f"aggregate successful_folds mismatch for {algorithm} {metric_name}"
                 )
             if not math.isclose(
                 float(row["mean"]),
@@ -263,9 +248,7 @@ def _validate_aggregate_metrics(
                 rel_tol=1e-8,
                 abs_tol=1e-10,
             ):
-                raise ValueError(
-                    f"aggregate mean mismatch for {algorithm} {metric_name}"
-                )
+                raise ValueError(f"aggregate mean mismatch for {algorithm} {metric_name}")
 
 
 def _build_algorithm_summary(
@@ -282,9 +265,7 @@ def _build_algorithm_summary(
     return {
         "algorithm": algorithm,
         "oos_rows": len(predictions),
-        "actual_class_counts": {
-            label: int(np.sum(actual == label)) for label in EXPECTED_CLASSES
-        },
+        "actual_class_counts": {label: int(np.sum(actual == label)) for label in EXPECTED_CLASSES},
         "argmax_prediction_counts": {
             label: int(np.sum(argmax == label)) for label in EXPECTED_CLASSES
         },
@@ -299,9 +280,7 @@ def _build_algorithm_summary(
         "policy_macro_f1": policy_metrics["policy_macro_f1"],
         "policy_neutral_precision": policy_metrics["policy_neutral_precision"],
         "policy_neutral_recall": policy_metrics["policy_neutral_recall"],
-        "mean_selected_neutral_threshold": float(
-            predictions["selected_neutral_threshold"].mean()
-        ),
+        "mean_selected_neutral_threshold": float(predictions["selected_neutral_threshold"].mean()),
     }
 
 
@@ -366,11 +345,7 @@ def audit_decision_policy_run(
         if not artifact_path.is_file():
             raise FileNotFoundError(f"D06 output is missing: {filename}")
         output_entry = output_entries.get(filename)
-        expected = (
-            output_entry.get("sha256")
-            if isinstance(output_entry, dict)
-            else None
-        )
+        expected = output_entry.get("sha256") if isinstance(output_entry, dict) else None
         actual_hash = _sha256_file(artifact_path)
         _record_check(
             checks,
@@ -379,11 +354,7 @@ def audit_decision_policy_run(
             f"expected={expected}; actual={actual_hash}",
         )
 
-        expected_bytes = (
-            output_entry.get("bytes")
-            if isinstance(output_entry, dict)
-            else None
-        )
+        expected_bytes = output_entry.get("bytes") if isinstance(output_entry, dict) else None
         if expected_bytes is not None:
             _record_check(
                 checks,
@@ -435,9 +406,7 @@ def audit_decision_policy_run(
     if dataset_frame.index.isna().any():
         raise ValueError("D04 dataset contains invalid feature dates")
 
-    missing_dataset_columns = set(_REQUIRED_DATASET_COLUMNS) - set(
-        dataset_frame.columns
-    )
+    missing_dataset_columns = set(_REQUIRED_DATASET_COLUMNS) - set(dataset_frame.columns)
     if missing_dataset_columns:
         raise ValueError(
             f"D04 dataset missing execution audit columns: "
@@ -452,12 +421,12 @@ def audit_decision_policy_run(
         f"D04 ticker={ticker}; D06 ticker={d06_summary.get('ticker')}",
     )
 
-    entry_open = pd.to_numeric(
-        dataset_frame["entry_open"], errors="coerce"
-    ).to_numpy(dtype=np.float64)
-    exit_close = pd.to_numeric(
-        dataset_frame["exit_close"], errors="coerce"
-    ).to_numpy(dtype=np.float64)
+    entry_open = pd.to_numeric(dataset_frame["entry_open"], errors="coerce").to_numpy(
+        dtype=np.float64
+    )
+    exit_close = pd.to_numeric(dataset_frame["exit_close"], errors="coerce").to_numpy(
+        dtype=np.float64
+    )
     execution_return = pd.to_numeric(
         dataset_frame["target_execution_return"], errors="coerce"
     ).to_numpy(dtype=np.float64)
@@ -499,9 +468,7 @@ def audit_decision_policy_run(
             "NEUTRAL",
         ),
     )
-    observed_dataset_labels = dataset_frame[
-        "target_execution_direction"
-    ].astype(str).to_numpy()
+    observed_dataset_labels = dataset_frame["target_execution_direction"].astype(str).to_numpy()
     _record_check(
         checks,
         "execution_target_label_rule",
@@ -576,9 +543,7 @@ def audit_decision_policy_run(
     }
     missing_fold_columns = required_fold_columns - set(fold_metrics.columns)
     if missing_fold_columns:
-        raise ValueError(
-            f"D06 fold_metrics.csv missing columns: {sorted(missing_fold_columns)}"
-        )
+        raise ValueError(f"D06 fold_metrics.csv missing columns: {sorted(missing_fold_columns)}")
 
     required_prediction_columns = {
         "fold",
@@ -593,14 +558,9 @@ def audit_decision_policy_run(
         "probability_neutral",
         "probability_up",
     }
-    missing_prediction_columns = required_prediction_columns - set(
-        predictions.columns
-    )
+    missing_prediction_columns = required_prediction_columns - set(predictions.columns)
     if missing_prediction_columns:
-        raise ValueError(
-            f"D06 oos_predictions.csv missing columns: "
-            f"{sorted(missing_prediction_columns)}"
-        )
+        raise ValueError(f"D06 oos_predictions.csv missing columns: {sorted(missing_prediction_columns)}")
 
     expected_model_folds = len(algorithms) * fold_count
     _record_check(
@@ -608,10 +568,8 @@ def audit_decision_policy_run(
         "completed_model_fold_count",
         len(fold_metrics) == expected_model_folds
         and set(fold_metrics["status"].astype(str)) == {"COMPLETED"}
-        and int(d06_summary.get("attempted_model_folds", -1))
-        == expected_model_folds
-        and int(d06_summary.get("completed_model_folds", -1))
-        == expected_model_folds,
+        and int(d06_summary.get("attempted_model_folds", -1)) == expected_model_folds
+        and int(d06_summary.get("completed_model_folds", -1)) == expected_model_folds,
         f"expected={expected_model_folds}; observed={len(fold_metrics)}",
     )
     _record_check(
@@ -638,17 +596,11 @@ def audit_decision_policy_run(
         "calibration_end_index",
         "calibration_samples",
     ):
-        fold_metrics[column] = pd.to_numeric(
-            fold_metrics[column], errors="raise"
-        ).astype(int)
+        fold_metrics[column] = pd.to_numeric(fold_metrics[column], errors="raise").astype(int)
 
     for column in ("fold", "row_index"):
-        numeric = pd.to_numeric(predictions[column], errors="raise").to_numpy(
-            dtype=np.float64
-        )
-        if not np.all(np.isfinite(numeric)) or not np.all(
-            np.equal(numeric, np.floor(numeric))
-        ):
+        numeric = pd.to_numeric(predictions[column], errors="raise").to_numpy(dtype=np.float64)
+        if not np.all(np.isfinite(numeric)) or not np.all(np.equal(numeric, np.floor(numeric))):
             raise ValueError(f"D06 predictions contains invalid {column}")
         predictions[column] = numeric.astype(np.int64)
 
@@ -668,12 +620,8 @@ def audit_decision_policy_run(
         "probability_up",
     )
     for column in probability_columns:
-        predictions[column] = pd.to_numeric(
-            predictions[column], errors="raise"
-        )
-    probability_matrix = predictions.loc[:, probability_columns].to_numpy(
-        dtype=np.float64
-    )
+        predictions[column] = pd.to_numeric(predictions[column], errors="raise")
+    probability_matrix = predictions.loc[:, probability_columns].to_numpy(dtype=np.float64)
     if (
         not np.all(np.isfinite(probability_matrix))
         or np.any(probability_matrix < 0.0)
@@ -755,8 +703,7 @@ def audit_decision_policy_run(
         ].copy()
         if len(selected) != test_samples:
             raise ValueError(
-                f"prediction count mismatch for {key}: "
-                f"expected {test_samples}, got {len(selected)}"
+                f"prediction count mismatch for {key}: expected {test_samples}, got {len(selected)}"
             )
 
         row_indices = selected["row_index"].to_numpy(dtype=np.int64)
@@ -782,18 +729,16 @@ def audit_decision_policy_run(
         if not np.array_equal(expected_dates.asi8, observed_dates.array.asi8):
             raise ValueError(f"OOS feature date/index mismatch for {key}")
 
-        actual = dataset_frame["target_execution_direction"].iloc[
-            row_indices
-        ].astype(str).to_numpy()
+        actual = (
+            dataset_frame["target_execution_direction"].iloc[row_indices].astype(str).to_numpy()
+        )
         observed_actual = selected["actual"].astype(str).to_numpy()
         if not np.array_equal(actual, observed_actual):
             raise ValueError(f"D06 actual labels do not match D04 target for {key}")
         if set(actual.tolist()) != set(EXPECTED_CLASSES):
             raise ValueError(f"OOS test fold does not contain all classes for {key}")
 
-        probabilities = selected.loc[:, probability_columns].to_numpy(
-            dtype=np.float64
-        )
+        probabilities = selected.loc[:, probability_columns].to_numpy(dtype=np.float64)
         stored_thresholds = pd.to_numeric(
             selected["selected_neutral_threshold"], errors="raise"
         ).to_numpy(dtype=np.float64)
@@ -859,9 +804,7 @@ def audit_decision_policy_run(
         enriched["policy_selected_probability"] = policy_probability
         enriched["maximum_probability"] = probabilities.max(axis=1)
         sorted_probabilities = np.sort(probabilities, axis=1)
-        enriched["probability_margin"] = (
-            sorted_probabilities[:, -1] - sorted_probabilities[:, -2]
-        )
+        enriched["probability_margin"] = sorted_probabilities[:, -1] - sorted_probabilities[:, -2]
         enriched["policy_selected_class_probability"] = [
             probabilities[index, EXPECTED_CLASSES.index(label)]
             for index, label in enumerate(expected_policy)
@@ -880,12 +823,8 @@ def audit_decision_policy_run(
             "first_feature_date": str(selected["feature_date"].iloc[0]),
             "last_feature_date": str(selected["feature_date"].iloc[-1]),
         }
-        fold_record.update(
-            _classification_metrics("argmax", actual, expected_argmax)
-        )
-        fold_record.update(
-            _classification_metrics("policy", actual, expected_policy)
-        )
+        fold_record.update(_classification_metrics("argmax", actual, expected_argmax))
+        fold_record.update(_classification_metrics("policy", actual, expected_policy))
         fold_audit_rows.append(fold_record)
 
         audited_frames.append(enriched)
@@ -894,16 +833,12 @@ def audit_decision_policy_run(
     for algorithm in algorithms:
         algorithm_folds = {
             int(value)
-            for value in fold_metrics.loc[
-                fold_metrics["algorithm"] == algorithm, "fold"
-            ].tolist()
+            for value in fold_metrics.loc[fold_metrics["algorithm"] == algorithm, "fold"].tolist()
         }
         if algorithm_folds != expected_folds:
             raise ValueError(f"fold identifiers are incomplete for {algorithm}")
 
-        ordered = fold_metrics.loc[
-            fold_metrics["algorithm"] == algorithm
-        ].sort_values("fold")
+        ordered = fold_metrics.loc[fold_metrics["algorithm"] == algorithm].sort_values("fold")
         previous_end = -1
         for _, row in ordered.iterrows():
             start = int(row["test_start_index"])
@@ -948,16 +883,12 @@ def audit_decision_policy_run(
     per_algorithm = [
         _build_algorithm_summary(
             algorithm,
-            audited_predictions.loc[
-                audited_predictions["algorithm"] == algorithm
-            ],
+            audited_predictions.loc[audited_predictions["algorithm"] == algorithm],
         )
         for algorithm in algorithms
     ]
 
-    all_returns = audited_predictions["actual_execution_return"].to_numpy(
-        dtype=np.float64
-    )
+    all_returns = audited_predictions["actual_execution_return"].to_numpy(dtype=np.float64)
     summary = {
         "schema_version": "1.0",
         "status": "COMPLETED",
@@ -978,9 +909,7 @@ def audit_decision_policy_run(
         "actual_execution_return": {
             "type": "gross next-session open-to-close target; before trading costs",
             "mean": float(np.mean(all_returns)),
-            "std": float(np.std(all_returns, ddof=1))
-            if len(all_returns) > 1
-            else 0.0,
+            "std": float(np.std(all_returns, ddof=1)) if len(all_returns) > 1 else 0.0,
             "minimum": float(np.min(all_returns)),
             "maximum": float(np.max(all_returns)),
         },
@@ -1007,9 +936,7 @@ def audit_decision_policy_run(
 
     output_root.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
-    audit_dir = output_root / (
-        f"{ticker.lower()}_{policy_run_dir.name}_audit_{timestamp}"
-    )
+    audit_dir = output_root / (f"{ticker.lower()}_{policy_run_dir.name}_audit_{timestamp}")
     audit_dir.mkdir(parents=False, exist_ok=False)
 
     predictions_path = audit_dir / "audited_predictions.csv"
@@ -1026,9 +953,7 @@ def audit_decision_policy_run(
         "created_at": datetime.now(UTC).isoformat(),
         "input": {
             "decision_policy_run_id": policy_run_dir.name,
-            "decision_policy_manifest_sha256": _sha256_file(
-                policy_manifest_path
-            ),
+            "decision_policy_manifest_sha256": _sha256_file(policy_manifest_path),
             "execution_dataset": dataset_path.name,
             "execution_dataset_sha256": dataset_hash,
             "source_manifest_sha256": source_manifest_hash,
