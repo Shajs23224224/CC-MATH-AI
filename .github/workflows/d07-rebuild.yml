@@ -45,6 +45,7 @@ jobs:
           scripts/simulate_execution_decisions.py
           tests/unit/d07_fixture_factory.py
           tests/unit/test_d07_audit.py
+          tests/unit/test_d07_calibration.py
           tests/unit/test_d07_simulation.py
 
       - name: Ruff format check
