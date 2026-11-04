@@ -101,6 +101,7 @@ See:
 - [Training Dashboard TD05](docs/TRAINING_DASHBOARD_TD05.md) — bounded task orchestration, allow-listed handlers, queue management and cooperative cancellation
 - [D07.1 — Execution decision integrity audit](docs/D07_EXECUTION_DECISION_AUDIT.md) — independently verifies D06 artifacts, D04 outcome alignment, temporal boundaries and recomputed classification metrics.
 - [D07.2 — Cost-aware execution decision simulation](docs/D07_2_EXECUTION_DECISION_SIMULATION.md) — compares argmax and neutral-threshold decisions under fixed-notional execution-cost scenarios.
+- [D07.3 — Independent calibration and reliability audit](docs/D07_3_CALIBRATION_RELIABILITY_AUDIT.md) — independently refits D06.3 temperature, reproduces threshold selection and rebuilds OOS reliability bins, ECE/MCE and aggregate metrics.
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 

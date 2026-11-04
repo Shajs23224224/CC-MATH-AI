@@ -41,6 +41,7 @@ jobs:
           ruff check
           execution/research
           scripts/audit_execution_decision_policy.py
+          scripts/audit_calibration_reliability.py
           scripts/simulate_execution_decisions.py
           tests/unit/d07_fixture_factory.py
           tests/unit/test_d07_audit.py
@@ -51,9 +52,11 @@ jobs:
           ruff format --check
           execution/research
           scripts/audit_execution_decision_policy.py
+          scripts/audit_calibration_reliability.py
           scripts/simulate_execution_decisions.py
           tests/unit/d07_fixture_factory.py
           tests/unit/test_d07_audit.py
+          tests/unit/test_d07_calibration.py
           tests/unit/test_d07_simulation.py
 
       - name: D07 audit/simulation and D04-D06 regressions
@@ -62,6 +65,7 @@ jobs:
         run: >-
           pytest -q
           tests/unit/test_d07_audit.py
+          tests/unit/test_d07_calibration.py
           tests/unit/test_d07_simulation.py
           tests/unit/test_execution_dataset.py
           tests/unit/test_execution_ml_walk_forward.py
