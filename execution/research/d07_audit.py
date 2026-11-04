@@ -217,6 +217,14 @@ def _verify_d04_dataset(
     )
     _require(entry_dates.is_monotonic_increasing, "D04 entry dates are not chronological")
     _require(not entry_dates.duplicated().any(), "D04 entry dates contain duplicates")
+    if len(frame) > 1:
+        _require(
+            np.array_equal(
+                entry_dates.iloc[:-1].to_numpy(),
+                date_index[1:].to_numpy(),
+            ),
+            "D04 entry dates do not map to the next observed feature session",
+        )
 
     experiment = manifest.get("experiment")
     _require(isinstance(experiment, dict), "D04 experiment metadata is missing")
