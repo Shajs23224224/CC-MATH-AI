@@ -50,10 +50,7 @@ DEFAULT_ALGORITHMS = (
     "gradient_boosting_classifier",
     "random_forest_classifier",
 )
-THRESHOLD_GRID = tuple(
-    float(value)
-    for value in np.round(np.arange(0.05, 0.801, 0.01), 2)
-)
+THRESHOLD_GRID = tuple(float(value) for value in np.round(np.arange(0.05, 0.801, 0.01), 2))
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 
 
@@ -176,10 +173,7 @@ def _aligned_probabilities(
         raise ValueError("classifier must return class probabilities")
 
     source_classes = tuple(str(value) for value in prediction.classes)
-    if (
-        len(source_classes) != len(EXPECTED_CLASSES)
-        or set(source_classes) != set(EXPECTED_CLASSES)
-    ):
+    if len(source_classes) != len(EXPECTED_CLASSES) or set(source_classes) != set(EXPECTED_CLASSES):
         raise ValueError(f"classifier probability labels are invalid: {source_classes}")
 
     raw = np.asarray(prediction.probabilities, dtype=np.float64)
@@ -324,9 +318,7 @@ def _policy_metrics(
     matrix = confusion_matrix(y_true, y_pred, labels=list(EXPECTED_CLASSES))
     metrics = {
         f"{prefix}_accuracy": float(accuracy_score(y_true, y_pred)),
-        f"{prefix}_balanced_accuracy": float(
-            balanced_accuracy_score(y_true, y_pred)
-        ),
+        f"{prefix}_balanced_accuracy": float(balanced_accuracy_score(y_true, y_pred)),
         f"{prefix}_macro_f1": float(
             f1_score(
                 y_true,
@@ -347,15 +339,12 @@ def _policy_metrics(
         metrics[f"{prefix}_{label.lower()}_f1"] = float(f1_values[index])
         metrics[f"{prefix}_{label.lower()}_support"] = float(support[index])
         metrics[f"{prefix}_{label.lower()}_predicted_count"] = float(predicted_count)
-        metrics[f"{prefix}_{label.lower()}_predicted_share"] = float(
-            predicted_count / len(y_true)
-        )
+        metrics[f"{prefix}_{label.lower()}_predicted_share"] = float(predicted_count / len(y_true))
 
     for actual_index, actual_label in enumerate(EXPECTED_CLASSES):
         for predicted_index, predicted_label in enumerate(EXPECTED_CLASSES):
             metrics[
-                f"{prefix}_confusion_{actual_label.lower()}_"
-                f"predicted_{predicted_label.lower()}"
+                f"{prefix}_confusion_{actual_label.lower()}_predicted_{predicted_label.lower()}"
             ] = float(matrix[actual_index, predicted_index])
     return metrics
 
@@ -394,8 +383,8 @@ def evaluate_decision_policy_fold(
     ):
         raise ValueError("invalid expanding fold boundaries")
 
-    outer_train_labels = set(dataset.target[:fold.train_end])
-    test_labels = set(dataset.target[fold.test_start:fold.test_end])
+    outer_train_labels = set(dataset.target[: fold.train_end])
+    test_labels = set(dataset.target[fold.test_start : fold.test_end])
     if outer_train_labels != set(EXPECTED_CLASSES):
         raise ValueError("outer training prefix must contain all three classes")
     if test_labels != set(EXPECTED_CLASSES):
@@ -407,7 +396,7 @@ def evaluate_decision_policy_fold(
         raise ValueError("outer training prefix is too short for the calibration suffix")
 
     calibration_labels = np.asarray(
-        dataset.target[calibration_start:fold.train_end],
+        dataset.target[calibration_start : fold.train_end],
         dtype=str,
     )
     calibration_training_labels = set(dataset.target[:calibration_start])
@@ -446,7 +435,7 @@ def evaluate_decision_policy_fold(
         raise RuntimeError("inner calibration split does not match the declared boundaries")
 
     calibration_prediction = calibration_model.predict(
-        dataset.features[calibration_start:fold.train_end]
+        dataset.features[calibration_start : fold.train_end]
     )
     calibration_probabilities = _aligned_probabilities(
         calibration_prediction,
@@ -487,9 +476,9 @@ def evaluate_decision_policy_fold(
     if actual_outer != expected_outer or evaluation.test_used_for_selection:
         raise RuntimeError("final model does not respect outer fold boundaries")
 
-    test_prediction = final_model.predict(dataset.features[fold.test_start:fold.test_end])
+    test_prediction = final_model.predict(dataset.features[fold.test_start : fold.test_end])
     probabilities = _aligned_probabilities(test_prediction, fold.test_samples)
-    actual = np.asarray(dataset.target[fold.test_start:fold.test_end], dtype=str)
+    actual = np.asarray(dataset.target[fold.test_start : fold.test_end], dtype=str)
 
     # Derive argmax explicitly from canonical probability columns so that the
     # persisted decision can be independently reproduced without model objects.
@@ -528,9 +517,7 @@ def evaluate_decision_policy_fold(
     metrics.update(_policy_metrics("argmax", actual, argmax_predictions))
     metrics.update(_policy_metrics("policy", actual, policy_predictions))
 
-    one_hot = np.column_stack([actual == label for label in EXPECTED_CLASSES]).astype(
-        np.float64
-    )
+    one_hot = np.column_stack([actual == label for label in EXPECTED_CLASSES]).astype(np.float64)
     metrics["multiclass_log_loss"] = float(
         log_loss(actual, probabilities, labels=list(EXPECTED_CLASSES))
     )
@@ -538,13 +525,11 @@ def evaluate_decision_policy_fold(
         np.mean(np.sum((probabilities - one_hot) ** 2, axis=1))
     )
 
-    training_counts = Counter(dataset.target[:fold.train_end])
+    training_counts = Counter(dataset.target[: fold.train_end])
     majority_class, majority_count = training_counts.most_common(1)[0]
     majority_predictions = np.full(len(actual), majority_class, dtype=object)
     metrics["majority_baseline_class"] = str(majority_class)
-    metrics["majority_baseline_accuracy"] = float(
-        accuracy_score(actual, majority_predictions)
-    )
+    metrics["majority_baseline_accuracy"] = float(accuracy_score(actual, majority_predictions))
     metrics["policy_accuracy_delta_vs_majority"] = (
         metrics["policy_accuracy"] - metrics["majority_baseline_accuracy"]
     )
@@ -649,8 +634,7 @@ def _load_validated_d04_input(
     source = manifest.get("source")
     dataset_info = manifest.get("dataset")
     if not all(
-        isinstance(value, dict)
-        for value in (experiment, target, artifact, source, dataset_info)
+        isinstance(value, dict) for value in (experiment, target, artifact, source, dataset_info)
     ):
         raise ValueError("D04 manifest is missing required metadata objects")
 
@@ -722,17 +706,25 @@ def _load_validated_d04_input(
     if tuple(value.isoformat() for value in index) != dates:
         raise ValueError("D04 feature dates do not match the loaded model rows")
 
-    feature_values = frame.loc[:, feature_names].apply(
-        pd.to_numeric,
-        errors="coerce",
-    ).to_numpy(dtype=np.float64)
+    feature_values = (
+        frame.loc[:, feature_names]
+        .apply(
+            pd.to_numeric,
+            errors="coerce",
+        )
+        .to_numpy(dtype=np.float64)
+    )
     if not np.all(np.isfinite(feature_values)):
         raise ValueError("D04 model features contain non-finite values")
 
-    prices = frame.loc[:, ["entry_open", "exit_close"]].apply(
-        pd.to_numeric,
-        errors="coerce",
-    ).to_numpy(dtype=np.float64)
+    prices = (
+        frame.loc[:, ["entry_open", "exit_close"]]
+        .apply(
+            pd.to_numeric,
+            errors="coerce",
+        )
+        .to_numpy(dtype=np.float64)
+    )
     if not np.all(np.isfinite(prices)) or np.any(prices <= 0.0):
         raise ValueError("D04 entry and exit prices must be finite and positive")
 
@@ -918,9 +910,7 @@ def run_decision_policy(
         "snapshot_file": dataset_path.name,
         "snapshot_sha256": _sha256_file(dataset_path),
         "source_manifest_sha256": d04_manifest_sha256,
-        "d04_original_source_manifest_sha256": source_manifest["source"][
-            "source_manifest_sha256"
-        ],
+        "d04_original_source_manifest_sha256": source_manifest["source"]["source_manifest_sha256"],
         "evaluation_scope": (
             "Exploratory historical nested chronological evaluation. Thresholds "
             "are selected using only a past inner suffix. Previously inspected "
