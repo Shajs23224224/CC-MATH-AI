@@ -112,7 +112,10 @@ def test_simulation_rejects_tampered_d07_1_artifact(tmp_path):
     _, _, audit_dir = _build_audit(tmp_path)
     with (audit_dir / "audited_predictions.csv").open("a", encoding="utf-8") as stream:
         stream.write("\n")
-    with pytest.raises(ValueError, match="byte-count verification failed|SHA-256 verification failed"):
+    with pytest.raises(
+        ValueError,
+        match="byte-count verification failed|SHA-256 verification failed",
+    ):
         simulate_execution_decisions(
             audit_dir,
             output_root=tmp_path / "simulations",
