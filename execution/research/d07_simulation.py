@@ -390,16 +390,7 @@ def _validate_audited_rows(
             np.array_equal(selected["argmax_prediction"].astype(str).to_numpy(), expected_argmax),
             f"{algorithm} argmax predictions cannot be reproduced",
         )
-        expected_policy = np.empty(len(selected), dtype=object)
-        for fold, fold_rows in selected.groupby("fold", sort=True):
-            threshold = float(fold_rows["selected_neutral_threshold"].iloc[0])
-            probabilities_fold = fold_rows[probability_columns].to_numpy(dtype=np.float64)
-            expected = apply_neutral_threshold(probabilities_fold, threshold)
-            expected_policy[fold_rows.index.to_numpy() - selected.index.min()] = expected
-        # Recompute the threshold policy directly per contiguous fold, independent of row order.
-        policy_reproduced = np.empty(len(selected), dtype=object)
-        for position, (_, row) in enumerate(selected.iterrows()):
-            policy_reproduced[position] = row["policy_prediction"]
+        # Recompute the threshold policy independently within each calibrated fold.
         for _, fold_rows in selected.groupby("fold", sort=True):
             threshold = float(fold_rows["selected_neutral_threshold"].iloc[0])
             expected = np.asarray(
@@ -629,7 +620,7 @@ def _fold_metrics(
                     float(pnl.sum()),
                     starting_equity,
                 ),
-                "minimum_intr fold_drawdown": float(group["drawdown"].min()),
+                "minimum_drawdown": float(group["drawdown"].min()),
                 "bankrupt_at_fold_end": bool(group["bankrupt_after_session"].any()),
             }
         )
