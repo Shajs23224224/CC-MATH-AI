@@ -1,4 +1,4 @@
-# D04.2 — Auditable execution dataset
+# D04.3 — Auditable execution dataset and data readiness
 
 ## Purpose
 
@@ -48,11 +48,10 @@ Each run creates a new directory under \`artifacts/execution_datasets/\`:
   entry date/open, same-session exit close, gross execution return and class.
 - \`execution_dataset_manifest.json\`: versioned contract, input identities,
   threshold units, execution assumptions, row/class statistics, environment,
-  output SHA-256 and byte count, and explicit interpretation limits.
+  output SHA-256 and byte count, downstream class/split readiness diagnostics for D05 and D06, and explicit interpretation limits.
 
 CSV writes use round-trip floating-point precision and atomic replacement. Existing
-run directories are never overwritten. The output manifest preserves the D04
-fields consumed by D05, D06 and D07.
+run directories are never overwritten. The output manifest preserves the D04 fields consumed by D05, D06 and D07. D04.3 also records global class counts and checks every default D05/D06 temporal segment, including D06's pre-calibration training prefix and calibration suffix. A dataset can be built successfully while its readiness status is BLOCKED or INSUFFICIENT_DATA.
 
 ## Usage
 
@@ -72,3 +71,29 @@ borrow, margin or taxes. A SHA-256 manifest detects content changes relative to
 the supplied manifest; it is not a signature and does not authenticate the
 origin of the artifacts. Historical labels and later model metrics do not
 establish future profitability.
+
+
+## Downstream readiness (D04.3)
+
+The manifest's `data_readiness` object evaluates the default downstream
+profiles (`n_folds=4`, `test_fraction=0.10`; D06 additionally uses
+`calibration_fraction=0.20`). For each chronological fold it records class
+counts and missing classes in the training/test windows. D06 additionally
+checks the pre-calibration training prefix, the withheld calibration suffix,
+and whether the suffix size can be represented by the estimator's chronological
+holdout API.
+
+Readiness is reported as:
+
+- `READY`: all three classes occur globally and in every required segment for
+  both default profiles.
+- `BLOCKED`: one or more required classes are absent globally or in a
+  downstream temporal segment.
+- `INSUFFICIENT_DATA`: the configured expanding windows cannot be formed.
+
+This is a deterministic coverage preflight, not a guarantee of model
+convergence, valid probabilities, predictive performance, or profitability.
+Custom D05/D06 fold settings must be checked independently. Add
+`--require-d06-ready` to make the CLI return exit code 2 when the default D06
+profile is not ready; by default D04 still persists the dataset and its
+diagnostics for inspection.

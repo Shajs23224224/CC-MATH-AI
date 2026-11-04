@@ -8,7 +8,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scripts.build_execution_dataset import build_execution_dataset
+from scripts.build_execution_dataset import (
+    _assess_downstream_readiness,
+    build_execution_dataset,
+)
 
 
 def digest(path: Path) -> str:
@@ -123,7 +126,13 @@ def test_manifest_records_integrity_and_execution_assumptions(tmp_path):
     manifest_path = run_dir / "execution_dataset_manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-    assert manifest["contract_version"] == "D04.2"
+    assert manifest["contract_version"] == "D04.3"
+    assert manifest["data_readiness"]["status"] == "INSUFFICIENT_DATA"
+    assert manifest["data_readiness"]["profiles"]["D06"]["configuration"] == {
+        "n_folds": 4,
+        "test_fraction": 0.10,
+        "calibration_fraction": 0.20,
+    }
     assert manifest["experiment"]["threshold_bps"] == 10.0
     assert manifest["experiment"]["threshold_is_transaction_cost"] is False
     assert manifest["target"]["classes"] == ["DOWN", "NEUTRAL", "UP"]
@@ -214,3 +223,42 @@ def test_feature_date_without_following_session_is_rejected(tmp_path):
 
     with pytest.raises(ValueError, match="following observed"):
         build_execution_dataset(raw_path, snapshot_path, output_root=tmp_path / "out")
+
+
+
+def test_downstream_readiness_detects_complete_temporal_class_coverage():
+    labels = np.tile(np.asarray(["DOWN", "NEUTRAL", "UP"]), 40)
+
+    report = _assess_downstream_readiness(labels)
+
+    assert report["status"] == "READY"
+    assert report["profiles"]["D05"]["ready"] is True
+    assert report["profiles"]["D06"]["ready"] is True
+    assert len(report["profiles"]["D06"]["folds"]) == 4
+    assert all(fold["ready"] for fold in report["profiles"]["D06"]["folds"])
+
+
+def test_downstream_readiness_blocks_a_class_missing_from_global_dataset():
+    labels = np.tile(np.asarray(["DOWN", "UP"]), 60)
+
+    report = _assess_downstream_readiness(labels)
+
+    assert report["global_missing_classes"] == ["NEUTRAL"]
+    assert report["status"] == "BLOCKED"
+    assert report["profiles"]["D05"]["status"] == "BLOCKED"
+    assert report["profiles"]["D06"]["status"] == "BLOCKED"
+
+
+def test_downstream_readiness_detects_class_missing_inside_a_temporal_test_fold():
+    labels = np.tile(np.asarray(["DOWN", "NEUTRAL", "UP"]), 40)
+    labels[72:84] = "UP"
+
+    report = _assess_downstream_readiness(labels)
+
+    assert report["global_missing_classes"] == []
+    assert report["profiles"]["D05"]["status"] == "BLOCKED"
+    assert report["profiles"]["D05"]["folds"][0]["test"]["missing_classes"] == [
+        "DOWN",
+        "NEUTRAL",
+    ]
+    assert report["profiles"]["D06"]["folds"][0]["outer_test"]["ready"] is False

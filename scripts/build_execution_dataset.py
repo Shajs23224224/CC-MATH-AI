@@ -164,6 +164,171 @@ def _numeric_matrix(
     return values
 
 
+
+def _class_coverage(labels: np.ndarray) -> dict[str, Any]:
+    counts = {
+        label: int(np.count_nonzero(labels == label))
+        for label in EXPECTED_CLASSES
+    }
+    missing = [label for label, count in counts.items() if count == 0]
+    return {
+        "rows": int(len(labels)),
+        "class_counts": counts,
+        "missing_classes": missing,
+        "ready": not missing,
+    }
+
+
+def _assess_downstream_readiness(
+    labels: np.ndarray,
+    *,
+    n_folds: int = 4,
+    test_fraction: float = 0.10,
+    calibration_fraction: float = 0.20,
+) -> dict[str, Any]:
+    """Check class coverage at the default D05/D06 expanding-window boundaries."""
+    values = np.asarray(labels, dtype=str)
+    global_coverage = _class_coverage(values)
+    total_samples = len(values)
+    test_size = math.floor(total_samples * test_fraction)
+    initial_training_size = total_samples - n_folds * test_size
+    setup_error = None
+    if test_size < 2:
+        setup_error = "Each outer test window must contain at least two rows."
+    elif initial_training_size < 12:
+        setup_error = "The initial expanding training prefix must contain at least 12 rows."
+
+    d05_folds: list[dict[str, Any]] = []
+    d06_folds: list[dict[str, Any]] = []
+    if setup_error is None:
+        for index in range(n_folds):
+            test_start = initial_training_size + index * test_size
+            test_end = test_start + test_size
+            train_end = test_start
+
+            training = _class_coverage(values[:train_end])
+            test = _class_coverage(values[test_start:test_end])
+            d05_folds.append(
+                {
+                    "fold": index + 1,
+                    "train_start_index": 0,
+                    "train_end_index": train_end,
+                    "test_start_index": test_start,
+                    "test_end_index": test_end,
+                    "training": training,
+                    "test": test,
+                    "ready": training["ready"] and test["ready"],
+                }
+            )
+
+            calibration_size = max(
+                2,
+                int(math.ceil(train_end * calibration_fraction)),
+            )
+            calibration_start = train_end - calibration_size
+            calibration_fraction_for_estimator = (
+                (calibration_size - 0.25) / train_end
+                if train_end > 0
+                else float("nan")
+            )
+            calibration_split_representable = (
+                calibration_start >= 12
+                and 0.05 < calibration_fraction_for_estimator < 0.5
+                and math.ceil(train_end * calibration_fraction_for_estimator)
+                == calibration_size
+            )
+
+            outer_training = _class_coverage(values[:train_end])
+            pre_calibration_training = _class_coverage(
+                values[:max(0, calibration_start)]
+            )
+            calibration = _class_coverage(
+                values[max(0, calibration_start):train_end]
+            )
+            outer_test = _class_coverage(values[test_start:test_end])
+            d06_folds.append(
+                {
+                    "fold": index + 1,
+                    "train_start_index": 0,
+                    "train_end_index": train_end,
+                    "calibration_start_index": calibration_start,
+                    "test_start_index": test_start,
+                    "test_end_index": test_end,
+                    "calibration_samples": calibration_size,
+                    "calibration_holdout_fraction_representable": (
+                        calibration_split_representable
+                    ),
+                    "outer_training": outer_training,
+                    "pre_calibration_training": pre_calibration_training,
+                    "calibration": calibration,
+                    "outer_test": outer_test,
+                    "ready": (
+                        outer_training["ready"]
+                        and pre_calibration_training["ready"]
+                        and calibration["ready"]
+                        and outer_test["ready"]
+                        and calibration_split_representable
+                    ),
+                }
+            )
+
+    global_missing = global_coverage["missing_classes"]
+    d05_status = (
+        "BLOCKED"
+        if global_missing or (setup_error is None and not all(f["ready"] for f in d05_folds))
+        else "INSUFFICIENT_DATA"
+        if setup_error
+        else "READY"
+    )
+    d06_status = (
+        "BLOCKED"
+        if global_missing or (setup_error is None and not all(f["ready"] for f in d06_folds))
+        else "INSUFFICIENT_DATA"
+        if setup_error
+        else "READY"
+    )
+    profiles = {
+        "D05": {
+            "status": d05_status,
+            "ready": d05_status == "READY",
+            "configuration": {"n_folds": n_folds, "test_fraction": test_fraction},
+            "reason": setup_error,
+            "folds": d05_folds,
+        },
+        "D06": {
+            "status": d06_status,
+            "ready": d06_status == "READY",
+            "configuration": {
+                "n_folds": n_folds,
+                "test_fraction": test_fraction,
+                "calibration_fraction": calibration_fraction,
+            },
+            "reason": setup_error,
+            "folds": d06_folds,
+        },
+    }
+    status = (
+        "READY"
+        if d05_status == "READY" and d06_status == "READY"
+        else "BLOCKED"
+        if global_missing or d05_status == "BLOCKED" or d06_status == "BLOCKED"
+        else "INSUFFICIENT_DATA"
+    )
+    return {
+        "schema_version": "1.0",
+        "status": status,
+        "expected_classes": list(EXPECTED_CLASSES),
+        "global_class_counts": global_coverage["class_counts"],
+        "global_missing_classes": global_missing,
+        "profiles": profiles,
+        "interpretation": (
+            "This preflight checks class coverage and temporal boundaries only. "
+            "It does not guarantee estimator convergence, valid probabilities, "
+            "predictive quality, or profitability."
+        ),
+    }
+
+
 def build_execution_dataset(
     raw_path: Path,
     snapshot_path: Path,
@@ -330,6 +495,8 @@ def build_execution_dataset(
         default="NEUTRAL",
     )
 
+    readiness = _assess_downstream_readiness(labels)
+
     entry_dates = raw.index.take(next_positions)
     if entry_dates.has_duplicates or not entry_dates.is_monotonic_increasing:
         raise ValueError("next-session entry dates must be unique and chronological")
@@ -365,7 +532,7 @@ def build_execution_dataset(
 
     manifest = {
         "schema_version": "1.0",
-        "contract_version": "D04.2",
+        "contract_version": "D04.3",
         "created_at": created_at.isoformat(),
         "experiment": {
             "ticker": ticker,
@@ -419,6 +586,7 @@ def build_execution_dataset(
             "execution_return_min": float(np.min(execution_returns)),
             "execution_return_max": float(np.max(execution_returns)),
         },
+        "data_readiness": readiness,
         "serialization": {
             "csv_float_format": "%.17g",
             "csv_date_format": "%Y-%m-%dT%H:%M:%S.%f%z",
@@ -456,6 +624,9 @@ def build_execution_dataset(
         "features": len(feature_names),
         "threshold_bps": threshold_bps,
         "direction_distribution": class_counts,
+        "readiness_status": readiness["status"],
+        "d05_readiness_status": readiness["profiles"]["D05"]["status"],
+        "d06_readiness_status": readiness["profiles"]["D06"]["status"],
         "execution_dataset_sha256": manifest["artifact"]["sha256"],
         "source_manifest_sha256": manifest["source"]["source_manifest_sha256"],
         "manifest": str(manifest_path),
@@ -474,6 +645,14 @@ def main() -> int:
         default=Path("artifacts/execution_datasets"),
     )
     parser.add_argument("--threshold-bps", type=float, default=10.0)
+    parser.add_argument(
+        "--require-d06-ready",
+        action="store_true",
+        help=(
+            "Return exit code 2 unless the default D06 temporal/class-coverage "
+            "profile is ready."
+        ),
+    )
     args = parser.parse_args()
 
     result = build_execution_dataset(
@@ -483,6 +662,12 @@ def main() -> int:
         threshold_bps=args.threshold_bps,
     )
     print(json.dumps(result, indent=2, ensure_ascii=False))
+    if args.require_d06_ready and result["d06_readiness_status"] != "READY":
+        print(
+            "D06 readiness requirement failed; inspect data_readiness in the manifest.",
+            file=sys.stderr,
+        )
+        return 2
     return 0
 
 

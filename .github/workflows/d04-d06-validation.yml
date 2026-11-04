@@ -7,7 +7,12 @@ on:
       - "scripts/run_execution_decision_policy.py"
       - "scripts/run_execution_ml_walk_forward.py"
       - "scripts/run_ml_walk_forward.py"
+      - "core/utils/market_dataset_artifacts.py"
+      - "apps/dashboard/training_tasks.py"
+      - "scripts/train_real_models.py"
       - "tests/unit/test_execution_dataset.py"
+      - "tests/unit/test_market_dataset_artifacts.py"
+      - "tests/unit/test_training_dataset_snapshots.py"
       - "tests/unit/test_execution_decision_policy.py"
       - "tests/unit/test_execution_ml_walk_forward.py"
       - "core/contracts/ml.py"
@@ -21,7 +26,12 @@ on:
       - "scripts/run_execution_decision_policy.py"
       - "scripts/run_execution_ml_walk_forward.py"
       - "scripts/run_ml_walk_forward.py"
+      - "core/utils/market_dataset_artifacts.py"
+      - "apps/dashboard/training_tasks.py"
+      - "scripts/train_real_models.py"
       - "tests/unit/test_execution_dataset.py"
+      - "tests/unit/test_market_dataset_artifacts.py"
+      - "tests/unit/test_training_dataset_snapshots.py"
       - "tests/unit/test_execution_decision_policy.py"
       - "tests/unit/test_execution_ml_walk_forward.py"
       - "core/contracts/ml.py"
@@ -54,10 +64,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
-      - name: Run D04-D06 and dependent D05 tests
+      - name: Run D04-D06, artifact persistence and dependent tests
         run: |
           python -m pytest -q \
             tests/unit/test_execution_dataset.py \
+            tests/unit/test_market_dataset_artifacts.py \
+            tests/unit/test_training_dataset_snapshots.py \
             tests/unit/test_execution_ml_walk_forward.py \
             tests/unit/test_execution_decision_policy.py \
             tests/unit/test_ml_walk_forward.py
@@ -72,11 +84,15 @@ jobs:
             scripts/build_execution_dataset.py \
             scripts/run_execution_decision_policy.py \
             tests/unit/test_execution_dataset.py \
-            tests/unit/test_execution_decision_policy.py
+            tests/unit/test_execution_decision_policy.py \
+            core/utils/market_dataset_artifacts.py \
+            tests/unit/test_market_dataset_artifacts.py
       - name: Ruff format
         run: |
           python -m ruff format --check \
             scripts/build_execution_dataset.py \
             scripts/run_execution_decision_policy.py \
             tests/unit/test_execution_dataset.py \
-            tests/unit/test_execution_decision_policy.py
+            tests/unit/test_execution_decision_policy.py \
+            core/utils/market_dataset_artifacts.py \
+            tests/unit/test_market_dataset_artifacts.py
