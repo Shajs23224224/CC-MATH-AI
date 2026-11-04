@@ -10,6 +10,8 @@ import pytest
 
 from core.utils.market_dataset_artifacts import persist_market_dataset_artifacts
 from scripts.build_execution_dataset import build_execution_dataset
+from scripts.run_execution_decision_policy import _load_validated_d04_input
+from scripts.run_execution_ml_walk_forward import load_execution_dataset
 
 
 def _digest(path: Path) -> str:
@@ -17,14 +19,21 @@ def _digest(path: Path) -> str:
 
 
 def _synthetic_source():
-    dates = pd.bdate_range("2024-01-02", periods=80)
-    step = np.arange(len(dates), dtype=np.float64)
-    close = 100.0 + 0.04 * step + 0.8 * np.sin(step / 3.0)
+    row_count = 120
+    dates = pd.bdate_range("2024-01-02", periods=row_count + 1)
+    step = np.arange(row_count + 1, dtype=np.float64)
+    close = np.full(row_count + 1, 100.0, dtype=np.float64)
+    execution_returns = np.tile(
+        np.asarray([-0.002, 0.0, 0.002], dtype=np.float64),
+        row_count // 3,
+    )
+    open_prices = np.full(row_count + 1, 100.0, dtype=np.float64)
+    open_prices[1:] = close[1:] / (1.0 + execution_returns)
     history = pd.DataFrame(
         {
-            "open": close * (1.0 - 0.001 * np.cos(step)),
-            "high": close * 1.01,
-            "low": close * 0.99,
+            "open": open_prices,
+            "high": np.maximum(open_prices, close) * 1.01,
+            "low": np.minimum(open_prices, close) * 0.99,
             "close": close,
             "volume": 1_000_000.0 + step * 100.0,
         },
@@ -94,6 +103,18 @@ def test_shared_artifacts_are_round_trip_safe_and_consumable_by_d04(tmp_path):
     )
     assert result["status"] == "COMPLETED"
     assert result["rows"] == len(rows)
+    assert result["readiness_status"] == "READY"
+    assert result["d05_readiness_status"] == "READY"
+    assert result["d06_readiness_status"] == "READY"
+
+    d05_dataset, d05_dates, d05_manifest = load_execution_dataset(output_path)
+    d06_dataset, d06_dates, d06_manifest = _load_validated_d04_input(output_path)
+
+    assert len(d05_dataset.features) == len(rows)
+    assert d05_dataset.target == d06_dataset.target
+    assert d05_dates == d06_dates
+    assert d05_manifest["contract_version"] == "D04.3"
+    assert d06_manifest["target"]["classes"] == ["DOWN", "NEUTRAL", "UP"]
 
 
 def test_shared_persistence_refuses_to_overwrite_artifacts(tmp_path):
