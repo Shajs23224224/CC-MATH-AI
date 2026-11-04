@@ -239,9 +239,7 @@ def _validate_audited_predictions(
         / predictions["entry_open"].to_numpy(dtype=np.float64)
         - 1.0
     )
-    observed_returns = predictions["actual_execution_return"].to_numpy(
-        dtype=np.float64
-    )
+    observed_returns = predictions["actual_execution_return"].to_numpy(dtype=np.float64)
     if not np.allclose(
         observed_returns,
         calculated_returns,
@@ -256,9 +254,7 @@ def _validate_audited_predictions(
             raise ValueError(f"D07.1 {column} contains invalid dates")
         predictions[f"_{column}_parsed"] = parsed
 
-    if (
-        predictions["_feature_date_parsed"] >= predictions["_entry_date_parsed"]
-    ).any():
+    if (predictions["_feature_date_parsed"] >= predictions["_entry_date_parsed"]).any():
         raise ValueError("D07.1 entry dates must follow their feature dates")
 
     for column in ("argmax_prediction", "policy_prediction"):
@@ -270,14 +266,8 @@ def _validate_audited_predictions(
         predictions["selected_neutral_threshold"],
         errors="raise",
     )
-    thresholds = predictions["selected_neutral_threshold"].to_numpy(
-        dtype=np.float64
-    )
-    if (
-        not np.all(np.isfinite(thresholds))
-        or np.any(thresholds < 0.0)
-        or np.any(thresholds > 1.0)
-    ):
+    thresholds = predictions["selected_neutral_threshold"].to_numpy(dtype=np.float64)
+    if not np.all(np.isfinite(thresholds)) or np.any(thresholds < 0.0) or np.any(thresholds > 1.0):
         raise ValueError("D07.1 selected neutral thresholds are invalid")
 
     if predictions.duplicated(["algorithm", "row_index"]).any():
@@ -290,9 +280,9 @@ def _validate_audited_predictions(
     canonical_folds: np.ndarray | None = None
 
     for algorithm in algorithms:
-        selected = predictions.loc[
-            predictions["algorithm"].astype(str) == algorithm
-        ].sort_values("row_index")
+        selected = predictions.loc[predictions["algorithm"].astype(str) == algorithm].sort_values(
+            "row_index"
+        )
         if selected.empty:
             raise ValueError(f"D07.1 contains no rows for {algorithm}")
 
@@ -300,9 +290,7 @@ def _validate_audited_predictions(
         if observed_folds != expected_folds:
             raise ValueError(f"D07.1 fold identifiers are incomplete for {algorithm}")
 
-        fold_order = selected.groupby("fold", sort=True)["row_index"].agg(
-            ["min", "max"]
-        )
+        fold_order = selected.groupby("fold", sort=True)["row_index"].agg(["min", "max"])
         if not fold_order["min"].is_monotonic_increasing:
             raise ValueError(f"D07.1 folds are not chronological for {algorithm}")
         if len(fold_order) > 1:
@@ -341,9 +329,7 @@ def _validate_audited_predictions(
                 rtol=1e-10,
                 atol=1e-12,
             ):
-                raise ValueError(
-                    "D07.1 algorithms do not share identical execution outcomes"
-                )
+                raise ValueError("D07.1 algorithms do not share identical execution outcomes")
 
         if not selected["_feature_date_parsed"].is_monotonic_increasing:
             raise ValueError(f"D07.1 feature dates are not chronological for {algorithm}")
@@ -356,13 +342,9 @@ def _validate_audited_predictions(
 
         for fold, fold_rows in selected.groupby("fold", sort=True):
             if fold_rows["selected_neutral_threshold"].nunique(dropna=False) != 1:
-                raise ValueError(
-                    f"D07.1 fold {fold} has inconsistent thresholds for {algorithm}"
-                )
+                raise ValueError(f"D07.1 fold {fold} has inconsistent thresholds for {algorithm}")
 
-    predictions = predictions.sort_values(
-        ["algorithm", "fold", "row_index"]
-    ).reset_index(drop=True)
+    predictions = predictions.sort_values(["algorithm", "fold", "row_index"]).reset_index(drop=True)
     return predictions, algorithms, fold_count
 
 
@@ -407,11 +389,7 @@ def _simulate_strategy(
         else:
             executed_direction = requested_direction
             active_notional = min(notional_per_trade, equity_before)
-            gross_pnl = (
-                executed_direction
-                * float(row.actual_execution_return)
-                * active_notional
-            )
+            gross_pnl = executed_direction * float(row.actual_execution_return) * active_notional
             transaction_cost = active_notional * cost_fraction
             net_pnl = gross_pnl - transaction_cost
             execution_status = "EXECUTED"
@@ -439,9 +417,7 @@ def _simulate_strategy(
                 "actual_execution_return": float(row.actual_execution_return),
                 "entry_open": float(row.entry_open),
                 "exit_close": float(row.exit_close),
-                "selected_neutral_threshold": float(
-                    row.selected_neutral_threshold
-                ),
+                "selected_neutral_threshold": float(row.selected_neutral_threshold),
                 "configured_notional": float(notional_per_trade),
                 "active_notional": float(active_notional),
                 "cost_bps_per_side": float(cost_bps_per_side),
@@ -454,9 +430,7 @@ def _simulate_strategy(
                 "transaction_cost_pnl": float(transaction_cost),
                 "net_pnl": float(net_pnl),
                 "net_return_on_notional": (
-                    float(net_pnl / active_notional)
-                    if active_notional > 0.0
-                    else 0.0
+                    float(net_pnl / active_notional) if active_notional > 0.0 else 0.0
                 ),
                 "net_return_on_initial_capital": float(net_pnl / initial_capital),
                 "portfolio_equity_before": float(equity_before),
