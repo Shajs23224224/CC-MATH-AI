@@ -219,9 +219,7 @@ def _multiclass_log_loss(actual: np.ndarray, probabilities: np.ndarray) -> float
 def _multiclass_brier_score(actual: np.ndarray, probabilities: np.ndarray) -> float:
     labels = np.asarray(actual, dtype=str)
     matrix = _validate_probability_matrix(probabilities, len(labels))
-    one_hot = np.column_stack(
-        [labels == label for label in EXPECTED_CLASSES]
-    ).astype(np.float64)
+    one_hot = np.column_stack([labels == label for label in EXPECTED_CLASSES]).astype(np.float64)
     return float(np.mean(np.sum((matrix - one_hot) ** 2, axis=1)))
 
 
@@ -236,11 +234,7 @@ def fit_temperature_scaling(
     labels = np.asarray(actual, dtype=str)
     raw = np.asarray(probabilities, dtype=np.float64)
     matrix = _validate_probability_matrix(raw, len(labels))
-    if (
-        labels.ndim != 1
-        or len(labels) == 0
-        or set(labels.tolist()) != set(EXPECTED_CLASSES)
-    ):
+    if labels.ndim != 1 or len(labels) == 0 or set(labels.tolist()) != set(EXPECTED_CLASSES):
         raise ValueError("temperature calibration labels must contain all three classes")
     if (
         isinstance(minimum_temperature, bool)
@@ -631,9 +625,7 @@ def evaluate_decision_policy_fold(
 
     # Keep the estimator fitted before the suffix. No refit includes calibration
     # labels, and the outer test cannot influence its temperature or threshold.
-    test_prediction = calibration_model.predict(
-        dataset.features[fold.test_start : fold.test_end]
-    )
+    test_prediction = calibration_model.predict(dataset.features[fold.test_start : fold.test_end])
     raw_test_probabilities = _aligned_probabilities(test_prediction, fold.test_samples)
     probabilities = apply_temperature_scaling(raw_test_probabilities, temperature)
     actual = np.asarray(dataset.target[fold.test_start : fold.test_end], dtype=str)

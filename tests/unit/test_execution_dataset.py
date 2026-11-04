@@ -225,7 +225,6 @@ def test_feature_date_without_following_session_is_rejected(tmp_path):
         build_execution_dataset(raw_path, snapshot_path, output_root=tmp_path / "out")
 
 
-
 def test_downstream_readiness_detects_complete_temporal_class_coverage():
     labels = np.tile(np.asarray(["DOWN", "NEUTRAL", "UP"]), 40)
 

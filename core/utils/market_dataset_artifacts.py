@@ -109,10 +109,14 @@ def persist_market_dataset_artifacts(
     if "target_next_direction" in rows.columns:
         raise ValueError("Dataset snapshot must not predefine target_next_direction")
 
-    feature_values = rows.loc[:, list(names)].apply(
-        pd.to_numeric,
-        errors="coerce",
-    ).to_numpy(dtype=np.float64)
+    feature_values = (
+        rows.loc[:, list(names)]
+        .apply(
+            pd.to_numeric,
+            errors="coerce",
+        )
+        .to_numpy(dtype=np.float64)
+    )
     if not np.all(np.isfinite(feature_values)):
         raise ValueError("Dataset features contain non-finite or non-numeric values")
 
@@ -123,10 +127,14 @@ def persist_market_dataset_artifacts(
     if not np.all(np.isfinite(target)):
         raise ValueError("Dataset targets contain non-finite or non-numeric values")
 
-    raw_prices = history.loc[:, ["open", "close"]].apply(
-        pd.to_numeric,
-        errors="coerce",
-    ).to_numpy(dtype=np.float64)
+    raw_prices = (
+        history.loc[:, ["open", "close"]]
+        .apply(
+            pd.to_numeric,
+            errors="coerce",
+        )
+        .to_numpy(dtype=np.float64)
+    )
     if not np.all(np.isfinite(raw_prices)) or np.any(raw_prices <= 0.0):
         raise ValueError("Historical open/close prices must be finite and positive")
 
@@ -156,9 +164,7 @@ def persist_market_dataset_artifacts(
 
     direction_counts = {
         str(label): int(count)
-        for label, count in (
-            snapshot["target_next_direction"].value_counts().sort_index().items()
-        )
+        for label, count in (snapshot["target_next_direction"].value_counts().sort_index().items())
     }
     target_series = pd.Series(target, dtype=np.float64)
     manifest = {

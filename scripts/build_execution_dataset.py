@@ -166,10 +166,7 @@ def _numeric_matrix(
 
 
 def _class_coverage(labels: np.ndarray) -> dict[str, Any]:
-    counts = {
-        label: int(np.count_nonzero(labels == label))
-        for label in EXPECTED_CLASSES
-    }
+    counts = {label: int(np.count_nonzero(labels == label)) for label in EXPECTED_CLASSES}
     missing = [label for label, count in counts.items() if count == 0]
     return {
         "rows": int(len(labels)),
@@ -227,24 +224,17 @@ def _assess_downstream_readiness(
             )
             calibration_start = train_end - calibration_size
             calibration_fraction_for_estimator = (
-                (calibration_size - 0.25) / train_end
-                if train_end > 0
-                else float("nan")
+                (calibration_size - 0.25) / train_end if train_end > 0 else float("nan")
             )
             calibration_split_representable = (
                 calibration_start >= 12
                 and 0.05 < calibration_fraction_for_estimator < 0.5
-                and math.ceil(train_end * calibration_fraction_for_estimator)
-                == calibration_size
+                and math.ceil(train_end * calibration_fraction_for_estimator) == calibration_size
             )
 
             outer_training = _class_coverage(values[:train_end])
-            pre_calibration_training = _class_coverage(
-                values[:max(0, calibration_start)]
-            )
-            calibration = _class_coverage(
-                values[max(0, calibration_start):train_end]
-            )
+            pre_calibration_training = _class_coverage(values[: max(0, calibration_start)])
+            calibration = _class_coverage(values[max(0, calibration_start) : train_end])
             outer_test = _class_coverage(values[test_start:test_end])
             d06_folds.append(
                 {
@@ -255,9 +245,7 @@ def _assess_downstream_readiness(
                     "test_start_index": test_start,
                     "test_end_index": test_end,
                     "calibration_samples": calibration_size,
-                    "calibration_holdout_fraction_representable": (
-                        calibration_split_representable
-                    ),
+                    "calibration_holdout_fraction_representable": (calibration_split_representable),
                     "outer_training": outer_training,
                     "pre_calibration_training": pre_calibration_training,
                     "calibration": calibration,
@@ -649,8 +637,7 @@ def main() -> int:
         "--require-d06-ready",
         action="store_true",
         help=(
-            "Return exit code 2 unless the default D06 temporal/class-coverage "
-            "profile is ready."
+            "Return exit code 2 unless the default D06 temporal/class-coverage profile is ready."
         ),
     )
     args = parser.parse_args()

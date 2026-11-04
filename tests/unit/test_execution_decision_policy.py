@@ -267,9 +267,10 @@ def test_outer_test_changes_cannot_change_selected_calibration_threshold():
         dates=dates,
     )
     assert modified["selected_neutral_threshold"] == original["selected_neutral_threshold"]
-    assert modified["probability_calibration_temperature"] == original[
-        "probability_calibration_temperature"
-    ]
+    assert (
+        modified["probability_calibration_temperature"]
+        == original["probability_calibration_temperature"]
+    )
     assert modified["calibration_macro_f1"] == original["calibration_macro_f1"]
     assert modified["calibration_start_index"] == original["calibration_start_index"]
 

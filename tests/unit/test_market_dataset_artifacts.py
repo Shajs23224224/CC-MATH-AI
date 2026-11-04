@@ -47,8 +47,7 @@ def _synthetic_source():
         index=dates[:-1],
     )
     rows["target_next_return"] = (
-        history["close"].shift(-1).iloc[:-1].to_numpy()
-        / history["close"].iloc[:-1].to_numpy()
+        history["close"].shift(-1).iloc[:-1].to_numpy() / history["close"].iloc[:-1].to_numpy()
         - 1.0
     )
     return history, rows
