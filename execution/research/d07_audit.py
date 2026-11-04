@@ -273,8 +273,14 @@ def _verify_d06_summary(
         "D06 prediction_rows is invalid",
     )
     expected_runs = len(algorithms) * fold_count
-    _require(summary.get("attempted_model_folds") == expected_runs, "D06 attempted fold count mismatch")
-    _require(summary.get("completed_model_folds") == expected_runs, "D06 completed fold count mismatch")
+    _require(
+        summary.get("attempted_model_folds") == expected_runs,
+        "D06 attempted fold count mismatch",
+    )
+    _require(
+        summary.get("completed_model_folds") == expected_runs,
+        "D06 completed fold count mismatch",
+    )
     _require(
         summary.get("outer_test_used_for_selection") is False,
         "D06 summary marks outer test data as selection data",
@@ -336,7 +342,10 @@ def _verify_aggregate_metrics(
         (str(row.algorithm), str(row.metric))
         for row in aggregates.itertuples(index=False)
     }
-    _require(observed_rows == expected_rows, "D06 aggregate metric keys are incomplete or unexpected")
+    _require(
+        observed_rows == expected_rows,
+        "D06 aggregate metric keys are incomplete or unexpected",
+    )
     return verified
 
 
@@ -476,7 +485,9 @@ def audit_decision_policy_run(
     _require((predictions["row_index"] >= 0).all(), "D06 row indexes must be non-negative")
 
     for column in ("test_used_for_selection", "calibration_test_used_for_selection"):
-        folds[column] = folds[column].map(lambda value: _as_bool(value, column))
+        folds[column] = folds[column].map(
+            lambda value, field=column: _as_bool(value, field)
+        )
     _require(not folds["test_used_for_selection"].any(), "outer test used for threshold selection")
     _require(
         folds["calibration_test_used_for_selection"].all(),
@@ -491,8 +502,14 @@ def audit_decision_policy_run(
     def passed(name: str, detail: str) -> None:
         checks.append({"name": name, "passed": True, "detail": detail})
 
-    passed("d04_manifest_and_target", "D04 hashes, row schema, execution-return formula and threshold labels verified")
-    passed("d06_manifest_and_summary", "All D06 output hashes, byte counts and completion declarations verified")
+    passed(
+        "d04_manifest_and_target",
+        "D04 hashes, row schema, execution-return formula and threshold labels verified",
+    )
+    passed(
+        "d06_manifest_and_summary",
+        "All D06 output hashes, byte counts and completion declarations verified",
+    )
 
     for algorithm in algorithms:
         algorithm_folds = folds.loc[folds["algorithm"].astype(str) == algorithm].sort_values("fold")
@@ -574,7 +591,12 @@ def audit_decision_policy_run(
                 np.array_equal(observed_dates, expected_dates),
                 f"{algorithm} fold {fold_row.fold} feature dates are misaligned",
             )
-            actual = frame["target_execution_direction"].iloc[expected_indices].astype(str).to_numpy()
+            actual = (
+                frame["target_execution_direction"]
+                .iloc[expected_indices]
+                .astype(str)
+                .to_numpy()
+            )
             stored_actual = selected["actual"].astype(str).to_numpy()
             _require(
                 np.array_equal(stored_actual, actual),
@@ -688,8 +710,14 @@ def audit_decision_policy_run(
         "D07.1 audited prediction count differs from D06 summary",
     )
     passed("oos_row_alignment", "Every OOS index/date/label is aligned to the same D04 row")
-    passed("probability_and_policy_reproduction", "All probability vectors and both decision rules were independently reproduced")
-    passed("fold_metric_recalculation", "Every persisted argmax/policy fold metric was recomputed from row-level predictions")
+    passed(
+        "probability_and_policy_reproduction",
+        "All probability vectors and both decision rules were independently reproduced",
+    )
+    passed(
+        "fold_metric_recalculation",
+        "Every persisted argmax/policy fold metric was recomputed from row-level predictions",
+    )
 
     verified_aggregate_count = _verify_aggregate_metrics(folds, aggregates, algorithms)
     passed(
@@ -698,7 +726,10 @@ def audit_decision_policy_run(
     )
     passed(
         "temporal_isolation",
-        "Calibration suffixes are inside training prefixes; outer test windows are contiguous, ordered and unused for selection",
+        (
+            "Calibration suffixes are inside training prefixes; outer test windows "
+            "are contiguous, ordered and unused for selection"
+        ),
     )
 
     audited = pd.concat(enriched_groups, ignore_index=True).sort_values(
@@ -748,9 +779,18 @@ def audit_decision_policy_run(
         },
         "limitations": [
             "D07.1 is an integrity audit, not a backtest or profitability assessment.",
-            "D07.2 must use this audited output and apply separately declared execution-cost assumptions.",
-            "Historical OOS folds have already been inspected and are not a prospective untouched test.",
-            "SHA-256 manifests detect file changes but are unsigned and do not authenticate artifact origin.",
+            (
+                "D07.2 must use this audited output and apply separately declared "
+                "execution-cost assumptions."
+            ),
+            (
+                "Historical OOS folds have already been inspected and are not "
+                "a prospective untouched test."
+            ),
+            (
+                "SHA-256 manifests detect file changes but are unsigned and do not "
+                "authenticate artifact origin."
+            ),
         ],
         "output_directory": str(audit_dir),
         "outputs": {
