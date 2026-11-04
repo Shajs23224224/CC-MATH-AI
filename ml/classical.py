@@ -395,6 +395,7 @@ class ClassicalMLModel:
             raise MLTrainingError(
                 "estimator returned a prediction count inconsistent with the test set"
             )
+        evaluation_parameters: dict[str, int | float | str | bool | None]
         if self.config.task == "regression":
             predicted_numeric = predictions.astype(np.float64)
             actual_numeric = y_test.astype(np.float64)
@@ -503,7 +504,7 @@ class ClassicalMLModel:
                 "prediction_collapse": float(unique_predictions == 1),
             }
 
-            used_slugs = set()
+            used_slugs: set[str] = set()
             class_slugs = [
                 _class_metric_slug(label, index, used_slugs) for index, label in enumerate(classes)
             ]
