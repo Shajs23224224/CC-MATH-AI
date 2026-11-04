@@ -249,7 +249,7 @@ def test_audit_rejects_entry_date_not_next_observed_session(tmp_path):
 
     d04_manifest_path = artifacts["dataset_manifest_path"]
     d04_manifest = json.loads(d04_manifest_path.read_text(encoding="utf-8"))
-    d04_manifest["artifact"] = _manifest_entry(dataset_path)
+    d04_manifest["artifact"].update(_manifest_entry(dataset_path))
     _write_json(d04_manifest_path, d04_manifest)
 
     policy_dir = artifacts["policy_dir"]
