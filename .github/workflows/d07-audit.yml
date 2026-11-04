@@ -1,4 +1,4 @@
-name: D07.1 Execution audit
+name: D07 execution audit and simulation
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   audit-quality:
-    name: Python ${{ matrix.python-version }} D07.1 audit
+    name: Python ${{ matrix.python-version }} D07 audit and simulation
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -40,13 +40,17 @@ jobs:
         run: >-
           ruff check
           scripts/audit_execution_decision_policy.py
+          scripts/simulate_execution_decisions.py
           tests/unit/test_audit_execution_decision_policy.py
+          tests/unit/test_simulate_execution_decisions.py
 
       - name: Ruff format check
         run: >-
           ruff format --check
           scripts/audit_execution_decision_policy.py
+          scripts/simulate_execution_decisions.py
           tests/unit/test_audit_execution_decision_policy.py
+          tests/unit/test_simulate_execution_decisions.py
 
       - name: D04-D06 and D07.1 regression tests
         env:
@@ -54,6 +58,7 @@ jobs:
         run: >-
           pytest -q
           tests/unit/test_audit_execution_decision_policy.py
+          tests/unit/test_simulate_execution_decisions.py
           tests/unit/test_execution_dataset.py
           tests/unit/test_execution_ml_walk_forward.py
           tests/unit/test_execution_decision_policy.py
