@@ -419,6 +419,25 @@ def audit_decision_policy_run(
         and len(np.unique(threshold_grid)) == len(threshold_grid),
         "D06 manifest threshold_grid is invalid",
     )
+    summary_threshold_grid = np.asarray(
+        d06_summary.get("threshold_grid", []),
+        dtype=np.float64,
+    )
+    _require(
+        summary_threshold_grid.shape == threshold_grid.shape
+        and np.allclose(
+            summary_threshold_grid,
+            threshold_grid,
+            rtol=0.0,
+            atol=1e-12,
+        ),
+        "D06 manifest and summary threshold grids differ",
+    )
+    _require(
+        configuration.get("selection_objective")
+        == d06_summary.get("threshold_selection_objective"),
+        "D06 manifest and summary threshold objectives differ",
+    )
     calibration_fraction = d06_summary.get("calibration_fraction")
     _require(
         isinstance(calibration_fraction, (int, float))
