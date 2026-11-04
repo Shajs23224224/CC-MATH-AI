@@ -837,7 +837,10 @@ def audit_calibration_reliability(
                 expected_calibration_indices
             ]
             _require(
-                np.array_equal(cal_rows["feature_date"].astype(str).to_numpy(), expected_calibration_dates),
+                np.array_equal(
+                    cal_rows["feature_date"].astype(str).to_numpy(),
+                    expected_calibration_dates,
+                ),
                 f"{algorithm} fold {fold_id} calibration feature dates differ from D04",
             )
             raw_calibration = _probability_matrix(
