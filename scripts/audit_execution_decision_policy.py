@@ -408,7 +408,9 @@ def audit_decision_policy_run(
 
     missing_dataset_columns = set(_REQUIRED_DATASET_COLUMNS) - set(dataset_frame.columns)
     if missing_dataset_columns:
-        raise ValueError(f"D04 dataset missing execution audit columns: {sorted(missing_dataset_columns)}")
+        raise ValueError(
+            f"D04 dataset missing execution audit columns: {sorted(missing_dataset_columns)}"
+        )
 
     ticker = str(d04_manifest.get("experiment", {}).get("ticker", "UNKNOWN"))
     _record_check(
