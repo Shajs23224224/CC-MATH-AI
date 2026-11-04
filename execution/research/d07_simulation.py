@@ -56,6 +56,10 @@ def _require(condition: bool, message: str) -> None:
 
 
 def _finite_number(value: object, field: str) -> float:
+    _require(
+        not isinstance(value, (bool, np.bool_)),
+        f"{field} must be numeric, not boolean",
+    )
     try:
         result = float(value)
     except (TypeError, ValueError) as exc:
