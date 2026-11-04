@@ -88,8 +88,7 @@ def _validate_configuration(
         "at least one transaction-cost scenario is required",
     )
     costs = tuple(
-        _finite_number(value, "cost_bps_per_side")
-        for value in cost_scenarios_bps_per_side
+        _finite_number(value, "cost_bps_per_side") for value in cost_scenarios_bps_per_side
     )
     _require(
         len(set(costs)) == len(costs),
