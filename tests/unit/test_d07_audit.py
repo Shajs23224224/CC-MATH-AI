@@ -49,9 +49,7 @@ def test_audit_reconciles_d06_predictions_with_d04_and_writes_manifest(tmp_path)
     assert audited.loc[0, "policy_prediction"] == "NEUTRAL"
     assert audited.loc[0, "actual_execution_return"] == pytest.approx(-0.02)
 
-    manifest = json.loads(
-        (audit_dir / "audit_manifest.json").read_text(encoding="utf-8")
-    )
+    manifest = json.loads((audit_dir / "audit_manifest.json").read_text(encoding="utf-8"))
     for filename, entry in manifest["outputs"].items():
         path = audit_dir / filename
         assert path.is_file()
