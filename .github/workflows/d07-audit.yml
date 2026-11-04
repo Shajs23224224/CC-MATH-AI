@@ -52,7 +52,7 @@ jobs:
           tests/unit/test_audit_execution_decision_policy.py
           tests/unit/test_simulate_execution_decisions.py
 
-      - name: D04-D06 and D07.1 regression tests
+      - name: D04-D06 regression and D07.1-D07.2 tests
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: >-
