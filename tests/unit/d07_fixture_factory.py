@@ -35,7 +35,7 @@ def _manifest_entry(path: Path) -> dict[str, Any]:
 def build_d04_d06_artifacts(root: Path) -> dict[str, Path]:
     """Create one completed D04 dataset and one completed D06 decision-policy run."""
     root.mkdir(parents=True, exist_ok=True)
-    feature_dates = pd.bdate_range("2024-01-02", periods=12)
+    feature_dates = pd.bdate_range("2024-01-02", periods=18)
     returns = np.asarray(
         [
             -0.020,
@@ -50,6 +50,12 @@ def build_d04_d06_artifacts(root: Path) -> dict[str, Path]:
             -0.020,
             0.020,
             0.0005,
+            -0.012,
+            0.016,
+            0.0005,
+            -0.030,
+            0.015,
+            0.0005,
         ],
         dtype=np.float64,
     )
@@ -60,12 +66,12 @@ def build_d04_d06_artifacts(root: Path) -> dict[str, Path]:
         np.where(returns < -threshold, "DOWN", "NEUTRAL"),
     )
     entry_dates = feature_dates + pd.offsets.BDay(1)
-    entry_open = np.full(12, 100.0, dtype=np.float64)
+    entry_open = np.full(18, 100.0, dtype=np.float64)
     exit_close = entry_open * (1.0 + returns)
     dataset = pd.DataFrame(
         {
-            "feature_a": np.arange(12, dtype=np.float64),
-            "feature_b": np.asarray([0.1, 0.2, 0.3] * 4, dtype=np.float64),
+            "feature_a": np.arange(18, dtype=np.float64),
+            "feature_b": np.asarray([0.1, 0.2, 0.3] * 6, dtype=np.float64),
             "entry_date": entry_dates.strftime("%Y-%m-%d"),
             "entry_open": entry_open,
             "exit_close": exit_close,
@@ -112,7 +118,7 @@ def build_d04_d06_artifacts(root: Path) -> dict[str, Path]:
 
     policy_dir = root / "d06_decision_policy"
     policy_dir.mkdir()
-    test_indices = np.arange(6, 12, dtype=np.int64)
+    test_indices = np.arange(12, 18, dtype=np.int64)
     actual = labels[test_indices].astype(str)
     probabilities = np.asarray(
         [
@@ -160,16 +166,16 @@ def build_d04_d06_artifacts(root: Path) -> dict[str, Path]:
         "algorithm": "test_classifier",
         "status": "COMPLETED",
         "train_start_index": 0,
-        "train_end_index": 6,
-        "test_start_index": 6,
-        "test_end_index": 12,
-        "training_samples": 6,
+        "train_end_index": 12,
+        "test_start_index": 12,
+        "test_end_index": 18,
+        "training_samples": 12,
         "test_samples": 6,
         "test_used_for_selection": False,
-        "test_start_date": feature_dates[6].isoformat(),
-        "test_last_feature_date": feature_dates[11].isoformat(),
-        "calibration_start_index": 3,
-        "calibration_end_index": 6,
+        "test_start_date": feature_dates[12].isoformat(),
+        "test_last_feature_date": feature_dates[17].isoformat(),
+        "calibration_start_index": 9,
+        "calibration_end_index": 12,
         "calibration_samples": 3,
         "calibration_test_used_for_selection": True,
         "threshold_objective": "macro_f1",
@@ -232,7 +238,7 @@ def build_d04_d06_artifacts(root: Path) -> dict[str, Path]:
         "configuration": {
             "seed": 28,
             "fold_count": 1,
-            "test_fraction": 0.10,
+            "test_fraction": 0.34,
             "calibration_fraction": 0.20,
             "algorithms": ["test_classifier"],
             "threshold_grid": [0.40],
