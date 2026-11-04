@@ -248,8 +248,11 @@ def _verify_d04_dataset(
     target_manifest = manifest.get("target")
     _require(
         isinstance(target_manifest, dict)
+        and target_manifest.get("name") == "target_execution_return"
         and target_manifest.get("classification_name") == "target_execution_direction"
-        and target_manifest.get("classes") == list(EXPECTED_CLASSES),
+        and target_manifest.get("classes") == list(EXPECTED_CLASSES)
+        and target_manifest.get("label_rule")
+        == "UP if return > threshold; DOWN if return < -threshold; NEUTRAL otherwise",
         "D04 target classification contract is invalid",
     )
     execution_assumption = manifest.get("execution_assumption")
@@ -259,7 +262,9 @@ def _verify_d04_dataset(
         and execution_assumption.get("entry") == "next observed session open"
         and execution_assumption.get("exit") == "same next session close"
         and execution_assumption.get("return_formula")
-        == "next_session_close / next_session_open - 1",
+        == "next_session_close / next_session_open - 1"
+        and execution_assumption.get("return_type")
+        == "gross, before commissions, spread and slippage",
         "D04 execution timing/return contract is invalid",
     )
     returns = execution[:, 2]
