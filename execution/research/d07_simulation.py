@@ -489,11 +489,7 @@ def _simulate_account(
         else:
             executed_direction = requested_direction
             active_notional = min(notional_per_trade, equity_before)
-            gross_pnl = (
-                executed_direction
-                * float(row.actual_execution_return)
-                * active_notional
-            )
+            gross_pnl = executed_direction * float(row.actual_execution_return) * active_notional
             costs = active_notional * round_trip_cost_rate
             net_pnl = gross_pnl - costs
             equity += net_pnl
@@ -559,9 +555,7 @@ def _account_metrics(
     trade_pnl = pnl[traded]
     daily_returns = pnl / initial_capital
     equity = frame["portfolio_equity_after"].to_numpy(dtype=np.float64)
-    running_peak = np.maximum.accumulate(
-        np.concatenate(([initial_capital], equity))
-    )[1:]
+    running_peak = np.maximum.accumulate(np.concatenate(([initial_capital], equity)))[1:]
     drawdowns = equity / running_peak - 1.0
     winners = trade_pnl[trade_pnl > 0.0]
     losers = trade_pnl[trade_pnl < 0.0]
@@ -699,9 +693,7 @@ def simulate_execution_decisions(
     metric_rows: list[dict[str, Any]] = []
     fold_rows: list[dict[str, Any]] = []
     for algorithm in algorithms:
-        algorithm_rows = predictions.loc[
-            predictions["algorithm"].astype(str) == algorithm
-        ]
+        algorithm_rows = predictions.loc[predictions["algorithm"].astype(str) == algorithm]
         for strategy, prediction_column in _STRATEGIES.items():
             for cost in costs:
                 ledger = _simulate_account(
@@ -730,13 +722,13 @@ def simulate_execution_decisions(
                     )
                 )
                 metric_rows.append(metric)
-                fold_rows.extend(
-                    _fold_metrics(ledger, initial_capital=initial_capital)
-                )
+                fold_rows.extend(_fold_metrics(ledger, initial_capital=initial_capital))
 
-    trade_ledger = pd.concat(ledgers, ignore_index=True).sort_values(
-        ["algorithm", "strategy", "cost_bps_per_side", "fold", "row_index"]
-    ).reset_index(drop=True)
+    trade_ledger = (
+        pd.concat(ledgers, ignore_index=True)
+        .sort_values(["algorithm", "strategy", "cost_bps_per_side", "fold", "row_index"])
+        .reset_index(drop=True)
+    )
     metrics = pd.DataFrame.from_records(metric_rows)
     folds = pd.DataFrame.from_records(fold_rows)
     sensitivity_columns = [
@@ -880,9 +872,7 @@ def simulate_execution_decisions(
         "input": {
             "audit_directory": audit_dir.name,
             "audit_manifest_sha256": sha256_file(audit_dir / "audit_manifest.json"),
-            "audited_predictions_sha256": sha256_file(
-                audit_dir / "audited_predictions.csv"
-            ),
+            "audited_predictions_sha256": sha256_file(audit_dir / "audited_predictions.csv"),
             "execution_dataset_sha256": audit_summary.get("execution_dataset_sha256"),
         },
         "configuration": {
