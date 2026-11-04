@@ -446,7 +446,8 @@ def build_execution_dataset(
             "The threshold is a classification label band, not a transaction-cost estimate.",
             "The recorded opening and closing prices are theoretical execution assumptions.",
             "Commissions, spread, slippage, market impact, funding and taxes are not modeled.",
-            "The source manifest is unsigned; SHA-256 detects changes but does not authenticate origin.",
+            "The source manifest is unsigned; SHA-256 detects changes "
+            "but does not authenticate origin.",
             "Historical predictive metrics do not establish future profitability.",
         ],
     }
