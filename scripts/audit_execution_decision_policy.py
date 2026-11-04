@@ -934,7 +934,10 @@ def audit_decision_policy_run(
         checks,
         "temporal_isolation",
         True,
-        "outer test windows are chronological, non-overlapping, and excluded from threshold selection",
+        (
+            "outer test windows are chronological, non-overlapping, and excluded "
+            "from threshold selection"
+        ),
     )
 
     audited_predictions = pd.concat(audited_frames, ignore_index=True)
@@ -985,8 +988,14 @@ def audit_decision_policy_run(
         "limitations": [
             "This audit validates data and prediction integrity; it is not a backtest.",
             "No position sizing, capital, fees, spread, slippage, or market impact is applied.",
-            "The historical OOS folds were previously inspected and are not an untouched prospective test.",
-            "Joined realized execution returns do not establish profitability or future predictive performance.",
+            (
+                "The historical OOS folds were previously inspected and are not "
+                "an untouched prospective test."
+            ),
+            (
+                "Joined realized execution returns do not establish profitability "
+                "or future predictive performance."
+            ),
         ],
         "outputs": {
             "predictions": "audited_predictions.csv",
