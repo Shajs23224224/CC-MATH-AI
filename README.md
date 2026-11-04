@@ -99,6 +99,7 @@ See:
 - [Training Dashboard TD03](docs/TRAINING_DASHBOARD_TD03.md) — read-only FastAPI backend, persisted-history recovery and resumable per-run SSE streaming
 - [Training Dashboard TD04](docs/TRAINING_DASHBOARD_TD04.md) — responsive same-origin browser UI, run inspector, metric cards, event timeline and live SSE updates
 - [Training Dashboard TD05](docs/TRAINING_DASHBOARD_TD05.md) — bounded task orchestration, allow-listed handlers, queue management and cooperative cancellation
+- [D07.1 execution decision-policy audit](docs/D07_EXECUTION_DECISION_AUDIT.md) — integrity checks and reconciliation of D06 OOS predictions with D04 execution outcomes (experimental feature branch; not merged into `main`).
 - [SYSTEM_SPEC.md](SYSTEM_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
