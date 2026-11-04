@@ -300,8 +300,17 @@ def _validate_audited_rows(
         "D07.1 entry dates must follow feature dates",
     )
     _require(
+        predictions["_feature_date_utc"].is_monotonic_increasing
+        and predictions["_entry_date_utc"].is_monotonic_increasing,
+        "D07.1 feature/entry dates must be chronological",
+    )
+    _require(
         not predictions.duplicated(["algorithm", "_feature_date_utc"]).any(),
         "D07.1 feature dates contain duplicates",
+    )
+    _require(
+        not predictions.duplicated(["algorithm", "_entry_date_utc"]).any(),
+        "D07.1 entry dates contain duplicates",
     )
 
     canonical_indices: np.ndarray | None = None
@@ -362,13 +371,15 @@ def _validate_audited_rows(
             algorithm_fold_audit["fold"].tolist() == list(range(1, fold_count + 1)),
             f"fold-audit identifiers are incomplete for {algorithm}",
         )
-        previous_end = -1
+        previous_end: int | None = None
         for audit_row in algorithm_fold_audit.itertuples(index=False):
             start = int(audit_row.test_start_index)
             end = int(audit_row.test_end_index)
             _require(
-                start >= 0 and end > start and start >= previous_end,
-                f"{algorithm} fold audit has invalid or overlapping OOS windows",
+                start >= 0
+                and end > start
+                and (previous_end is None or start == previous_end),
+                f"{algorithm} fold audit has a gap or overlapping OOS windows",
             )
             _require(
                 int(audit_row.train_start_index) == 0
