@@ -479,8 +479,22 @@ class ClassicalMLModel:
 
             metrics = {
                 "accuracy": model_accuracy,
-                "precision_macro": float(precision_score(y_test, predictions, average="macro", zero_division=0)),
-                "recall_macro": float(recall_score(y_test, predictions, average="macro", zero_division=0)),
+                "precision_macro": float(
+                    precision_score(
+                        y_test,
+                        predictions,
+                        average="macro",
+                        zero_division=0,
+                    )
+                ),
+                "recall_macro": float(
+                    recall_score(
+                        y_test,
+                        predictions,
+                        average="macro",
+                        zero_division=0,
+                    )
+                ),
                 "f1_macro": float(f1_score(y_test, predictions, average="macro", zero_division=0)),
                 "balanced_accuracy": float(balanced_accuracy_score(y_test, predictions)),
                 "majority_baseline_accuracy": majority_accuracy,
