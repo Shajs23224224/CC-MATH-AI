@@ -1,0 +1,61 @@
+name: D07.1 Execution audit
+
+on:
+  push:
+    branches:
+      - feature/cc-math-ai-d07-execution-audit
+  pull_request:
+    branches:
+      - feature/cc-math-ai-d01-d06
+
+permissions:
+  contents: read
+
+jobs:
+  audit-quality:
+    name: Python ${{ matrix.python-version }} D07.1 audit
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Upgrade packaging tools
+        run: python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install project and development dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Ruff lint
+        run: >-
+          ruff check
+          scripts/audit_execution_decision_policy.py
+          tests/unit/test_audit_execution_decision_policy.py
+
+      - name: Ruff format check
+        run: >-
+          ruff format --check
+          scripts/audit_execution_decision_policy.py
+          tests/unit/test_audit_execution_decision_policy.py
+
+      - name: D04-D06 and D07.1 regression tests
+        run: >-
+          pytest -q
+          tests/unit/test_audit_execution_decision_policy.py
+          tests/unit/test_execution_dataset.py
+          tests/unit/test_execution_ml_walk_forward.py
+          tests/unit/test_execution_decision_policy.py
+          tests/unit/test_ml_walk_forward.py
+          tests/unit/test_training_dataset_snapshots.py
+          tests/unit/test_classical_ml.py
+          tests/unit/test_gradient_boosting.py
