@@ -85,3 +85,8 @@ that the declared software protocol completed; it does not establish an edge or
 trading profitability. D06 does not include transaction costs, portfolio sizing,
 risk approval or broker execution. Those belong to later, separately validated
 stages.
+
+
+## D07 calibration-audit evidence
+
+D06.3 also persists calibration_predictions.csv with the original three-class probabilities for every calibration-suffix observation. The OOS prediction file includes both the pre-temperature probabilities and the calibrated probabilities. These auxiliary raw values are retained in the output manifest so the downstream D07.3 auditor can independently refit the temperature, reproduce calibration scores, verify its application to OOS probabilities, and rebuild reliability bins from the actual rows. The primary four D06 artifacts and their existing schemas remain available to downstream consumers.

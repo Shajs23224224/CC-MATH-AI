@@ -526,6 +526,7 @@ def evaluate_decision_policy_fold(
     dates: tuple[str, ...],
     calibration_fraction: float = 0.20,
     reliability_records: list[dict[str, Any]] | None = None,
+    calibration_prediction_records: list[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Calibrate and select the decision threshold using only a past suffix."""
     if dataset.task != "classification":
@@ -714,11 +715,29 @@ def evaluate_decision_policy_fold(
                 "argmax_prediction": argmax_predictions[offset],
                 "policy_prediction": policy_predictions[offset],
                 "selected_neutral_threshold": selected["threshold"],
+                "raw_probability_down": float(raw_test_probabilities[offset, 0]),
+                "raw_probability_neutral": float(raw_test_probabilities[offset, 1]),
+                "raw_probability_up": float(raw_test_probabilities[offset, 2]),
                 "probability_down": float(probabilities[offset, 0]),
                 "probability_neutral": float(probabilities[offset, 1]),
                 "probability_up": float(probabilities[offset, 2]),
             }
         )
+    if calibration_prediction_records is not None:
+        for offset in range(calibration_size):
+            absolute_index = calibration_start + offset
+            calibration_prediction_records.append(
+                {
+                    "fold": fold.fold,
+                    "algorithm": algorithm,
+                    "row_index": absolute_index,
+                    "feature_date": dates[absolute_index],
+                    "actual": calibration_labels[offset],
+                    "raw_probability_down": float(raw_calibration_probabilities[offset, 0]),
+                    "raw_probability_neutral": float(raw_calibration_probabilities[offset, 1]),
+                    "raw_probability_up": float(raw_calibration_probabilities[offset, 2]),
+                }
+            )
     if reliability_records is not None:
         reliability_records.extend(reliability_rows)
     return metrics, predictions
@@ -977,6 +996,7 @@ def run_decision_policy(
 
     fold_records: list[dict[str, Any]] = []
     prediction_records: list[dict[str, Any]] = []
+    calibration_prediction_records: list[dict[str, Any]] = []
     reliability_records: list[dict[str, Any]] = []
     total = len(DEFAULT_ALGORITHMS) * len(folds)
     completed = 0
@@ -999,6 +1019,7 @@ def run_decision_policy(
                     dates=dates,
                     calibration_fraction=calibration_fraction,
                     reliability_records=reliability_records,
+                    calibration_prediction_records=calibration_prediction_records,
                 )
                 fold_records.append(record)
                 prediction_records.extend(predictions)
@@ -1028,9 +1049,11 @@ def run_decision_policy(
     fold_path = run_dir / "fold_metrics.csv"
     aggregate_path = run_dir / "aggregate_metrics.csv"
     predictions_path = run_dir / "oos_predictions.csv"
+    calibration_predictions_path = run_dir / "calibration_predictions.csv"
     _write_csv_atomic(fold_records, fold_path)
     _write_csv_atomic(_aggregate_metrics(fold_records), aggregate_path)
     _write_csv_atomic(prediction_records, predictions_path)
+    _write_csv_atomic(calibration_prediction_records, calibration_predictions_path)
 
     successes = sum(item["status"] == "COMPLETED" for item in fold_records)
     failures = total - successes
@@ -1103,12 +1126,19 @@ def run_decision_policy(
             "fold_metrics": fold_path.name,
             "aggregate_metrics": aggregate_path.name,
             "predictions": predictions_path.name,
+            "calibration_predictions": calibration_predictions_path.name,
         },
     }
     summary_path = run_dir / "decision_policy_summary.json"
     _write_json_atomic(summary_path, summary)
 
-    output_files = (fold_path, aggregate_path, predictions_path, summary_path)
+    output_files = (
+        fold_path,
+        aggregate_path,
+        predictions_path,
+        calibration_predictions_path,
+        summary_path,
+    )
     output_manifest = {
         "schema_version": "1.0",
         "contract_version": "D06.3",

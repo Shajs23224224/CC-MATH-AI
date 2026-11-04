@@ -326,6 +326,25 @@ def test_run_writes_complete_hash_manifest_compatible_with_d07(tmp_path, monkeyp
 
     predictions = pd.read_csv(run_dir / "oos_predictions.csv")
     assert len(predictions) == 18
+    assert {
+        "raw_probability_down",
+        "raw_probability_neutral",
+        "raw_probability_up",
+    }.issubset(predictions.columns)
+    calibration_predictions = pd.read_csv(run_dir / "calibration_predictions.csv")
+    assert len(calibration_predictions) == int(
+        pd.read_csv(run_dir / "fold_metrics.csv").iloc[0]["calibration_samples"]
+    )
+    assert {
+        "fold",
+        "algorithm",
+        "row_index",
+        "feature_date",
+        "actual",
+        "raw_probability_down",
+        "raw_probability_neutral",
+        "raw_probability_up",
+    }.issubset(calibration_predictions.columns)
     assert set(predictions["actual"]) == {"DOWN", "NEUTRAL", "UP"}
     assert set(predictions["argmax_prediction"]).issubset({"DOWN", "NEUTRAL", "UP"})
     assert set(predictions["policy_prediction"]).issubset({"DOWN", "NEUTRAL", "UP"})
