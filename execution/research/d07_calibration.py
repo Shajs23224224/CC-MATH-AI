@@ -744,7 +744,7 @@ def audit_calibration_reliability(
     folds = folds.copy()
     oos = oos.copy()
     calibration = calibration.copy()
-    for frame, columns, label in (
+    for artifact_frame, columns, label in (
         (
             folds,
             (
@@ -764,7 +764,7 @@ def audit_calibration_reliability(
         (calibration, ("fold", "row_index"), "calibration predictions"),
     ):
         for column in columns:
-            frame[column] = frame[column].map(
+            artifact_frame[column] = artifact_frame[column].map(
                 lambda value, name=f"{label} {column}": _as_integer(value, name)
             )
 

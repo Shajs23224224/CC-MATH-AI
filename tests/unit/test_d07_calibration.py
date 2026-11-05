@@ -315,7 +315,7 @@ def test_audit_rejects_d04_next_session_mapping_even_after_hash_refresh(tmp_path
         index_label="feature_date",
         float_format="%.17g",
         date_format="%Y-%m-%dT%H:%M:%S.%f",
-        lineterminator="\\n",
+        lineterminator="\n",
     )
 
     d04_manifest_path = dataset_path.parent / "execution_dataset_manifest.json"
