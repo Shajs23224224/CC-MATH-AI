@@ -121,6 +121,7 @@ def _build_d06_3_artifacts(root: Path) -> dict[str, Path | float]:
     fold = folds.iloc[0].to_dict()
     fold.update(
         {
+            "estimator_fit_samples": 9,
             "probability_calibration_temperature": temperature,
             **calibration_scores,
             **threshold_result,
@@ -244,6 +245,52 @@ def test_audit_reproduces_temperature_threshold_and_reliability_bins(tmp_path):
         assert path.is_file()
         assert entry["sha256"] == _sha256(path)
         assert entry["bytes"] == path.stat().st_size
+
+
+@pytest.mark.parametrize(
+    ("column", "replacement", "message"),
+    [
+        (
+            "estimator_fit_samples",
+            12,
+            "estimator_fit_samples must equal the pre-calibration prefix length",
+        ),
+        (
+            "test_used_for_selection",
+            True,
+            "outer test must not be used for selection",
+        ),
+        (
+            "calibration_test_used_for_selection",
+            False,
+            "calibration suffix must be used for calibration and threshold selection",
+        ),
+    ],
+)
+def test_audit_rejects_nested_calibration_boundary_tampering_after_manifest_refresh(
+    tmp_path,
+    column,
+    replacement,
+    message,
+):
+    artifacts = _build_d06_3_artifacts(tmp_path)
+    path = Path(artifacts["fold_metrics_path"])
+    folds = pd.read_csv(path)
+    folds.loc[0, column] = replacement
+    folds.to_csv(
+        path,
+        index=False,
+        float_format="%.17g",
+        lineterminator="\n",
+    )
+    _refresh_manifest(Path(artifacts["policy_dir"]), "fold_metrics.csv")
+
+    with pytest.raises(ValueError, match=message):
+        audit_calibration_reliability(
+            artifacts["policy_dir"],
+            artifacts["dataset_path"],
+            output_root=tmp_path / "audits",
+        )
 
 
 def test_audit_rejects_tampered_reliability_bin_after_manifest_refresh(tmp_path):
