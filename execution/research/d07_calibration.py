@@ -92,6 +92,14 @@ def _as_integer(value: object, field: str) -> int:
     return int(numeric)
 
 
+def _as_boolean(value: object, field: str) -> bool:
+    _require(
+        isinstance(value, (bool, np.bool_)),
+        f"{field} must be a boolean",
+    )
+    return bool(value)
+
+
 def _as_finite(value: object, field: str) -> float:
     _require(
         not isinstance(value, (bool, np.bool_)),
@@ -732,10 +740,14 @@ def audit_calibration_reliability(
             "train_end_index",
             "test_start_index",
             "test_end_index",
+            "training_samples",
+            "estimator_fit_samples",
             "calibration_start_index",
             "calibration_end_index",
             "calibration_samples",
             "test_samples",
+            "test_used_for_selection",
+            "calibration_test_used_for_selection",
             "probability_calibration_temperature",
             "selected_neutral_threshold",
         }.issubset(folds.columns),
@@ -753,6 +765,8 @@ def audit_calibration_reliability(
                 "train_end_index",
                 "test_start_index",
                 "test_end_index",
+                "training_samples",
+                "estimator_fit_samples",
                 "calibration_start_index",
                 "calibration_end_index",
                 "calibration_samples",
@@ -812,6 +826,44 @@ def audit_calibration_reliability(
                 and calibration_count == calibration_end - calibration_start
                 and test_start < test_end <= len(frame),
                 f"{algorithm} fold {fold_id} temporal boundaries are invalid",
+            )
+            training_samples = int(fold_row["training_samples"])
+            estimator_fit_samples = int(fold_row["estimator_fit_samples"])
+            _require(
+                training_samples == train_end - train_start,
+                f"{algorithm} fold {fold_id} training_samples do not match the outer prefix",
+            )
+            _require(
+                estimator_fit_samples == calibration_start - train_start,
+                (
+                    f"{algorithm} fold {fold_id} estimator_fit_samples must equal "
+                    "the pre-calibration prefix length"
+                ),
+            )
+            _require(
+                not _as_boolean(
+                    fold_row["test_used_for_selection"],
+                    f"{algorithm} fold {fold_id} test_used_for_selection",
+                ),
+                f"{algorithm} fold {fold_id} outer test must not be used for selection",
+            )
+            _require(
+                _as_boolean(
+                    fold_row["calibration_test_used_for_selection"],
+                    f"{algorithm} fold {fold_id} calibration_test_used_for_selection",
+                ),
+                (
+                    f"{algorithm} fold {fold_id} calibration suffix must be used "
+                    "for calibration and threshold selection"
+                ),
+            )
+            pre_calibration_labels = d04_labels[train_start:calibration_start]
+            _require(
+                set(pre_calibration_labels.tolist()) == set(EXPECTED_CLASSES),
+                (
+                    f"{algorithm} fold {fold_id} pre-calibration estimator prefix "
+                    "does not contain all three classes"
+                ),
             )
             expected_calibration_count = max(2, int(math.ceil(train_end * calibration_fraction)))
             _require(
