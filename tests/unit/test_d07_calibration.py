@@ -251,6 +251,11 @@ def test_audit_reproduces_temperature_threshold_and_reliability_bins(tmp_path):
     ("column", "replacement", "message"),
     [
         (
+            "training_samples",
+            11,
+            "training_samples do not match the outer prefix",
+        ),
+        (
             "estimator_fit_samples",
             12,
             "estimator_fit_samples must equal the pre-calibration prefix length",
