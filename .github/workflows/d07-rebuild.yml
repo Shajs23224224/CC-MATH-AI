@@ -4,6 +4,30 @@ on:
   push:
     branches:
       - feature/cc-math-ai-d07-rebuild
+  pull_request:
+    branches:
+      - feature/cc-math-ai-d01-d06
+    paths:
+      - ".github/workflows/d07-rebuild.yml"
+      - "execution/research/**"
+      - "scripts/audit_execution_decision_policy.py"
+      - "scripts/audit_calibration_reliability.py"
+      - "scripts/simulate_execution_decisions.py"
+      - "scripts/build_execution_dataset.py"
+      - "scripts/run_execution_decision_policy.py"
+      - "scripts/run_execution_ml_walk_forward.py"
+      - "scripts/run_ml_walk_forward.py"
+      - "core/contracts/ml.py"
+      - "core/utils/market_dataset_artifacts.py"
+      - "ml/**"
+      - "pyproject.toml"
+      - "tests/unit/d07_*.py"
+      - "tests/unit/test_execution_dataset.py"
+      - "tests/unit/test_execution_ml_walk_forward.py"
+      - "tests/unit/test_execution_decision_policy.py"
+      - "tests/unit/test_ml_walk_forward.py"
+  workflow_dispatch:
+
 permissions:
   contents: read
 
@@ -60,14 +84,18 @@ jobs:
           tests/unit/test_d07_calibration.py
           tests/unit/test_d07_simulation.py
 
+      - name: Mypy D07 research modules
+        run: mypy execution/research
+
       - name: D07 audit/simulation and D04-D06 regressions
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: >-
-          pytest -q
+          python -m pytest -q
           tests/unit/test_d07_audit.py
           tests/unit/test_d07_calibration.py
           tests/unit/test_d07_simulation.py
           tests/unit/test_execution_dataset.py
           tests/unit/test_execution_ml_walk_forward.py
           tests/unit/test_execution_decision_policy.py
+          tests/unit/test_ml_walk_forward.py
