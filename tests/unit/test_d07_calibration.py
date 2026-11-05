@@ -305,6 +305,48 @@ def test_audit_rejects_modified_temperature_after_manifest_refresh(tmp_path):
         )
 
 
+def test_audit_rejects_d04_next_session_mapping_even_after_hash_refresh(tmp_path):
+    artifacts = _build_d06_3_artifacts(tmp_path)
+    dataset_path = Path(artifacts["dataset_path"])
+    dataset = pd.read_csv(dataset_path, index_col="feature_date")
+    dataset.iloc[0, dataset.columns.get_loc("entry_date")] = "2024-01-04"
+    dataset.to_csv(
+        dataset_path,
+        index_label="feature_date",
+        float_format="%.17g",
+        date_format="%Y-%m-%dT%H:%M:%S.%f",
+        lineterminator="\\n",
+    )
+
+    d04_manifest_path = dataset_path.parent / "execution_dataset_manifest.json"
+    d04_manifest = json.loads(d04_manifest_path.read_text(encoding="utf-8"))
+    d04_manifest["artifact"]["sha256"] = _sha256(dataset_path)
+    d04_manifest["artifact"]["bytes"] = dataset_path.stat().st_size
+    _write_json(d04_manifest_path, d04_manifest)
+
+    policy_dir = Path(artifacts["policy_dir"])
+    d06_manifest_path = policy_dir / "decision_policy_manifest.json"
+    d06_manifest = json.loads(d06_manifest_path.read_text(encoding="utf-8"))
+    d06_manifest["input"]["execution_dataset_sha256"] = _sha256(dataset_path)
+    d06_manifest["input"]["source_manifest_sha256"] = _sha256(d04_manifest_path)
+    _write_json(d06_manifest_path, d06_manifest)
+    summary_path = policy_dir / "decision_policy_summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["snapshot_sha256"] = _sha256(dataset_path)
+    _write_json(summary_path, summary)
+    _refresh_manifest(policy_dir, "decision_policy_summary.json")
+
+    with pytest.raises(
+        ValueError,
+        match="D04 entry dates do not map to the next observed feature session",
+    ):
+        audit_calibration_reliability(
+            policy_dir,
+            dataset_path,
+            output_root=tmp_path / "audits",
+        )
+
+
 def test_audit_rejects_calibration_label_misalignment_after_manifest_refresh(tmp_path):
     artifacts = _build_d06_3_artifacts(tmp_path)
     path = Path(artifacts["calibration_predictions_path"])

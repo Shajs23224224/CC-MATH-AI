@@ -25,7 +25,8 @@ from execution.research.artifacts import (
     sha256_file,
     verify_manifest_outputs,
 )
-from scripts.run_execution_ml_walk_forward import EXPECTED_CLASSES, load_execution_dataset
+from execution.research.d07_audit import _verify_d04_dataset
+from scripts.run_execution_ml_walk_forward import EXPECTED_CLASSES
 from scripts.run_ml_walk_forward import build_expanding_folds
 
 _D06_OUTPUTS = (
@@ -520,11 +521,8 @@ def audit_calibration_reliability(
         "D07.3 requires the D06.3 contract",
     )
     d06_summary = read_json_object(policy_run_dir / "decision_policy_summary.json")
-    dataset, dates, _ = load_execution_dataset(dataset_path)
-    d04_manifest_path = dataset_path.parent / "execution_dataset_manifest.json"
-    _require(d04_manifest_path.is_file(), "D04 execution dataset manifest is missing")
-    d04_hash = sha256_file(dataset_path)
-    d04_manifest_hash = sha256_file(d04_manifest_path)
+    frame, dates, _, d04_hash, d04_manifest_hash = _verify_d04_dataset(dataset_path)
+    d04_labels = frame["target_execution_direction"].astype(str).to_numpy()
     d06_input = d06_manifest.get("input")
     _require(isinstance(d06_input, dict), "D06 input manifest is missing")
     _require(
@@ -570,7 +568,7 @@ def audit_calibration_reliability(
         "D06 test_fraction is outside its supported range",
     )
     expected_folds = build_expanding_folds(
-        len(dataset.features),
+        len(frame),
         n_folds=fold_count,
         test_fraction=test_fraction,
     )
@@ -812,7 +810,7 @@ def audit_calibration_reliability(
                 and train_end == test_start
                 and 0 <= calibration_start < calibration_end == train_end
                 and calibration_count == calibration_end - calibration_start
-                and test_start < test_end <= len(dataset.target),
+                and test_start < test_end <= len(frame),
                 f"{algorithm} fold {fold_id} temporal boundaries are invalid",
             )
             expected_calibration_count = max(2, int(math.ceil(train_end * calibration_fraction)))
@@ -836,7 +834,7 @@ def audit_calibration_reliability(
                 ),
                 f"{algorithm} fold {fold_id} calibration row coverage is incomplete",
             )
-            calibration_actual = np.asarray(dataset.target, dtype=str)[expected_calibration_indices]
+            calibration_actual = d04_labels[expected_calibration_indices]
             _require(
                 np.array_equal(cal_rows["actual"].astype(str).to_numpy(), calibration_actual),
                 f"{algorithm} fold {fold_id} calibration labels differ from D04",
@@ -902,7 +900,7 @@ def audit_calibration_reliability(
                 ),
                 f"{algorithm} fold {fold_id} OOS row coverage is incomplete",
             )
-            oos_actual = np.asarray(dataset.target, dtype=str)[expected_oos_indices]
+            oos_actual = d04_labels[expected_oos_indices]
             _require(
                 np.array_equal(oos_rows["actual"].astype(str).to_numpy(), oos_actual),
                 f"{algorithm} fold {fold_id} OOS labels differ from D04",
@@ -1022,7 +1020,10 @@ def audit_calibration_reliability(
         {
             "name": "d06_manifest_and_d04_identity",
             "passed": True,
-            "detail": "D06.3 source hashes/byte counts and D04 dataset/manifest identity verified",
+            "detail": (
+                "D06.3 hashes and byte counts verified; D04 execution returns, labels, "
+                "threshold and next-session entry mapping independently reconciled"
+            ),
         },
         {
             "name": "calibration_suffix_alignment",

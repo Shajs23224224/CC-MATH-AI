@@ -4,7 +4,7 @@
 
 D07.3 independently verifies the probability-calibration layer emitted by D06.3. It does not trust the temperature, selected neutral threshold, calibrated probability columns, fold calibration metrics, aggregate statistics, or reliability bins simply because they appear in D06 outputs.
 
-The auditor requires a completed D06.3 run and the exact D04 execution dataset used by that run. It verifies the D06 manifest hashes and byte counts before analysis, then maps every saved calibration and OOS probability row to its D04 index, feature date, and actual class label.
+The auditor requires a completed D06.3 run and the exact D04 execution dataset used by that run. It verifies the D06 manifest hashes and byte counts, then reuses D07.1's strict D04 contract verification: execution-return arithmetic, threshold/label reconciliation, chronological dates, and next-observed-session entry mapping. Only after those checks does it map calibration and OOS probability rows to D04 indices, dates, and actual labels.
 
 ## Independent recomputation
 
