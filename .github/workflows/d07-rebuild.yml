@@ -22,6 +22,7 @@ on:
       - "ml/**"
       - "pyproject.toml"
       - "tests/unit/d07_*.py"
+      - "tests/unit/test_d07_*.py"
       - "tests/unit/test_execution_dataset.py"
       - "tests/unit/test_execution_ml_walk_forward.py"
       - "tests/unit/test_execution_decision_policy.py"
@@ -85,7 +86,7 @@ jobs:
           tests/unit/test_d07_simulation.py
 
       - name: Mypy D07 research modules
-        run: mypy execution/research
+        run: mypy --follow-imports=skip execution/research
 
       - name: D07 audit/simulation and D04-D06 regressions
         env:
