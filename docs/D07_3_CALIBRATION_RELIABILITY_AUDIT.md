@@ -10,7 +10,7 @@ The auditor requires a completed D06.3 run and the exact D04 execution dataset u
 
 For each algorithm and expanding fold, D07.3:
 
-1. Rebuilds the calibration suffix boundaries from the fold metadata and declared calibration fraction.
+1. Rebuilds the calibration suffix boundaries from the fold metadata and declared calibration fraction. It verifies the estimator-fit sample count stops exactly at the suffix boundary, the outer OOS fold is excluded from selection, and the pre-calibration prefix contains all three classes.
 2. Validates calibration raw probabilities as finite three-class simplex rows and matches row indexes, dates, and labels to D04.
 3. Fits a scalar temperature again using bounded optimization over the exact manifest bounds [0.05, 20]. The implementation independently reproduces D06's objective, optimizer tolerance, and deterministic endpoint/identity candidate tie-breaks.
 4. Recomputes raw and temperature-scaled calibration log-loss and multiclass Brier scores.
