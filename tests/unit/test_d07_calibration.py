@@ -309,6 +309,8 @@ def test_audit_rejects_d04_next_session_mapping_even_after_hash_refresh(tmp_path
     artifacts = _build_d06_3_artifacts(tmp_path)
     dataset_path = Path(artifacts["dataset_path"])
     dataset = pd.read_csv(dataset_path, index_col="feature_date")
+    entry_dates = pd.to_datetime(dataset["entry_date"])
+    dataset["entry_date"] = entry_dates.dt.strftime("%Y-%m-%dT%H:%M:%S")
     dataset.iloc[1, dataset.columns.get_loc("entry_date")] = "2024-01-04T12:00:00"
     dataset.to_csv(
         dataset_path,
